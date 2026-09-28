@@ -192,7 +192,7 @@
             line-height: 1.4;
         }
         .result-graphic {
-            padding: 40px;
+            padding: 35px 25px;
             border-radius: 12px;
             text-align: center;
             margin: 25px 0;
@@ -208,11 +208,11 @@
             border: 4px solid #f85149;
         }
         .graphic-title {
-            font-size: 3.5em;
+            font-size: 3.2em;
             font-weight: 900;
             letter-spacing: 2px;
             text-transform: uppercase;
-            margin: 0 0 10px 0;
+            margin: 0 0 8px 0;
             text-shadow: 2px 4px 10px rgba(0,0,0,0.7);
         }
         .win .graphic-title {
@@ -222,7 +222,7 @@
             color: #f85149;
         }
         .graphic-banner {
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: 600;
             margin-bottom: 20px;
             color: #eee;
@@ -231,13 +231,71 @@
             display: flex;
             justify-content: center;
             gap: 40px;
-            margin: 20px 0;
+            margin: 15px 0;
             font-size: 1.8em;
             font-weight: bold;
             background: rgba(0,0,0,0.3);
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
+        }
+        .mvp-container {
+            margin: 25px auto 10px auto;
+            max-width: 500px;
+            background: rgba(0,0,0,0.45);
+            border: 2px solid #e3b341;
+            border-radius: 10px;
+            padding: 15px 20px;
+            box-shadow: 0 0 15px rgba(227, 179, 65, 0.25);
+        }
+        .mvp-title {
+            color: #e3b341;
+            font-size: 1.15em;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .mvp-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #fff;
+            margin: 4px 0;
+        }
+        .mvp-meta {
+            color: #8b949e;
+            font-size: 0.9em;
+            margin-bottom: 12px;
+        }
+        .mvp-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+        }
+        .mvp-stat-grid.pitcher {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .mvp-stat-box {
+            text-align: center;
+        }
+        .mvp-stat-val {
+            font-size: 1.35em;
+            font-weight: bold;
+            color: #00cecb;
+        }
+        .mvp-stat-lbl {
+            font-size: 0.7em;
+            color: #aaa;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .doc-label {
             font-size: 0.5em;
@@ -616,6 +674,84 @@
         }
     }
 
+    function generateMvpCard(team, wins) {
+        let candidates = positions.map(pos => {
+            let p = team[pos];
+            let variance = (Math.random() * 8) - 4;
+            let performanceScore = p.ovr + variance;
+            return { pos, name: p.name, ovr: p.ovr, score: performanceScore };
+        });
+
+        candidates.sort((a, b) => b.score - a.score);
+        let mvp = candidates[0];
+        let ovrFactor = (mvp.ovr - 80) / 20; // 0.1 to 1.0
+        let winFactor = wins / 162;
+
+        if (mvp.pos === 'SP') {
+            let decPct = 0.65 + (winFactor * 0.25);
+            let totalDecisions = Math.floor(28 + Math.random() * 5);
+            let w = Math.min(wins, Math.max(12, Math.round(totalDecisions * decPct)));
+            let l = Math.max(2, totalDecisions - w);
+            let eraBase = 3.90 - (ovrFactor * 1.80) - ((winFactor - 0.5) * 0.6);
+            let era = Math.max(1.55, eraBase + (Math.random() * 0.40 - 0.20)).toFixed(2);
+
+            return `
+                <div class="mvp-container">
+                    <div class="mvp-title">🏆 Team MVP Selection</div>
+                    <div class="mvp-name">${mvp.name}</div>
+                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Ace Starting Pitcher</div>
+                    <div class="mvp-stat-grid pitcher">
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${w}-${l}</div>
+                            <div class="mvp-stat-lbl">W-L</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${era}</div>
+                            <div class="mvp-stat-lbl">ERA</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            let avgBase = 0.255 + (ovrFactor * 0.075) + (Math.random() * 0.02 - 0.01);
+            let avgStr = (Math.min(0.380, Math.max(0.240, avgBase))).toFixed(3).replace(/^0/, '');
+            
+            let powerMult = ["1B", "3B", "RF", "LF", "C"].includes(mvp.pos) ? 1.25 : 0.85;
+            let hr = Math.round((22 + (ovrFactor * 26) + (Math.random() * 6 - 3)) * powerMult);
+            
+            let rbi = Math.round(hr * 2.3 + (winFactor * 20) + (Math.random() * 10 - 5));
+            
+            let speedMult = ["CF", "SS", "2B", "LF"].includes(mvp.pos) ? 1.6 : 0.4;
+            let sb = Math.max(2, Math.round((8 + (ovrFactor * 24) + (Math.random() * 8 - 4)) * speedMult));
+
+            return `
+                <div class="mvp-container">
+                    <div class="mvp-title">🏆 Team MVP Selection</div>
+                    <div class="mvp-name">${mvp.name}</div>
+                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Starting Lineup Leader</div>
+                    <div class="mvp-stat-grid">
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${avgStr}</div>
+                            <div class="mvp-stat-lbl">AVG</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${hr}</div>
+                            <div class="mvp-stat-lbl">HR</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${rbi}</div>
+                            <div class="mvp-stat-lbl">RBI</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${sb}</div>
+                            <div class="mvp-stat-lbl">SB</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
     function startLiveSimulation() {
         const simBtn = document.getElementById('sim-btn');
         simBtn.style.display = 'none';
@@ -660,6 +796,11 @@
     function displayFinalGraphicResults(userWins, oppWins) {
         const resultsDiv = document.getElementById('sim-results');
         const isWin = userWins >= oppWins;
+        const winningTeam = isWin ? userTeam : opponentTeam;
+        const winningWins = isWin ? userWins : oppWins;
+        
+        const mvpCardHTML = generateMvpCard(winningTeam, winningWins);
+
         let actionButtons = `
             <div class="btn-container">
                 ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: #00cecb; color: #000; margin: 0;">Re-Sim Season</button>` : ''}
@@ -671,7 +812,7 @@
             <div class="result-graphic ${isWin ? 'win' : 'loss'}">
                 <div class="graphic-title">${isWin ? 'Pennant Winner' : 'Season Over'}</div>
                 <div class="graphic-banner">
-                    ${isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck in the offseason.'}
+                    ${isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.'}
                 </div>
                 <div class="graphic-stats">
                     <div>
@@ -684,6 +825,7 @@
                         ${oppWins}-${162 - oppWins}
                     </div>
                 </div>
+                ${mvpCardHTML}
                 <div style="margin-bottom: 25px;"></div>
                 ${actionButtons}
             </div>
