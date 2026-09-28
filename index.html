@@ -254,8 +254,8 @@
 </head>
 <body>
 <div class="container">
-    <h1>⚾ MLB Roster & Payroll Cap Simulation</h1>
-    <p class="subtitle">Draft a 9-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, SP) under the $28.0M payroll threshold.</p>
+    <h1>MLB Roster & Payroll Cap Simulation</h1>
+    <p class="subtitle">Draft a 9-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, SP) under the $28.0M luxury tax threshold.</p>
     
     <div class="hud-bar">
         <div class="hud-item">Remaining Payroll <span id="hud-bank">$28.0M</span></div>
@@ -269,7 +269,7 @@
     
     <div id="draft-section">
         <h2>Available Free Agent Catalog</h2>
-        <p style="text-align:center; color:#8b949e; font-size:0.9em;">Click a candidate card below to slot them into the active position.</p>
+        <p style="text-align:center; color:#8b949e; font-size:0.9em;">Click any position card anytime to switch targets. Click a candidate below to sign them.</p>
         <div id="draft-catalog" class="draft-pool"></div>
     </div>
     
@@ -279,7 +279,7 @@
     </div>
     
     <div id="sim-section" style="display:none; text-align: center; margin-top: 20px;">
-        <button class="btn" id="sim-btn" onclick="startLiveSimulation()">▶ Play 162-Game Season</button>
+        <button class="btn" id="sim-btn" onclick="startLiveSimulation()">Play 162-Game Season</button>
         <div id="sim-results" style="display:none; text-align: left;"></div>
     </div>
 </div>
@@ -308,10 +308,10 @@
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
                 let color = background;
-                if (r <= 2 && c >= 2 && c <= 5) color = cap; // Baseball cap
+                if (r <= 2 && c >= 2 && c <= 5) color = cap;
                 else if (r === 2 && (c === 1 || c === 6)) color = hair;
                 else if (r >= 3 && r <= 5 && c >= 2 && c <= 5) color = skin;
-                else if (r >= 6) color = cap; // Jersey
+                else if (r >= 6) color = cap;
                 html += `<div class="p-block" style="background:${color}"></div>`;
             }
         }
@@ -322,67 +322,111 @@
     const playersDB = {
         C: [
             { name: "Johnny Bench", ovr: 98 }, { name: "Yogi Berra", ovr: 97 }, { name: "Ivan Rodriguez", ovr: 96 },
-            { name: "Mike Piazza", ovr: 95 }, { name: "Buster Posey", ovr: 94 }, { name: "Adley Rutschman", ovr: 92 },
-            { name: "William Contreras", ovr: 91 }, { name: "Yadier Molina", ovr: 90 }, { name: "Will Smith", ovr: 89 },
-            { name: "J.T. Realmuto", ovr: 88 }, { name: "Jorge Posada", ovr: 88 }, { name: "Cal Raleigh", ovr: 87 },
-            { name: "Salvador Perez", ovr: 86 }, { name: "Yainer Diaz", ovr: 84 }, { name: "Sean Murphy", ovr: 84 }
+            { name: "Mike Piazza", ovr: 95 }, { name: "Carlton Fisk", ovr: 95 }, { name: "Gary Carter", ovr: 94 },
+            { name: "Buster Posey", ovr: 94 }, { name: "Thurman Munson", ovr: 93 }, { name: "Adley Rutschman", ovr: 92 },
+            { name: "Roy Campanella", ovr: 92 }, { name: "William Contreras", ovr: 91 }, { name: "Joe Mauer", ovr: 91 },
+            { name: "Yadier Molina", ovr: 90 }, { name: "Ted Simmons", ovr: 90 }, { name: "Will Smith", ovr: 89 },
+            { name: "Bill Dickey", ovr: 89 }, { name: "J.T. Realmuto", ovr: 88 }, { name: "Jorge Posada", ovr: 88 },
+            { name: "Gene Tenace", ovr: 88 }, { name: "Cal Raleigh", ovr: 87 }, { name: "Jason Varitek", ovr: 87 },
+            { name: "Salvador Perez", ovr: 86 }, { name: "Brian McCann", ovr: 86 }, { name: "Russell Martin", ovr: 85 },
+            { name: "Yainer Diaz", ovr: 85 }, { name: "Sean Murphy", ovr: 84 }, { name: "Alejandro Kirk", ovr: 84 },
+            { name: "Logan O'Hoppe", ovr: 83 }, { name: "Francisco Alvarez", ovr: 83 }, { name: "Gabriel Moreno", ovr: 82 }
         ],
         "1B": [
-            { name: "Lou Gehrig", ovr: 99 }, { name: "Albert Pujols", ovr: 98 }, { name: "Frank Thomas", ovr: 96 },
-            { name: "Freddie Freeman", ovr: 95 }, { name: "Bryce Harper", ovr: 94 }, { name: "Jim Thome", ovr: 93 },
-            { name: "Matt Olson", ovr: 91 }, { name: "Vladimir Guerrero Jr.", ovr: 90 }, { name: "Paul Goldschmidt", ovr: 89 },
-            { name: "Pete Alonso", ovr: 88 }, { name: "Joey Votto", ovr: 88 }, { name: "Christian Walker", ovr: 86 },
-            { name: "Triston Casas", ovr: 84 }, { name: "Josh Naylor", ovr: 84 }, { name: "Nathaniel Lowe", ovr: 83 }
+            { name: "Lou Gehrig", ovr: 99 }, { name: "Albert Pujols", ovr: 98 }, { name: "Jimmie Foxx", ovr: 97 },
+            { name: "Frank Thomas", ovr: 96 }, { name: "Freddie Freeman", ovr: 95 }, { name: "Jeff Bagwell", ovr: 95 },
+            { name: "Bryce Harper", ovr: 94 }, { name: "Eddie Murray", ovr: 94 }, { name: "Jim Thome", ovr: 93 },
+            { name: "Harmon Killebrew", ovr: 93 }, { name: "Willie McCovey", ovr: 92 }, { name: "Rafael Palmeiro", ovr: 92 },
+            { name: "Matt Olson", ovr: 91 }, { name: "Todd Helton", ovr: 91 }, { name: "Vladimir Guerrero Jr.", ovr: 90 },
+            { name: "Keith Hernandez", ovr: 90 }, { name: "Paul Goldschmidt", ovr: 89 }, { name: "John Olerud", ovr: 89 },
+            { name: "Pete Alonso", ovr: 88 }, { name: "Joey Votto", ovr: 88 }, { name: "Derrek Lee", ovr: 87 },
+            { name: "Anthony Rizzo", ovr: 87 }, { name: "Christian Walker", ovr: 86 }, { name: "Mark Grace", ovr: 86 },
+            { name: "Triston Casas", ovr: 85 }, { name: "Josh Naylor", ovr: 85 }, { name: "Nathaniel Lowe", ovr: 84 },
+            { name: "Vinnie Pasquantino", ovr: 84 }, { name: "Ryan Mountcastle", ovr: 83 }, { name: "Spencer Torkelson", ovr: 82 }
         ],
         "2B": [
-            { name: "Rogers Hornsby", ovr: 98 }, { name: "Jackie Robinson", ovr: 97 }, { name: "Roberto Alomar", ovr: 95 },
-            { name: "Ryne Sandberg", ovr: 94 }, { name: "Chase Utley", ovr: 93 }, { name: "Jose Altuve", ovr: 92 },
-            { name: "Marcus Semien", ovr: 90 }, { name: "Ketel Marte", ovr: 91 }, { name: "Ozzie Albies", ovr: 88 },
-            { name: "Dustin Pedroia", ovr: 89 }, { name: "Andres Gimenez", ovr: 87 }, { name: "Nico Hoerner", ovr: 86 },
-            { name: "Bryson Stott", ovr: 85 }, { name: "Zack Gelof", ovr: 83 }, { name: "Gleyber Torres", ovr: 83 }
+            { name: "Rogers Hornsby", ovr: 98 }, { name: "Jackie Robinson", ovr: 97 }, { name: "Joe Morgan", ovr: 97 },
+            { name: "Eddie Collins", ovr: 96 }, { name: "Roberto Alomar", ovr: 95 }, { name: "Rod Carew", ovr: 95 },
+            { name: "Ryne Sandberg", ovr: 94 }, { name: "Craig Biggio", ovr: 94 }, { name: "Chase Utley", ovr: 93 },
+            { name: "Charlie Gehringer", ovr: 93 }, { name: "Jose Altuve", ovr: 92 }, { name: "Jeff Kent", ovr: 92 },
+            { name: "Ketel Marte", ovr: 91 }, { name: "Robinson Cano", ovr: 91 }, { name: "Marcus Semien", ovr: 90 },
+            { name: "Lou Whitaker", ovr: 90 }, { name: "Dustin Pedroia", ovr: 89 }, { name: "Bobby Grich", ovr: 89 },
+            { name: "Ozzie Albies", ovr: 88 }, { name: "Ian Kinsler", ovr: 88 }, { name: "Andres Gimenez", ovr: 87 },
+            { name: "Brian Dozier", ovr: 87 }, { name: "Nico Hoerner", ovr: 86 }, { name: "Daniel Murphy", ovr: 86 },
+            { name: "Bryson Stott", ovr: 85 }, { name: "Jonathan India", ovr: 84 }, { name: "Zack Gelof", ovr: 84 },
+            { name: "Gleyber Torres", ovr: 83 }, { name: "Brice Turang", ovr: 83 }, { name: "Luis Arraez", ovr: 82 }
         ],
         "3B": [
-            { name: "Mike Schmidt", ovr: 98 }, { name: "George Brett", ovr: 97 }, { name: "Chipper Jones", ovr: 96 },
-            { name: "Adrian Beltre", ovr: 95 }, { name: "Jose Ramirez", ovr: 95 }, { name: "Manny Machado", ovr: 93 },
-            { name: "Austin Riley", ovr: 92 }, { name: "Rafael Devers", ovr: 91 }, { name: "Alex Rodriguez", ovr: 97 },
-            { name: "Nolan Arenado", ovr: 90 }, { name: "Gunnar Henderson", ovr: 94 }, { name: "Royce Lewis", ovr: 87 },
-            { name: "Josh Jung", ovr: 85 }, { name: "Maikel Garcia", ovr: 84 }, { name: "Ke'Bryan Hayes", ovr: 84 }
+            { name: "Mike Schmidt", ovr: 98 }, { name: "George Brett", ovr: 97 }, { name: "Alex Rodriguez", ovr: 97 },
+            { name: "Eddie Mathews", ovr: 96 }, { name: "Chipper Jones", ovr: 96 }, { name: "Brooks Robinson", ovr: 95 },
+            { name: "Adrian Beltre", ovr: 95 }, { name: "Jose Ramirez", ovr: 95 }, { name: "Wade Boggs", ovr: 94 },
+            { name: "Gunnar Henderson", ovr: 94 }, { name: "Manny Machado", ovr: 93 }, { name: "Ron Santo", ovr: 93 },
+            { name: "Austin Riley", ovr: 92 }, { name: "Scott Rolen", ovr: 92 }, { name: "Rafael Devers", ovr: 91 },
+            { name: "Ken Caminiti", ovr: 91 }, { name: "Nolan Arenado", ovr: 90 }, { name: "David Wright", ovr: 90 },
+            { name: "Josh Donaldson", ovr: 89 }, { name: "Evan Longoria", ovr: 89 }, { name: "Matt Chapman", ovr: 88 },
+            { name: "Robin Ventura", ovr: 88 }, { name: "Royce Lewis", ovr: 87 }, { name: "Justin Turner", ovr: 86 },
+            { name: "Josh Jung", ovr: 85 }, { name: "Maikel Garcia", ovr: 85 }, { name: "Ke'Bryan Hayes", ovr: 84 },
+            { name: "Max Muncy", ovr: 84 }, { name: "Ryan McMahon", ovr: 83 }, { name: "Alec Bohm", ovr: 83 }
         ],
         SS: [
-            { name: "Honus Wagner", ovr: 98 }, { name: "Cal Ripken Jr.", ovr: 97 }, { name: "Derek Jeter", ovr: 95 },
-            { name: "Ozzie Smith", ovr: 94 }, { name: "Bobby Witt Jr.", ovr: 96 }, { name: "Corey Seager", ovr: 95 },
-            { name: "Francisco Lindor", ovr: 94 }, { name: "Trea Turner", ovr: 91 }, { name: "Bo Bichette", ovr: 88 },
-            { name: "Elly De La Cruz", ovr: 90 }, { name: "Dansby Swanson", ovr: 87 }, { name: "Willy Adames", ovr: 86 },
-            { name: "Anthony Volpe", ovr: 85 }, { name: "C.J. Abrams", ovr: 85 }, { name: "Ha-Seong Kim", ovr: 84 }
+            { name: "Honus Wagner", ovr: 98 }, { name: "Cal Ripken Jr.", ovr: 97 }, { name: "Ernie Banks", ovr: 97 },
+            { name: "Bobby Witt Jr.", ovr: 96 }, { name: "Arky Vaughan", ovr: 96 }, { name: "Derek Jeter", ovr: 95 },
+            { name: "Corey Seager", ovr: 95 }, { name: "Robin Yount", ovr: 95 }, { name: "Ozzie Smith", ovr: 94 },
+            { name: "Francisco Lindor", ovr: 94 }, { name: "Barry Larkin", ovr: 93 }, { name: "Alan Trammell", ovr: 92 },
+            { name: "Trea Turner", ovr: 91 }, { name: "Nomar Garciaparra", ovr: 91 }, { name: "Elly De La Cruz", ovr: 90 },
+            { name: "Troy Tulowitzki", ovr: 90 }, { name: "Bo Bichette", ovr: 88 }, { name: "Jimmy Rollins", ovr: 88 },
+            { name: "Dansby Swanson", ovr: 87 }, { name: "Miguel Tejada", ovr: 87 }, { name: "Willy Adames", ovr: 86 },
+            { name: "Omar Vizquel", ovr: 86 }, { name: "Anthony Volpe", ovr: 85 }, { name: "C.J. Abrams", ovr: 85 },
+            { name: "Ha-Seong Kim", ovr: 84 }, { name: "J.P. Crawford", ovr: 84 }, { name: "Masyn Winn", ovr: 83 },
+            { name: "Ezequiel Tovar", ovr: 83 }, { name: "Oneil Cruz", ovr: 83 }, { name: "Jeremy Pena", ovr: 82 }
         ],
         LF: [
             { name: "Ted Williams", ovr: 99 }, { name: "Barry Bonds", ovr: 99 }, { name: "Rickey Henderson", ovr: 97 },
-            { name: "Stan Musial", ovr: 97 }, { name: "Carl Yastrzemski", ovr: 95 }, { name: "Yordan Alvarez", ovr: 96 },
-            { name: "Juan Soto", ovr: 96 }, { name: "Christian Yelich", ovr: 89 }, { name: "Randy Arozarena", ovr: 87 },
-            { name: "Steven Kwan", ovr: 88 }, { name: "Lourdes Gurriel Jr.", ovr: 85 }, { name: "Bryan Reynolds", ovr: 86 },
-            { name: "Ian Happ", ovr: 84 }, { name: "Taylor Ward", ovr: 83 }, { name: "Riley Greene", ovr: 86 }
+            { name: "Stan Musial", ovr: 97 }, { name: "Yordan Alvarez", ovr: 96 }, { name: "Juan Soto", ovr: 96 },
+            { name: "Carl Yastrzemski", ovr: 95 }, { name: "Al Simmons", ovr: 94 }, { name: "Tim Raines", ovr: 93 },
+            { name: "Willie Stargell", ovr: 92 }, { name: "Ralph Kiner", ovr: 91 }, { name: "Lou Brock", ovr: 90 },
+            { name: "Christian Yelich", ovr: 89 }, { name: "Matt Holliday", ovr: 89 }, { name: "Steven Kwan", ovr: 88 },
+            { name: "Moises Alou", ovr: 88 }, { name: "Randy Arozarena", ovr: 87 }, { name: "Lance Berkman", ovr: 87 },
+            { name: "Bryan Reynolds", ovr: 86 }, { name: "Riley Greene", ovr: 86 }, { name: "Lourdes Gurriel Jr.", ovr: 85 },
+            { name: "Michael Brantley", ovr: 85 }, { name: "Ian Happ", ovr: 84 }, { name: "Alex Verdugo", ovr: 84 },
+            { name: "Taylor Ward", ovr: 83 }, { name: "Jurickson Profar", ovr: 83 }, { name: "Andrew Benintendi", ovr: 82 },
+            { name: "Austin Hays", ovr: 82 }, { name: "Chas McCormick", ovr: 81 }, { name: "Eddie Rosario", ovr: 81 }
         ],
         CF: [
             { name: "Willie Mays", ovr: 99 }, { name: "Mickey Mantle", ovr: 98 }, { name: "Ken Griffey Jr.", ovr: 98 },
-            { name: "Mike Trout", ovr: 96 }, { name: "Julio Rodriguez", ovr: 93 }, { name: "Michael Harris II", ovr: 89 },
-            { name: "Ceddanne Rafaela", ovr: 85 }, { name: "Jackson Chourio", ovr: 86 }, { name: "Luis Robert Jr.", ovr: 88 },
-            { name: "Cody Bellinger", ovr: 87 }, { name: "Byron Buxton", ovr: 87 }, { name: "Jarren Duran", ovr: 90 },
-            { name: "Pete Crow-Armstrong", ovr: 83 }, { name: "Brandon Nimmo", ovr: 86 }, { name: "Jazz Chisholm Jr.", ovr: 85 }
+            { name: "Joe DiMaggio", ovr: 98 }, { name: "Ty Cobb", ovr: 98 }, { name: "Mike Trout", ovr: 96 },
+            { name: "Tris Speaker", ovr: 96 }, { name: "Duke Snider", ovr: 95 }, { name: "Carlos Beltran", ovr: 94 },
+            { name: "Julio Rodriguez", ovr: 93 }, { name: "Kenny Lofton", ovr: 93 }, { name: "Andruw Jones", ovr: 92 },
+            { name: "Jim Edmonds", ovr: 91 }, { name: "Jarren Duran", ovr: 90 }, { name: "Bernie Williams", ovr: 90 },
+            { name: "Michael Harris II", ovr: 89 }, { name: "Torii Hunter", ovr: 89 }, { name: "Luis Robert Jr.", ovr: 88 },
+            { name: "Cody Bellinger", ovr: 87 }, { name: "Byron Buxton", ovr: 87 }, { name: "Jackson Chourio", ovr: 86 },
+            { name: "Brandon Nimmo", ovr: 86 }, { name: "Ceddanne Rafaela", ovr: 85 }, { name: "Jazz Chisholm Jr.", ovr: 85 },
+            { name: "Harrison Bader", ovr: 84 }, { name: "Jung Hoo Lee", ovr: 84 }, { name: "Pete Crow-Armstrong", ovr: 83 },
+            { name: "Jose Siri", ovr: 82 }, { name: "Kevin Kiermaier", ovr: 82 }, { name: "TJ Friedl", ovr: 81 }
         ],
         RF: [
             { name: "Babe Ruth", ovr: 99 }, { name: "Hank Aaron", ovr: 99 }, { name: "Roberto Clemente", ovr: 97 },
-            { name: "Tony Gwynn", ovr: 96 }, { name: "Ichiro Suzuki", ovr: 96 }, { name: "Mookie Betts", ovr: 97 },
-            { name: "Aaron Judge", ovr: 98 }, { name: "Ronald Acuña Jr.", ovr: 96 }, { name: "Kyle Tucker", ovr: 93 },
-            { name: "Fernando Tatis Jr.", ovr: 92 }, { name: "Corbin Carroll", ovr: 88 }, { name: "Teoscar Hernandez", ovr: 87 },
-            { name: "Adolis Garcia", ovr: 86 }, { name: "Seiya Suzuki", ovr: 85 }, { name: "Anthony Santander", ovr: 86 }
+            { name: "Frank Robinson", ovr: 97 }, { name: "Mookie Betts", ovr: 97 }, { name: "Aaron Judge", ovr: 98 },
+            { name: "Tony Gwynn", ovr: 96 }, { name: "Ichiro Suzuki", ovr: 96 }, { name: "Ronald Acuña Jr.", ovr: 96 },
+            { name: "Al Kaline", ovr: 95 }, { name: "Reggie Jackson", ovr: 94 }, { name: "Dave Winfield", ovr: 94 },
+            { name: "Vladimir Guerrero", ovr: 93 }, { name: "Kyle Tucker", ovr: 93 }, { name: "Fernando Tatis Jr.", ovr: 92 },
+            { name: "Sammy Sosa", ovr: 92 }, { name: "Larry Walker", ovr: 91 }, { name: "Dwight Evans", ovr: 90 },
+            { name: "Corbin Carroll", ovr: 88 }, { name: "Paul O'Neill", ovr: 88 }, { name: "Teoscar Hernandez", ovr: 87 },
+            { name: "Bobby Abreu", ovr: 87 }, { name: "Anthony Santander", ovr: 86 }, { name: "Adolis Garcia", ovr: 86 },
+            { name: "Seiya Suzuki", ovr: 85 }, { name: "Nick Castellanos", ovr: 84 }, { name: "Lane Thomas", ovr: 83 },
+            { name: "Josh Lowe", ovr: 83 }, { name: "Max Kepler", ovr: 82 }, { name: "Wilyer Abreu", ovr: 82 }
         ],
         SP: [
             { name: "Pedro Martinez", ovr: 99 }, { name: "Randy Johnson", ovr: 98 }, { name: "Sandy Koufax", ovr: 98 },
-            { name: "Greg Maddux", ovr: 97 }, { name: "Nolan Ryan", ovr: 96 }, { name: "Shohei Ohtani", ovr: 97 },
-            { name: "Tarik Skubal", ovr: 96 }, { name: "Zack Wheeler", ovr: 95 }, { name: "Corbin Burnes", ovr: 94 },
-            { name: "Paul Skenes", ovr: 93 }, { name: "Logan Gilbert", ovr: 91 }, { name: "Cole Ragans", ovr: 90 },
-            { name: "George Kirby", ovr: 89 }, { name: "Tyler Glasnow", ovr: 90 }, { name: "Logan Webb", ovr: 89 },
-            { name: "Shota Imanaga", ovr: 88 }, { name: "Dylan Cease", ovr: 88 }, { name: "Freddy Peralta", ovr: 86 }
+            { name: "Bob Gibson", ovr: 98 }, { name: "Greg Maddux", ovr: 97 }, { name: "Roger Clemens", ovr: 97 },
+            { name: "Shohei Ohtani", ovr: 97 }, { name: "Tom Seaver", ovr: 97 }, { name: "Nolan Ryan", ovr: 96 },
+            { name: "Steve Carlton", ovr: 96 }, { name: "Tarik Skubal", ovr: 96 }, { name: "Clayton Kershaw", ovr: 96 },
+            { name: "Zack Wheeler", ovr: 95 }, { name: "Justin Verlander", ovr: 95 }, { name: "Max Scherzer", ovr: 95 },
+            { name: "Corbin Burnes", ovr: 94 }, { name: "Roy Halladay", ovr: 94 }, { name: "Paul Skenes", ovr: 93 },
+            { name: "Jacob deGrom", ovr: 93 }, { name: "Gerrit Cole", ovr: 92 }, { name: "Logan Gilbert", ovr: 91 },
+            { name: "Cole Ragans", ovr: 90 }, { name: "Tyler Glasnow", ovr: 90 }, { name: "George Kirby", ovr: 89 },
+            { name: "Logan Webb", ovr: 89 }, { name: "Shota Imanaga", ovr: 88 }, { name: "Dylan Cease", ovr: 88 },
+            { name: "Freddy Peralta", ovr: 86 }, { name: "Hunter Greene", ovr: 85 }, { name: "Bailey Ober", ovr: 84 }
         ]
     };
 
@@ -533,7 +577,6 @@
     function pickPlayer(pos, name, ovr, cost) {
         userTeam[pos] = { name, ovr, cost };
         
-        // Advance to next unfilled position
         let nextIndex = positions.indexOf(pos) + 1;
         let foundEmpty = false;
         
@@ -599,7 +642,7 @@
             if (Math.random() < 0.50) oppWins++; 
             
             resultsDiv.innerHTML = `
-                <h3 style="text-align: center;">⚾ Simulating 162-Game Regular Season...</h3>
+                <h3 style="text-align: center;">Simulating 162-Game Regular Season...</h3>
                 <div class="live-counter" style="text-align: center;">
                     YOUR CLUB: <span style="color:#2ea043;">${userWins} W</span> - <span style="color:#f85149;">${currentGame - userWins} L</span><br>
                     RIVAL CLUB: <span style="color:#1f6feb;">${oppWins} W</span> - <span style="color:#e3b341;">${currentGame - oppWins} L</span>
@@ -619,14 +662,14 @@
         const isWin = userWins >= oppWins;
         let actionButtons = `
             <div class="btn-container">
-                ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: #00cecb; color: #000; margin: 0;">🔄 Re-Sim Season</button>` : ''}
-                <button class="btn" onclick="resetToNewCampaign()" style="background: #f0f6fc; color: #000; margin: 0;">🎮 New Campaign</button>
+                ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: #00cecb; color: #000; margin: 0;">Re-Sim Season</button>` : ''}
+                <button class="btn" onclick="resetToNewCampaign()" style="background: #f0f6fc; color: #000; margin: 0;">New Campaign</button>
             </div>
         `;
         
         let graphicHTML = `
             <div class="result-graphic ${isWin ? 'win' : 'loss'}">
-                <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
+                <div class="graphic-title">${isWin ? 'Pennant Winner' : 'Season Over'}</div>
                 <div class="graphic-banner">
                     ${isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck in the offseason.'}
                 </div>
