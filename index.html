@@ -192,7 +192,7 @@
             line-height: 1.4;
         }
         .result-graphic {
-            padding: 35px 25px;
+            padding: 30px 20px;
             border-radius: 12px;
             text-align: center;
             margin: 25px 0;
@@ -208,7 +208,7 @@
             border: 4px solid #f85149;
         }
         .graphic-title {
-            font-size: 3.2em;
+            font-size: 3em;
             font-weight: 900;
             letter-spacing: 2px;
             text-transform: uppercase;
@@ -222,7 +222,7 @@
             color: #f85149;
         }
         .graphic-banner {
-            font-size: 1.2em;
+            font-size: 1.15em;
             font-weight: 600;
             margin-bottom: 20px;
             color: #eee;
@@ -240,31 +240,27 @@
             border: 1px solid rgba(255,255,255,0.1);
         }
         .mvp-container {
-            margin: 25px auto 10px auto;
-            max-width: 500px;
-            background: rgba(0,0,0,0.45);
+            margin: 25px auto 15px auto;
+            max-width: 520px;
+            background: rgba(13, 17, 23, 0.9);
             border: 2px solid #e3b341;
             border-radius: 10px;
-            padding: 15px 20px;
-            box-shadow: 0 0 15px rgba(227, 179, 65, 0.25);
+            padding: 18px;
+            box-shadow: 0 0 20px rgba(227, 179, 65, 0.35);
         }
-        .mvp-title {
+        .mvp-heading {
             color: #e3b341;
-            font-size: 1.15em;
+            font-size: 1.1em;
             font-weight: 900;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            margin-bottom: 6px;
         }
         .mvp-name {
-            font-size: 1.4em;
+            font-size: 1.5em;
             font-weight: bold;
-            color: #fff;
-            margin: 4px 0;
+            color: #ffffff;
+            margin: 4px 0 2px 0;
         }
         .mvp-meta {
             color: #8b949e;
@@ -274,28 +270,32 @@
         .mvp-stat-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            gap: 8px;
             background: rgba(255, 255, 255, 0.05);
-            padding: 10px;
+            padding: 12px 8px;
             border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .mvp-stat-grid.pitcher {
             grid-template-columns: repeat(2, 1fr);
+            max-width: 280px;
+            margin: 0 auto;
         }
         .mvp-stat-box {
             text-align: center;
         }
         .mvp-stat-val {
-            font-size: 1.35em;
-            font-weight: bold;
+            font-size: 1.4em;
+            font-weight: 800;
             color: #00cecb;
         }
         .mvp-stat-lbl {
-            font-size: 0.7em;
-            color: #aaa;
+            font-size: 0.75em;
+            color: #8b949e;
             font-weight: bold;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            margin-top: 2px;
         }
         .doc-label {
             font-size: 0.5em;
@@ -352,6 +352,7 @@
     }
 
     function render8BitFaceHTML(name) {
+        if (!name) name = "MLB Player";
         let seed = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         const skinColors = ["#dfa070", "#c68a5c", "#a0653d", "#eec590", "#f5d0b0"];
         const hairColors = ["#000000", "#4a2306", "#9a3300", "#d8b020", "#666666"];
@@ -377,114 +378,296 @@
         return html;
     }
 
+    // Baselines for position players: [AVG, HR, RBI, SB]
+    // Baselines for starting pitchers: [W, L, ERA]
     const playersDB = {
         C: [
-            { name: "Johnny Bench", ovr: 98 }, { name: "Yogi Berra", ovr: 97 }, { name: "Ivan Rodriguez", ovr: 96 },
-            { name: "Mike Piazza", ovr: 95 }, { name: "Carlton Fisk", ovr: 95 }, { name: "Gary Carter", ovr: 94 },
-            { name: "Buster Posey", ovr: 94 }, { name: "Thurman Munson", ovr: 93 }, { name: "Adley Rutschman", ovr: 92 },
-            { name: "Roy Campanella", ovr: 92 }, { name: "William Contreras", ovr: 91 }, { name: "Joe Mauer", ovr: 91 },
-            { name: "Yadier Molina", ovr: 90 }, { name: "Ted Simmons", ovr: 90 }, { name: "Will Smith", ovr: 89 },
-            { name: "Bill Dickey", ovr: 89 }, { name: "J.T. Realmuto", ovr: 88 }, { name: "Jorge Posada", ovr: 88 },
-            { name: "Gene Tenace", ovr: 88 }, { name: "Cal Raleigh", ovr: 87 }, { name: "Jason Varitek", ovr: 87 },
-            { name: "Salvador Perez", ovr: 86 }, { name: "Brian McCann", ovr: 86 }, { name: "Russell Martin", ovr: 85 },
-            { name: "Yainer Diaz", ovr: 85 }, { name: "Sean Murphy", ovr: 84 }, { name: "Alejandro Kirk", ovr: 84 },
-            { name: "Logan O'Hoppe", ovr: 83 }, { name: "Francisco Alvarez", ovr: 83 }, { name: "Gabriel Moreno", ovr: 82 }
+            { name: "Johnny Bench", ovr: 98, base: [0.275, 40, 125, 4] },
+            { name: "Yogi Berra", ovr: 97, base: [0.295, 28, 110, 2] },
+            { name: "Ivan Rodriguez", ovr: 96, base: [0.315, 26, 98, 18] },
+            { name: "Mike Piazza", ovr: 95, base: [0.325, 36, 115, 1] },
+            { name: "Carlton Fisk", ovr: 95, base: [0.280, 26, 92, 7] },
+            { name: "Gary Carter", ovr: 94, base: [0.270, 29, 102, 2] },
+            { name: "Buster Posey", ovr: 94, base: [0.318, 22, 92, 3] },
+            { name: "Thurman Munson", ovr: 93, base: [0.300, 17, 95, 8] },
+            { name: "Adley Rutschman", ovr: 92, base: [0.280, 21, 85, 3] },
+            { name: "Roy Campanella", ovr: 92, base: [0.285, 32, 110, 2] },
+            { name: "William Contreras", ovr: 91, base: [0.285, 22, 88, 7] },
+            { name: "Joe Mauer", ovr: 91, base: [0.340, 18, 86, 6] },
+            { name: "Yadier Molina", ovr: 90, base: [0.280, 16, 75, 4] },
+            { name: "Ted Simmons", ovr: 90, base: [0.295, 20, 95, 2] },
+            { name: "Will Smith", ovr: 89, base: [0.265, 22, 82, 2] },
+            { name: "Bill Dickey", ovr: 89, base: [0.315, 22, 105, 3] },
+            { name: "J.T. Realmuto", ovr: 88, base: [0.270, 20, 78, 16] },
+            { name: "Jorge Posada", ovr: 88, base: [0.275, 23, 90, 1] },
+            { name: "Gene Tenace", ovr: 88, base: [0.250, 24, 80, 5] },
+            { name: "Cal Raleigh", ovr: 87, base: [0.230, 32, 88, 3] },
+            { name: "Jason Varitek", ovr: 87, base: [0.260, 20, 78, 3] },
+            { name: "Salvador Perez", ovr: 86, base: [0.260, 28, 92, 0] },
+            { name: "Brian McCann", ovr: 86, base: [0.265, 22, 82, 2] },
+            { name: "Russell Martin", ovr: 85, base: [0.260, 17, 72, 12] },
+            { name: "Yainer Diaz", ovr: 85, base: [0.288, 22, 80, 1] },
+            { name: "Sean Murphy", ovr: 84, base: [0.250, 21, 74, 1] },
+            { name: "Alejandro Kirk", ovr: 84, base: [0.275, 14, 62, 0] },
+            { name: "Logan O'Hoppe", ovr: 83, base: [0.250, 22, 68, 2] },
+            { name: "Francisco Alvarez", ovr: 83, base: [0.235, 24, 66, 2] },
+            { name: "Gabriel Moreno", ovr: 82, base: [0.285, 10, 56, 7] }
         ],
         "1B": [
-            { name: "Lou Gehrig", ovr: 99 }, { name: "Albert Pujols", ovr: 98 }, { name: "Jimmie Foxx", ovr: 97 },
-            { name: "Frank Thomas", ovr: 96 }, { name: "Freddie Freeman", ovr: 95 }, { name: "Jeff Bagwell", ovr: 95 },
-            { name: "Bryce Harper", ovr: 94 }, { name: "Eddie Murray", ovr: 94 }, { name: "Jim Thome", ovr: 93 },
-            { name: "Harmon Killebrew", ovr: 93 }, { name: "Willie McCovey", ovr: 92 }, { name: "Rafael Palmeiro", ovr: 92 },
-            { name: "Matt Olson", ovr: 91 }, { name: "Todd Helton", ovr: 91 }, { name: "Vladimir Guerrero Jr.", ovr: 90 },
-            { name: "Keith Hernandez", ovr: 90 }, { name: "Paul Goldschmidt", ovr: 89 }, { name: "John Olerud", ovr: 89 },
-            { name: "Pete Alonso", ovr: 88 }, { name: "Joey Votto", ovr: 88 }, { name: "Derrek Lee", ovr: 87 },
-            { name: "Anthony Rizzo", ovr: 87 }, { name: "Christian Walker", ovr: 86 }, { name: "Mark Grace", ovr: 86 },
-            { name: "Triston Casas", ovr: 85 }, { name: "Josh Naylor", ovr: 85 }, { name: "Nathaniel Lowe", ovr: 84 },
-            { name: "Vinnie Pasquantino", ovr: 84 }, { name: "Ryan Mountcastle", ovr: 83 }, { name: "Spencer Torkelson", ovr: 82 }
+            { name: "Lou Gehrig", ovr: 99, base: [0.345, 41, 155, 6] },
+            { name: "Albert Pujols", ovr: 98, base: [0.328, 42, 125, 8] },
+            { name: "Jimmie Foxx", ovr: 97, base: [0.330, 45, 145, 6] },
+            { name: "Frank Thomas", ovr: 96, base: [0.325, 38, 120, 3] },
+            { name: "Freddie Freeman", ovr: 95, base: [0.315, 28, 100, 14] },
+            { name: "Jeff Bagwell", ovr: 95, base: [0.300, 39, 120, 25] },
+            { name: "Bryce Harper", ovr: 94, base: [0.295, 33, 100, 11] },
+            { name: "Eddie Murray", ovr: 94, base: [0.290, 30, 110, 5] },
+            { name: "Jim Thome", ovr: 93, base: [0.280, 42, 115, 2] },
+            { name: "Harmon Killebrew", ovr: 93, base: [0.260, 44, 115, 1] },
+            { name: "Willie McCovey", ovr: 92, base: [0.275, 38, 110, 2] },
+            { name: "Rafael Palmeiro", ovr: 92, base: [0.290, 38, 115, 3] },
+            { name: "Matt Olson", ovr: 91, base: [0.260, 43, 118, 1] },
+            { name: "Todd Helton", ovr: 91, base: [0.335, 32, 115, 5] },
+            { name: "Vladimir Guerrero Jr.", ovr: 90, base: [0.295, 32, 102, 4] },
+            { name: "Keith Hernandez", ovr: 90, base: [0.305, 16, 90, 9] },
+            { name: "Paul Goldschmidt", ovr: 89, base: [0.290, 31, 98, 10] },
+            { name: "John Olerud", ovr: 89, base: [0.310, 19, 94, 2] },
+            { name: "Pete Alonso", ovr: 88, base: [0.250, 41, 112, 3] },
+            { name: "Joey Votto", ovr: 88, base: [0.305, 28, 92, 5] },
+            { name: "Derrek Lee", ovr: 87, base: [0.295, 30, 98, 11] },
+            { name: "Anthony Rizzo", ovr: 87, base: [0.265, 29, 94, 5] },
+            { name: "Christian Walker", ovr: 86, base: [0.260, 31, 92, 5] },
+            { name: "Mark Grace", ovr: 86, base: [0.305, 15, 88, 3] },
+            { name: "Triston Casas", ovr: 85, base: [0.265, 27, 85, 0] },
+            { name: "Josh Naylor", ovr: 85, base: [0.275, 26, 95, 8] },
+            { name: "Nathaniel Lowe", ovr: 84, base: [0.275, 20, 78, 2] },
+            { name: "Vinnie Pasquantino", ovr: 84, base: [0.270, 22, 85, 1] },
+            { name: "Ryan Mountcastle", ovr: 83, base: [0.260, 24, 82, 3] },
+            { name: "Spencer Torkelson", ovr: 82, base: [0.240, 27, 80, 2] }
         ],
         "2B": [
-            { name: "Rogers Hornsby", ovr: 98 }, { name: "Jackie Robinson", ovr: 97 }, { name: "Joe Morgan", ovr: 97 },
-            { name: "Eddie Collins", ovr: 96 }, { name: "Roberto Alomar", ovr: 95 }, { name: "Rod Carew", ovr: 95 },
-            { name: "Ryne Sandberg", ovr: 94 }, { name: "Craig Biggio", ovr: 94 }, { name: "Chase Utley", ovr: 93 },
-            { name: "Charlie Gehringer", ovr: 93 }, { name: "Jose Altuve", ovr: 92 }, { name: "Jeff Kent", ovr: 92 },
-            { name: "Ketel Marte", ovr: 91 }, { name: "Robinson Cano", ovr: 91 }, { name: "Marcus Semien", ovr: 90 },
-            { name: "Lou Whitaker", ovr: 90 }, { name: "Dustin Pedroia", ovr: 89 }, { name: "Bobby Grich", ovr: 89 },
-            { name: "Ozzie Albies", ovr: 88 }, { name: "Ian Kinsler", ovr: 88 }, { name: "Andres Gimenez", ovr: 87 },
-            { name: "Brian Dozier", ovr: 87 }, { name: "Nico Hoerner", ovr: 86 }, { name: "Daniel Murphy", ovr: 86 },
-            { name: "Bryson Stott", ovr: 85 }, { name: "Jonathan India", ovr: 84 }, { name: "Zack Gelof", ovr: 84 },
-            { name: "Gleyber Torres", ovr: 83 }, { name: "Brice Turang", ovr: 83 }, { name: "Luis Arraez", ovr: 82 }
+            { name: "Rogers Hornsby", ovr: 98, base: [0.365, 32, 125, 12] },
+            { name: "Jackie Robinson", ovr: 97, base: [0.325, 18, 90, 28] },
+            { name: "Joe Morgan", ovr: 97, base: [0.295, 24, 92, 55] },
+            { name: "Eddie Collins", ovr: 96, base: [0.340, 7, 75, 52] },
+            { name: "Roberto Alomar", ovr: 95, base: [0.305, 18, 85, 38] },
+            { name: "Rod Carew", ovr: 95, base: [0.345, 12, 78, 25] },
+            { name: "Ryne Sandberg", ovr: 94, base: [0.290, 28, 92, 30] },
+            { name: "Craig Biggio", ovr: 94, base: [0.290, 20, 80, 36] },
+            { name: "Chase Utley", ovr: 93, base: [0.285, 29, 98, 16] },
+            { name: "Charlie Gehringer", ovr: 93, base: [0.325, 18, 102, 15] },
+            { name: "Jose Altuve", ovr: 92, base: [0.310, 24, 78, 25] },
+            { name: "Jeff Kent", ovr: 92, base: [0.290, 31, 108, 6] },
+            { name: "Ketel Marte", ovr: 91, base: [0.295, 26, 85, 7] },
+            { name: "Robinson Cano", ovr: 91, base: [0.308, 26, 96, 4] },
+            { name: "Marcus Semien", ovr: 90, base: [0.265, 32, 92, 15] },
+            { name: "Lou Whitaker", ovr: 90, base: [0.280, 19, 78, 10] },
+            { name: "Dustin Pedroia", ovr: 89, base: [0.300, 18, 80, 18] },
+            { name: "Bobby Grich", ovr: 89, base: [0.270, 20, 78, 10] },
+            { name: "Ozzie Albies", ovr: 88, base: [0.275, 28, 92, 14] },
+            { name: "Ian Kinsler", ovr: 88, base: [0.275, 24, 82, 26] },
+            { name: "Andres Gimenez", ovr: 87, base: [0.265, 15, 68, 30] },
+            { name: "Brian Dozier", ovr: 87, base: [0.250, 30, 85, 16] },
+            { name: "Nico Hoerner", ovr: 86, base: [0.280, 8, 65, 36] },
+            { name: "Daniel Murphy", ovr: 86, base: [0.315, 20, 88, 4] },
+            { name: "Bryson Stott", ovr: 85, base: [0.270, 14, 62, 28] },
+            { name: "Jonathan India", ovr: 84, base: [0.255, 18, 68, 14] },
+            { name: "Zack Gelof", ovr: 84, base: [0.245, 22, 68, 22] },
+            { name: "Gleyber Torres", ovr: 83, base: [0.260, 22, 75, 8] },
+            { name: "Brice Turang", ovr: 83, base: [0.255, 7, 55, 45] },
+            { name: "Luis Arraez", ovr: 82, base: [0.335, 5, 55, 4] }
         ],
         "3B": [
-            { name: "Mike Schmidt", ovr: 98 }, { name: "George Brett", ovr: 97 }, { name: "Alex Rodriguez", ovr: 97 },
-            { name: "Eddie Mathews", ovr: 96 }, { name: "Chipper Jones", ovr: 96 }, { name: "Brooks Robinson", ovr: 95 },
-            { name: "Adrian Beltre", ovr: 95 }, { name: "Jose Ramirez", ovr: 95 }, { name: "Wade Boggs", ovr: 94 },
-            { name: "Gunnar Henderson", ovr: 94 }, { name: "Manny Machado", ovr: 93 }, { name: "Ron Santo", ovr: 93 },
-            { name: "Austin Riley", ovr: 92 }, { name: "Scott Rolen", ovr: 92 }, { name: "Rafael Devers", ovr: 91 },
-            { name: "Ken Caminiti", ovr: 91 }, { name: "Nolan Arenado", ovr: 90 }, { name: "David Wright", ovr: 90 },
-            { name: "Josh Donaldson", ovr: 89 }, { name: "Evan Longoria", ovr: 89 }, { name: "Matt Chapman", ovr: 88 },
-            { name: "Robin Ventura", ovr: 88 }, { name: "Royce Lewis", ovr: 87 }, { name: "Justin Turner", ovr: 86 },
-            { name: "Josh Jung", ovr: 85 }, { name: "Maikel Garcia", ovr: 85 }, { name: "Ke'Bryan Hayes", ovr: 84 },
-            { name: "Max Muncy", ovr: 84 }, { name: "Ryan McMahon", ovr: 83 }, { name: "Alec Bohm", ovr: 83 }
+            { name: "Mike Schmidt", ovr: 98, base: [0.270, 42, 118, 14] },
+            { name: "George Brett", ovr: 97, base: [0.320, 24, 105, 16] },
+            { name: "Alex Rodriguez", ovr: 97, base: [0.300, 44, 125, 18] },
+            { name: "Eddie Mathews", ovr: 96, base: [0.275, 38, 105, 6] },
+            { name: "Chipper Jones", ovr: 96, base: [0.315, 32, 108, 12] },
+            { name: "Brooks Robinson", ovr: 95, base: [0.270, 20, 88, 2] },
+            { name: "Adrian Beltre", ovr: 95, base: [0.295, 32, 104, 8] },
+            { name: "Jose Ramirez", ovr: 95, base: [0.285, 34, 110, 36] },
+            { name: "Wade Boggs", ovr: 94, base: [0.340, 11, 75, 3] },
+            { name: "Gunnar Henderson", ovr: 94, base: [0.280, 35, 95, 20] },
+            { name: "Manny Machado", ovr: 93, base: [0.285, 32, 98, 8] },
+            { name: "Ron Santo", ovr: 93, base: [0.280, 28, 102, 4] },
+            { name: "Austin Riley", ovr: 92, base: [0.275, 36, 100, 2] },
+            { name: "Scott Rolen", ovr: 92, base: [0.285, 26, 98, 10] },
+            { name: "Rafael Devers", ovr: 91, base: [0.285, 33, 102, 4] },
+            { name: "Ken Caminiti", ovr: 91, base: [0.280, 30, 105, 7] },
+            { name: "Nolan Arenado", ovr: 90, base: [0.285, 33, 105, 3] },
+            { name: "David Wright", ovr: 90, base: [0.300, 27, 98, 20] },
+            { name: "Josh Donaldson", ovr: 89, base: [0.275, 34, 100, 5] },
+            { name: "Evan Longoria", ovr: 89, base: [0.270, 30, 95, 5] },
+            { name: "Matt Chapman", ovr: 88, base: [0.250, 28, 82, 8] },
+            { name: "Robin Ventura", ovr: 88, base: [0.270, 24, 92, 3] },
+            { name: "Royce Lewis", ovr: 87, base: [0.280, 28, 88, 6] },
+            { name: "Justin Turner", ovr: 86, base: [0.290, 22, 82, 3] },
+            { name: "Josh Jung", ovr: 85, base: [0.260, 26, 80, 3] },
+            { name: "Maikel Garcia", ovr: 85, base: [0.265, 9, 62, 34] },
+            { name: "Ke'Bryan Hayes", ovr: 84, base: [0.265, 15, 65, 14] },
+            { name: "Max Muncy", ovr: 84, base: [0.235, 32, 90, 2] },
+            { name: "Ryan McMahon", ovr: 83, base: [0.250, 23, 76, 5] },
+            { name: "Alec Bohm", ovr: 83, base: [0.280, 18, 92, 4] }
         ],
         SS: [
-            { name: "Honus Wagner", ovr: 98 }, { name: "Cal Ripken Jr.", ovr: 97 }, { name: "Ernie Banks", ovr: 97 },
-            { name: "Bobby Witt Jr.", ovr: 96 }, { name: "Arky Vaughan", ovr: 96 }, { name: "Derek Jeter", ovr: 95 },
-            { name: "Corey Seager", ovr: 95 }, { name: "Robin Yount", ovr: 95 }, { name: "Ozzie Smith", ovr: 94 },
-            { name: "Francisco Lindor", ovr: 94 }, { name: "Barry Larkin", ovr: 93 }, { name: "Alan Trammell", ovr: 92 },
-            { name: "Trea Turner", ovr: 91 }, { name: "Nomar Garciaparra", ovr: 91 }, { name: "Elly De La Cruz", ovr: 90 },
-            { name: "Troy Tulowitzki", ovr: 90 }, { name: "Bo Bichette", ovr: 88 }, { name: "Jimmy Rollins", ovr: 88 },
-            { name: "Dansby Swanson", ovr: 87 }, { name: "Miguel Tejada", ovr: 87 }, { name: "Willy Adames", ovr: 86 },
-            { name: "Omar Vizquel", ovr: 86 }, { name: "Anthony Volpe", ovr: 85 }, { name: "C.J. Abrams", ovr: 85 },
-            { name: "Ha-Seong Kim", ovr: 84 }, { name: "J.P. Crawford", ovr: 84 }, { name: "Masyn Winn", ovr: 83 },
-            { name: "Ezequiel Tovar", ovr: 83 }, { name: "Oneil Cruz", ovr: 83 }, { name: "Jeremy Pena", ovr: 82 }
+            { name: "Honus Wagner", ovr: 98, base: [0.340, 14, 98, 52] },
+            { name: "Cal Ripken Jr.", ovr: 97, base: [0.285, 28, 102, 4] },
+            { name: "Ernie Banks", ovr: 97, base: [0.285, 42, 118, 4] },
+            { name: "Bobby Witt Jr.", ovr: 96, base: [0.315, 32, 105, 35] },
+            { name: "Arky Vaughan", ovr: 96, base: [0.325, 12, 82, 14] },
+            { name: "Derek Jeter", ovr: 95, base: [0.315, 18, 82, 24] },
+            { name: "Corey Seager", ovr: 95, base: [0.300, 33, 98, 2] },
+            { name: "Robin Yount", ovr: 95, base: [0.305, 22, 92, 18] },
+            { name: "Ozzie Smith", ovr: 94, base: [0.265, 4, 55, 38] },
+            { name: "Francisco Lindor", ovr: 94, base: [0.275, 31, 94, 26] },
+            { name: "Barry Larkin", ovr: 93, base: [0.300, 18, 78, 32] },
+            { name: "Alan Trammell", ovr: 92, base: [0.290, 18, 80, 18] },
+            { name: "Trea Turner", ovr: 91, base: [0.300, 22, 76, 32] },
+            { name: "Nomar Garciaparra", ovr: 91, base: [0.325, 26, 102, 12] },
+            { name: "Elly De La Cruz", ovr: 90, base: [0.260, 26, 78, 65] },
+            { name: "Troy Tulowitzki", ovr: 90, base: [0.295, 29, 95, 8] },
+            { name: "Bo Bichette", ovr: 88, base: [0.295, 22, 84, 10] },
+            { name: "Jimmy Rollins", ovr: 88, base: [0.270, 20, 78, 38] },
+            { name: "Dansby Swanson", ovr: 87, base: [0.255, 22, 82, 12] },
+            { name: "Miguel Tejada", ovr: 87, base: [0.290, 30, 115, 4] },
+            { name: "Willy Adames", ovr: 86, base: [0.250, 29, 95, 12] },
+            { name: "Omar Vizquel", ovr: 86, base: [0.275, 5, 58, 28] },
+            { name: "Anthony Volpe", ovr: 85, base: [0.250, 18, 68, 28] },
+            { name: "C.J. Abrams", ovr: 85, base: [0.255, 19, 68, 36] },
+            { name: "Ha-Seong Kim", ovr: 84, base: [0.255, 16, 62, 30] },
+            { name: "J.P. Crawford", ovr: 84, base: [0.265, 14, 62, 4] },
+            { name: "Masyn Winn", ovr: 83, base: [0.270, 12, 55, 16] },
+            { name: "Ezequiel Tovar", ovr: 83, base: [0.265, 22, 74, 8] },
+            { name: "Oneil Cruz", ovr: 83, base: [0.255, 25, 78, 22] },
+            { name: "Jeremy Pena", ovr: 82, base: [0.265, 16, 65, 18] }
         ],
         LF: [
-            { name: "Ted Williams", ovr: 99 }, { name: "Barry Bonds", ovr: 99 }, { name: "Rickey Henderson", ovr: 97 },
-            { name: "Stan Musial", ovr: 97 }, { name: "Yordan Alvarez", ovr: 96 }, { name: "Juan Soto", ovr: 96 },
-            { name: "Carl Yastrzemski", ovr: 95 }, { name: "Al Simmons", ovr: 94 }, { name: "Tim Raines", ovr: 93 },
-            { name: "Willie Stargell", ovr: 92 }, { name: "Ralph Kiner", ovr: 91 }, { name: "Lou Brock", ovr: 90 },
-            { name: "Christian Yelich", ovr: 89 }, { name: "Matt Holliday", ovr: 89 }, { name: "Steven Kwan", ovr: 88 },
-            { name: "Moises Alou", ovr: 88 }, { name: "Randy Arozarena", ovr: 87 }, { name: "Lance Berkman", ovr: 87 },
-            { name: "Bryan Reynolds", ovr: 86 }, { name: "Riley Greene", ovr: 86 }, { name: "Lourdes Gurriel Jr.", ovr: 85 },
-            { name: "Michael Brantley", ovr: 85 }, { name: "Ian Happ", ovr: 84 }, { name: "Alex Verdugo", ovr: 84 },
-            { name: "Taylor Ward", ovr: 83 }, { name: "Jurickson Profar", ovr: 83 }, { name: "Andrew Benintendi", ovr: 82 },
-            { name: "Austin Hays", ovr: 82 }, { name: "Chas McCormick", ovr: 81 }, { name: "Eddie Rosario", ovr: 81 }
+            { name: "Ted Williams", ovr: 99, base: [0.350, 38, 130, 2] },
+            { name: "Barry Bonds", ovr: 99, base: [0.315, 48, 125, 24] },
+            { name: "Rickey Henderson", ovr: 97, base: [0.285, 22, 75, 78] },
+            { name: "Stan Musial", ovr: 97, base: [0.335, 32, 120, 6] },
+            { name: "Yordan Alvarez", ovr: 96, base: [0.300, 38, 110, 2] },
+            { name: "Juan Soto", ovr: 96, base: [0.295, 38, 112, 10] },
+            { name: "Carl Yastrzemski", ovr: 95, base: [0.290, 30, 105, 8] },
+            { name: "Al Simmons", ovr: 94, base: [0.335, 26, 125, 6] },
+            { name: "Tim Raines", ovr: 93, base: [0.295, 14, 68, 62] },
+            { name: "Willie Stargell", ovr: 92, base: [0.285, 36, 110, 2] },
+            { name: "Ralph Kiner", ovr: 91, base: [0.280, 42, 115, 2] },
+            { name: "Lou Brock", ovr: 90, base: [0.295, 12, 60, 65] },
+            { name: "Christian Yelich", ovr: 89, base: [0.300, 24, 80, 24] },
+            { name: "Matt Holliday", ovr: 89, base: [0.305, 27, 98, 8] },
+            { name: "Steven Kwan", ovr: 88, base: [0.300, 10, 52, 18] },
+            { name: "Moises Alou", ovr: 88, base: [0.305, 28, 98, 6] },
+            { name: "Randy Arozarena", ovr: 87, base: [0.255, 23, 80, 25] },
+            { name: "Lance Berkman", ovr: 87, base: [0.295, 32, 102, 5] },
+            { name: "Bryan Reynolds", ovr: 86, base: [0.275, 25, 84, 6] },
+            { name: "Riley Greene", ovr: 86, base: [0.270, 24, 78, 5] },
+            { name: "Lourdes Gurriel Jr.", ovr: 85, base: [0.270, 22, 80, 5] },
+            { name: "Michael Brantley", ovr: 85, base: [0.305, 15, 75, 10] },
+            { name: "Ian Happ", ovr: 84, base: [0.245, 24, 82, 12] },
+            { name: "Alex Verdugo", ovr: 84, base: [0.270, 14, 65, 5] },
+            { name: "Taylor Ward", ovr: 83, base: [0.255, 24, 75, 5] },
+            { name: "Jurickson Profar", ovr: 83, base: [0.275, 20, 78, 8] },
+            { name: "Andrew Benintendi", ovr: 82, base: [0.265, 15, 68, 12] },
+            { name: "Austin Hays", ovr: 82, base: [0.260, 18, 65, 4] },
+            { name: "Chas McCormick", ovr: 81, base: [0.250, 18, 60, 12] },
+            { name: "Eddie Rosario", ovr: 81, base: [0.255, 22, 72, 5] }
         ],
         CF: [
-            { name: "Willie Mays", ovr: 99 }, { name: "Mickey Mantle", ovr: 98 }, { name: "Ken Griffey Jr.", ovr: 98 },
-            { name: "Joe DiMaggio", ovr: 98 }, { name: "Ty Cobb", ovr: 98 }, { name: "Mike Trout", ovr: 96 },
-            { name: "Tris Speaker", ovr: 96 }, { name: "Duke Snider", ovr: 95 }, { name: "Carlos Beltran", ovr: 94 },
-            { name: "Julio Rodriguez", ovr: 93 }, { name: "Kenny Lofton", ovr: 93 }, { name: "Andruw Jones", ovr: 92 },
-            { name: "Jim Edmonds", ovr: 91 }, { name: "Jarren Duran", ovr: 90 }, { name: "Bernie Williams", ovr: 90 },
-            { name: "Michael Harris II", ovr: 89 }, { name: "Torii Hunter", ovr: 89 }, { name: "Luis Robert Jr.", ovr: 88 },
-            { name: "Cody Bellinger", ovr: 87 }, { name: "Byron Buxton", ovr: 87 }, { name: "Jackson Chourio", ovr: 86 },
-            { name: "Brandon Nimmo", ovr: 86 }, { name: "Ceddanne Rafaela", ovr: 85 }, { name: "Jazz Chisholm Jr.", ovr: 85 },
-            { name: "Harrison Bader", ovr: 84 }, { name: "Jung Hoo Lee", ovr: 84 }, { name: "Pete Crow-Armstrong", ovr: 83 },
-            { name: "Jose Siri", ovr: 82 }, { name: "Kevin Kiermaier", ovr: 82 }, { name: "TJ Friedl", ovr: 81 }
+            { name: "Willie Mays", ovr: 99, base: [0.310, 44, 125, 26] },
+            { name: "Mickey Mantle", ovr: 98, base: [0.315, 42, 118, 16] },
+            { name: "Ken Griffey Jr.", ovr: 98, base: [0.295, 48, 130, 16] },
+            { name: "Joe DiMaggio", ovr: 98, base: [0.325, 34, 128, 5] },
+            { name: "Ty Cobb", ovr: 98, base: [0.365, 9, 90, 58] },
+            { name: "Mike Trout", ovr: 96, base: [0.300, 40, 105, 18] },
+            { name: "Tris Speaker", ovr: 96, base: [0.345, 8, 85, 30] },
+            { name: "Duke Snider", ovr: 95, base: [0.300, 38, 118, 8] },
+            { name: "Carlos Beltran", ovr: 94, base: [0.280, 32, 105, 28] },
+            { name: "Julio Rodriguez", ovr: 93, base: [0.280, 30, 92, 32] },
+            { name: "Kenny Lofton", ovr: 93, base: [0.300, 10, 60, 55] },
+            { name: "Andruw Jones", ovr: 92, base: [0.260, 38, 110, 10] },
+            { name: "Jim Edmonds", ovr: 91, base: [0.285, 32, 98, 6] },
+            { name: "Jarren Duran", ovr: 90, base: [0.285, 20, 75, 38] },
+            { name: "Bernie Williams", ovr: 90, base: [0.305, 24, 96, 12] },
+            { name: "Michael Harris II", ovr: 89, base: [0.285, 20, 72, 22] },
+            { name: "Torii Hunter", ovr: 89, base: [0.275, 26, 92, 14] },
+            { name: "Luis Robert Jr.", ovr: 88, base: [0.265, 32, 85, 24] },
+            { name: "Cody Bellinger", ovr: 87, base: [0.270, 28, 88, 16] },
+            { name: "Byron Buxton", ovr: 87, base: [0.255, 28, 76, 16] },
+            { name: "Jackson Chourio", ovr: 86, base: [0.275, 22, 78, 26] },
+            { name: "Brandon Nimmo", ovr: 86, base: [0.265, 22, 75, 8] },
+            { name: "Ceddanne Rafaela", ovr: 85, base: [0.255, 17, 72, 20] },
+            { name: "Jazz Chisholm Jr.", ovr: 85, base: [0.255, 24, 76, 32] },
+            { name: "Harrison Bader", ovr: 84, base: [0.250, 15, 58, 18] },
+            { name: "Jung Hoo Lee", ovr: 84, base: [0.285, 10, 55, 12] },
+            { name: "Pete Crow-Armstrong", ovr: 83, base: [0.245, 14, 52, 32] },
+            { name: "Jose Siri", ovr: 82, base: [0.225, 23, 62, 18] },
+            { name: "Kevin Kiermaier", ovr: 82, base: [0.245, 12, 50, 16] },
+            { name: "TJ Friedl", ovr: 81, base: [0.265, 14, 55, 22] }
         ],
         RF: [
-            { name: "Babe Ruth", ovr: 99 }, { name: "Hank Aaron", ovr: 99 }, { name: "Roberto Clemente", ovr: 97 },
-            { name: "Frank Robinson", ovr: 97 }, { name: "Mookie Betts", ovr: 97 }, { name: "Aaron Judge", ovr: 98 },
-            { name: "Tony Gwynn", ovr: 96 }, { name: "Ichiro Suzuki", ovr: 96 }, { name: "Ronald Acuña Jr.", ovr: 96 },
-            { name: "Al Kaline", ovr: 95 }, { name: "Reggie Jackson", ovr: 94 }, { name: "Dave Winfield", ovr: 94 },
-            { name: "Vladimir Guerrero", ovr: 93 }, { name: "Kyle Tucker", ovr: 93 }, { name: "Fernando Tatis Jr.", ovr: 92 },
-            { name: "Sammy Sosa", ovr: 92 }, { name: "Larry Walker", ovr: 91 }, { name: "Dwight Evans", ovr: 90 },
-            { name: "Corbin Carroll", ovr: 88 }, { name: "Paul O'Neill", ovr: 88 }, { name: "Teoscar Hernandez", ovr: 87 },
-            { name: "Bobby Abreu", ovr: 87 }, { name: "Anthony Santander", ovr: 86 }, { name: "Adolis Garcia", ovr: 86 },
-            { name: "Seiya Suzuki", ovr: 85 }, { name: "Nick Castellanos", ovr: 84 }, { name: "Lane Thomas", ovr: 83 },
-            { name: "Josh Lowe", ovr: 83 }, { name: "Max Kepler", ovr: 82 }, { name: "Wilyer Abreu", ovr: 82 }
+            { name: "Babe Ruth", ovr: 99, base: [0.345, 50, 140, 6] },
+            { name: "Hank Aaron", ovr: 99, base: [0.310, 42, 125, 14] },
+            { name: "Roberto Clemente", ovr: 97, base: [0.325, 20, 95, 8] },
+            { name: "Frank Robinson", ovr: 97, base: [0.300, 38, 118, 10] },
+            { name: "Mookie Betts", ovr: 97, base: [0.300, 32, 95, 20] },
+            { name: "Aaron Judge", ovr: 98, base: [0.290, 52, 128, 8] },
+            { name: "Tony Gwynn", ovr: 96, base: [0.348, 8, 65, 25] },
+            { name: "Ichiro Suzuki", ovr: 96, base: [0.335, 9, 60, 42] },
+            { name: "Ronald Acuña Jr.", ovr: 96, base: [0.305, 38, 98, 55] },
+            { name: "Al Kaline", ovr: 95, base: [0.300, 24, 96, 8] },
+            { name: "Reggie Jackson", ovr: 94, base: [0.265, 36, 108, 12] },
+            { name: "Dave Winfield", ovr: 94, base: [0.285, 28, 105, 12] },
+            { name: "Vladimir Guerrero", ovr: 93, base: [0.320, 34, 115, 18] },
+            { name: "Kyle Tucker", ovr: 93, base: [0.280, 32, 105, 24] },
+            { name: "Fernando Tatis Jr.", ovr: 92, base: [0.285, 34, 92, 22] },
+            { name: "Sammy Sosa", ovr: 92, base: [0.280, 48, 125, 12] },
+            { name: "Larry Walker", ovr: 91, base: [0.320, 35, 115, 18] },
+            { name: "Dwight Evans", ovr: 90, base: [0.275, 26, 96, 6] },
+            { name: "Corbin Carroll", ovr: 88, base: [0.265, 22, 74, 45] },
+            { name: "Paul O'Neill", ovr: 88, base: [0.300, 22, 98, 6] },
+            { name: "Teoscar Hernandez", ovr: 87, base: [0.265, 30, 95, 8] },
+            { name: "Bobby Abreu", ovr: 87, base: [0.295, 22, 92, 30] },
+            { name: "Anthony Santander", ovr: 86, base: [0.250, 36, 98, 2] },
+            { name: "Adolis Garcia", ovr: 86, base: [0.245, 33, 96, 14] },
+            { name: "Seiya Suzuki", ovr: 85, base: [0.275, 23, 78, 12] },
+            { name: "Nick Castellanos", ovr: 84, base: [0.265, 24, 88, 3] },
+            { name: "Lane Thomas", ovr: 83, base: [0.255, 20, 68, 28] },
+            { name: "Josh Lowe", ovr: 83, base: [0.265, 20, 72, 26] },
+            { name: "Max Kepler", ovr: 82, base: [0.245, 22, 68, 3] },
+            { name: "Wilyer Abreu", ovr: 82, base: [0.260, 18, 65, 8] }
         ],
         SP: [
-            { name: "Pedro Martinez", ovr: 99 }, { name: "Randy Johnson", ovr: 98 }, { name: "Sandy Koufax", ovr: 98 },
-            { name: "Bob Gibson", ovr: 98 }, { name: "Greg Maddux", ovr: 97 }, { name: "Roger Clemens", ovr: 97 },
-            { name: "Shohei Ohtani", ovr: 97 }, { name: "Tom Seaver", ovr: 97 }, { name: "Nolan Ryan", ovr: 96 },
-            { name: "Steve Carlton", ovr: 96 }, { name: "Tarik Skubal", ovr: 96 }, { name: "Clayton Kershaw", ovr: 96 },
-            { name: "Zack Wheeler", ovr: 95 }, { name: "Justin Verlander", ovr: 95 }, { name: "Max Scherzer", ovr: 95 },
-            { name: "Corbin Burnes", ovr: 94 }, { name: "Roy Halladay", ovr: 94 }, { name: "Paul Skenes", ovr: 93 },
-            { name: "Jacob deGrom", ovr: 93 }, { name: "Gerrit Cole", ovr: 92 }, { name: "Logan Gilbert", ovr: 91 },
-            { name: "Cole Ragans", ovr: 90 }, { name: "Tyler Glasnow", ovr: 90 }, { name: "George Kirby", ovr: 89 },
-            { name: "Logan Webb", ovr: 89 }, { name: "Shota Imanaga", ovr: 88 }, { name: "Dylan Cease", ovr: 88 },
-            { name: "Freddy Peralta", ovr: 86 }, { name: "Hunter Greene", ovr: 85 }, { name: "Bailey Ober", ovr: 84 }
+            { name: "Pedro Martinez", ovr: 99, base: [21, 5, 2.05] },
+            { name: "Randy Johnson", ovr: 98, base: [21, 6, 2.45] },
+            { name: "Sandy Koufax", ovr: 98, base: [23, 6, 2.10] },
+            { name: "Bob Gibson", ovr: 98, base: [22, 7, 2.15] },
+            { name: "Greg Maddux", ovr: 97, base: [20, 6, 2.30] },
+            { name: "Roger Clemens", ovr: 97, base: [21, 6, 2.50] },
+            { name: "Shohei Ohtani", ovr: 97, base: [16, 5, 2.85] },
+            { name: "Tom Seaver", ovr: 97, base: [21, 7, 2.40] },
+            { name: "Nolan Ryan", ovr: 96, base: [19, 11, 2.80] },
+            { name: "Steve Carlton", ovr: 96, base: [22, 9, 2.70] },
+            { name: "Tarik Skubal", ovr: 96, base: [18, 5, 2.40] },
+            { name: "Clayton Kershaw", ovr: 96, base: [19, 5, 2.30] },
+            { name: "Zack Wheeler", ovr: 95, base: [16, 6, 2.65] },
+            { name: "Justin Verlander", ovr: 95, base: [19, 6, 2.60] },
+            { name: "Max Scherzer", ovr: 95, base: [18, 6, 2.75] },
+            { name: "Corbin Burnes", ovr: 94, base: [16, 7, 2.85] },
+            { name: "Roy Halladay", ovr: 94, base: [19, 7, 2.70] },
+            { name: "Paul Skenes", ovr: 93, base: [15, 5, 2.35] },
+            { name: "Jacob deGrom", ovr: 93, base: [14, 5, 2.15] },
+            { name: "Gerrit Cole", ovr: 92, base: [16, 6, 2.85] },
+            { name: "Logan Gilbert", ovr: 91, base: [14, 7, 3.15] },
+            { name: "Cole Ragans", ovr: 90, base: [13, 8, 3.20] },
+            { name: "Tyler Glasnow", ovr: 90, base: [13, 5, 3.10] },
+            { name: "George Kirby", ovr: 89, base: [13, 8, 3.30] },
+            { name: "Logan Webb", ovr: 89, base: [14, 9, 3.25] },
+            { name: "Shota Imanaga", ovr: 88, base: [14, 5, 3.15] },
+            { name: "Dylan Cease", ovr: 88, base: [14, 9, 3.35] },
+            { name: "Freddy Peralta", ovr: 86, base: [12, 8, 3.60] },
+            { name: "Hunter Greene", ovr: 85, base: [11, 7, 3.30] },
+            { name: "Bailey Ober", ovr: 84, base: [12, 8, 3.80] }
         ]
     };
 
@@ -629,11 +812,11 @@
 
     function executePlayerSelection(index) {
         let player = catalogChoices[activeDraftPos][index];
-        pickPlayer(activeDraftPos, player.name, player.ovr, player.cost);
+        pickPlayer(activeDraftPos, player.name, player.ovr, player.cost, player.base);
     }
 
-    function pickPlayer(pos, name, ovr, cost) {
-        userTeam[pos] = { name, ovr, cost };
+    function pickPlayer(pos, name, ovr, cost, base) {
+        userTeam[pos] = { name, ovr, cost, base };
         
         let nextIndex = positions.indexOf(pos) + 1;
         let foundEmpty = false;
@@ -658,7 +841,7 @@
     }
 
     function checkSimulationReady() {
-        let complete = positions.every(pos => userTeam[pos] !== null);
+        let complete = positions.every(pos => userTeam[pos] !== null && userTeam[pos] !== undefined);
         let budgetValid = calculateRemainingBudget() >= 0;
         
         const simSection = document.getElementById('sim-section');
@@ -675,29 +858,53 @@
     }
 
     function generateMvpCard(team, wins) {
-        let candidates = positions.map(pos => {
-            let p = team[pos];
-            let variance = (Math.random() * 8) - 4;
-            let performanceScore = p.ovr + variance;
-            return { pos, name: p.name, ovr: p.ovr, score: performanceScore };
+        let candidates = [];
+        positions.forEach(pos => {
+            if (team && team[pos]) {
+                let p = team[pos];
+                // Weight slightly toward higher OVR with small season variance
+                let variance = (Math.random() * 8) - 4;
+                candidates.push({
+                    pos: pos,
+                    name: p.name,
+                    ovr: p.ovr || 85,
+                    base: p.base,
+                    score: (p.ovr || 85) + variance
+                });
+            }
         });
+
+        if (candidates.length === 0) return '';
 
         candidates.sort((a, b) => b.score - a.score);
         let mvp = candidates[0];
-        let ovrFactor = (mvp.ovr - 80) / 20; // 0.1 to 1.0
-        let winFactor = wins / 162;
+        
+        // Find profile fallback if base wasn't carried
+        let base = mvp.base;
+        if (!base) {
+            let matched = playersDB[mvp.pos].find(x => x.name === mvp.name);
+            base = matched ? matched.base : (mvp.pos === 'SP' ? [15, 7, 3.20] : [0.280, 25, 85, 10]);
+        }
+
+        let teamWinRatio = wins / 162; // ~0.45 to ~0.70
 
         if (mvp.pos === 'SP') {
-            let decPct = 0.65 + (winFactor * 0.25);
-            let totalDecisions = Math.floor(28 + Math.random() * 5);
-            let w = Math.min(wins, Math.max(12, Math.round(totalDecisions * decPct)));
-            let l = Math.max(2, totalDecisions - w);
-            let eraBase = 3.90 - (ovrFactor * 1.80) - ((winFactor - 0.5) * 0.6);
-            let era = Math.max(1.55, eraBase + (Math.random() * 0.40 - 0.20)).toFixed(2);
+            let [baseW, baseL, baseERA] = base;
+            
+            // Adjust pitcher record based on team wins
+            let winMultiplier = teamWinRatio / 0.55; 
+            let w = Math.round(baseW * winMultiplier + (Math.random() * 2 - 1));
+            w = Math.max(10, Math.min(wins, w));
+            
+            let l = Math.max(2, Math.round(baseL / (winMultiplier * 0.9) + (Math.random() * 2 - 1)));
+            
+            let eraMod = (0.55 - teamWinRatio) * 0.5 + (Math.random() * 0.25 - 0.12);
+            let era = Math.max(1.45, (baseERA + eraMod)).toFixed(2);
 
             return `
                 <div class="mvp-container">
-                    <div class="mvp-title">🏆 Team MVP Selection</div>
+                    <div class="mvp-heading">⭐ Winning Team MVP</div>
+                    ${render8BitFaceHTML(mvp.name)}
                     <div class="mvp-name">${mvp.name}</div>
                     <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Ace Starting Pitcher</div>
                     <div class="mvp-stat-grid pitcher">
@@ -713,37 +920,45 @@
                 </div>
             `;
         } else {
-            let avgBase = 0.255 + (ovrFactor * 0.075) + (Math.random() * 0.02 - 0.01);
-            let avgStr = (Math.min(0.380, Math.max(0.240, avgBase))).toFixed(3).replace(/^0/, '');
+            let [baseAVG, baseHR, baseRBI, baseSB] = base;
             
-            let powerMult = ["1B", "3B", "RF", "LF", "C"].includes(mvp.pos) ? 1.25 : 0.85;
-            let hr = Math.round((22 + (ovrFactor * 26) + (Math.random() * 6 - 3)) * powerMult);
+            // Realistic season variance applied to individual career baseline
+            let avgDelta = (Math.random() * 0.024) - 0.012;
+            let finalAvg = Math.max(0.210, Math.min(0.395, baseAVG + avgDelta));
+            let avgStr = finalAvg.toFixed(3).replace(/^0/, '');
             
-            let rbi = Math.round(hr * 2.3 + (winFactor * 20) + (Math.random() * 10 - 5));
+            let hrDelta = Math.round((Math.random() * 6) - 3);
+            let finalHR = Math.max(1, baseHR + hrDelta);
             
-            let speedMult = ["CF", "SS", "2B", "LF"].includes(mvp.pos) ? 1.6 : 0.4;
-            let sb = Math.max(2, Math.round((8 + (ovrFactor * 24) + (Math.random() * 8 - 4)) * speedMult));
+            // Runs batted in scale with team performance
+            let rbiScale = 0.85 + (teamWinRatio * 0.3);
+            let rbiDelta = Math.round((Math.random() * 8) - 4);
+            let finalRBI = Math.max(25, Math.round(baseRBI * rbiScale + rbiDelta));
+            
+            let sbDelta = Math.round((Math.random() * 6) - 3);
+            let finalSB = Math.max(0, baseSB + sbDelta);
 
             return `
                 <div class="mvp-container">
-                    <div class="mvp-title">🏆 Team MVP Selection</div>
+                    <div class="mvp-heading">⭐ Winning Team MVP</div>
+                    ${render8BitFaceHTML(mvp.name)}
                     <div class="mvp-name">${mvp.name}</div>
-                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Starting Lineup Leader</div>
+                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Offensive Leader</div>
                     <div class="mvp-stat-grid">
                         <div class="mvp-stat-box">
                             <div class="mvp-stat-val">${avgStr}</div>
                             <div class="mvp-stat-lbl">AVG</div>
                         </div>
                         <div class="mvp-stat-box">
-                            <div class="mvp-stat-val">${hr}</div>
+                            <div class="mvp-stat-val">${finalHR}</div>
                             <div class="mvp-stat-lbl">HR</div>
                         </div>
                         <div class="mvp-stat-box">
-                            <div class="mvp-stat-val">${rbi}</div>
+                            <div class="mvp-stat-val">${finalRBI}</div>
                             <div class="mvp-stat-lbl">RBI</div>
                         </div>
                         <div class="mvp-stat-box">
-                            <div class="mvp-stat-val">${sb}</div>
+                            <div class="mvp-stat-val">${finalSB}</div>
                             <div class="mvp-stat-lbl">SB</div>
                         </div>
                     </div>
@@ -778,7 +993,7 @@
             if (Math.random() < 0.50) oppWins++; 
             
             resultsDiv.innerHTML = `
-                <h3 style="text-align: center;">Simulating 162-Game Regular Season...</h3>
+                <h3 style="text-align: center;">⚾ Simulating 162-Game Regular Season...</h3>
                 <div class="live-counter" style="text-align: center;">
                     YOUR CLUB: <span style="color:#2ea043;">${userWins} W</span> - <span style="color:#f85149;">${currentGame - userWins} L</span><br>
                     RIVAL CLUB: <span style="color:#1f6feb;">${oppWins} W</span> - <span style="color:#e3b341;">${currentGame - oppWins} L</span>
@@ -810,7 +1025,7 @@
         
         let graphicHTML = `
             <div class="result-graphic ${isWin ? 'win' : 'loss'}">
-                <div class="graphic-title">${isWin ? 'Pennant Winner' : 'Season Over'}</div>
+                <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">
                     ${isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.'}
                 </div>
