@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MLB Strategy & Luxury Tax Cap Simulation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d1117;
+            color: #fff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: #161b22;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+        }
+        h1, h2 {
+            color: #00cecb;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #8b949e;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+        }
+        .hud-bar {
+            display: flex;
+            justify-content: space-around;
+            background: #0d1117;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #30363d;
+        }
+        .hud-item {
+            text-align: center;
+            font-size: 1.1em;
+        }
+        .hud-item span {
+            display: block;
+            font-weight: bold;
+            font-size: 1.3em;
+            color: #00cecb;
+        }
+        .hud-item span.bankrupt {
+            color: #f85149;
+        }
+        .lineup-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+        @media (max-width: 900px) {
+            .lineup-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .card {
+            background: #21262d;
+            border: 2px solid #30363d;
+            border-radius: 8px;
+            padding: 10px 6px;
+            text-align: center;
+            transition: 0.2s;
+            position: relative;
+            min-height: 165px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card.active {
+            border-color: #00cecb;
+            cursor: pointer;
+        }
+        .card.active:hover:not(.disabled) {
+            background: #30363d;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,206,203,0.25);
+        }
+        .card.selected-pos {
+            border-color: #2ea043 !important;
+            box-shadow: 0 0 10px rgba(46, 160, 67, 0.5);
+        }
+        .card.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+            border-color: #21262d;
+        }
+        .pixel-portrait {
+            display: grid;
+            grid-template-columns: repeat(8, 5px);
+            grid-template-rows: repeat(8, 5px);
+            gap: 0;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            margin: 6px auto;
+            image-rendering: pixelated;
+        }
+        .p-block {
+            width: 5px;
+            height: 5px;
+        }
+        .player-name {
+            font-size: 0.85em;
+            line-height: 1.15;
+            margin: 4px 0;
+            word-break: break-word;
+        }
+        .badge {
+            display: inline-block;
+            background: #00cecb;
+            color: #000;
+            font-weight: bold;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            margin-top: 3px;
+        }
+        .badge.price {
+            background: #2ea043;
+            color: #fff;
+        }
+        .badge.ovr-badge {
+            background: #1f6feb;
+            color: #fff;
+            margin-left: 2px;
+        }
+        .pos-label {
+            font-size: 0.8em;
+            color: #8b949e;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            max-width: 240px;
+            margin: 25px auto;
+            padding: 14px;
+            background: #00cecb;
+            border: none;
+            color: #0d1117;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: 0.2s;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn:hover {
+            background: #00b4b1;
+            box-shadow: 0 4px 15px rgba(0,206,203,0.4);
+        }
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .draft-pool {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .draft-pool {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .live-counter {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00cecb;
+            margin: 15px 0;
+            letter-spacing: 1px;
+            line-height: 1.4;
+        }
+        .result-graphic {
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            margin: 25px 0;
+            animation: scaleUp 0.4s ease-out;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+        }
+        .result-graphic.win {
+            background: linear-gradient(135deg, #1b4d3e, #0f2a1d);
+            border: 4px solid #2ea043;
+        }
+        .result-graphic.loss {
+            background: linear-gradient(135deg, #5c1d1d, #301010);
+            border: 4px solid #f85149;
+        }
+        .graphic-title {
+            font-size: 3.5em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 0 0 10px 0;
+            text-shadow: 2px 4px 10px rgba(0,0,0,0.7);
+        }
+        .win .graphic-title {
+            color: #2ea043;
+        }
+        .loss .graphic-title {
+            color: #f85149;
+        }
+        .graphic-banner {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #eee;
+        }
+        .graphic-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+            font-size: 1.8em;
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .doc-label {
+            font-size: 0.5em;
+            text-transform: uppercase;
+            color: #aaa;
+            display: block;
+            margin-bottom: 4px;
+        }
+        @keyframes scaleUp {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>⚾ MLB Roster & Payroll Cap Simulation</h1>
+    <p class="subtitle">Draft a 9-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, SP) under the $28.0M payroll threshold.</p>
+    
+    <div class="hud-bar">
+        <div class="hud-item">Remaining Payroll <span id="hud-bank">$28.0M</span></div>
+        <div class="hud-item">Active Position <span id="hud-pos">C</span></div>
+    </div>
+    
+    <div id="opponent-section">
+        <h2>Opponent Lineup</h2>
+        <div id="opponent-lineup" class="lineup-grid"></div>
+    </div>
+    
+    <div id="draft-section">
+        <h2>Available Free Agent Catalog</h2>
+        <p style="text-align:center; color:#8b949e; font-size:0.9em;">Click a candidate card below to slot them into the active position.</p>
+        <div id="draft-catalog" class="draft-pool"></div>
+    </div>
+    
+    <div id="user-section" style="margin-top:30px;">
+        <h2>Your Active 9-Man Roster</h2>
+        <div id="user-lineup" class="lineup-grid"></div>
+    </div>
+    
+    <div id="sim-section" style="display:none; text-align: center; margin-top: 20px;">
+        <button class="btn" id="sim-btn" onclick="startLiveSimulation()">▶ Play 162-Game Season</button>
+        <div id="sim-results" style="display:none; text-align: left;"></div>
+    </div>
+</div>
+
+<script>
+    function getPlayerCost(ovr) {
+        if (ovr >= 97) return 5.0; 
+        if (ovr >= 95) return 4.2; 
+        if (ovr >= 92) return 3.2; 
+        if (ovr >= 88) return 2.2; 
+        return 1.2;                
+    }
+
+    function render8BitFaceHTML(name) {
+        let seed = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const skinColors = ["#dfa070", "#c68a5c", "#a0653d", "#eec590", "#f5d0b0"];
+        const hairColors = ["#000000", "#4a2306", "#9a3300", "#d8b020", "#666666"];
+        const capColors = ["#0c2340", "#ba0c2f", "#005a9c", "#005c5c", "#ff5910", "#003831"];
+        
+        let skin = skinColors[seed % skinColors.length];
+        let hair = hairColors[(seed >> 2) % hairColors.length];
+        let cap = capColors[(seed >> 4) % capColors.length];
+        let background = "rgba(0,0,0,0.15)";
+        
+        let html = '<div class="pixel-portrait">';
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                let color = background;
+                if (r <= 2 && c >= 2 && c <= 5) color = cap; // Baseball cap
+                else if (r === 2 && (c === 1 || c === 6)) color = hair;
+                else if (r >= 3 && r <= 5 && c >= 2 && c <= 5) color = skin;
+                else if (r >= 6) color = cap; // Jersey
+                html += `<div class="p-block" style="background:${color}"></div>`;
+            }
+        }
+        html += '</div>';
+        return html;
+    }
+
+    const playersDB = {
+        C: [
+            { name: "Johnny Bench", ovr: 98 }, { name: "Yogi Berra", ovr: 97 }, { name: "Ivan Rodriguez", ovr: 96 },
+            { name: "Mike Piazza", ovr: 95 }, { name: "Buster Posey", ovr: 94 }, { name: "Adley Rutschman", ovr: 92 },
+            { name: "William Contreras", ovr: 91 }, { name: "Yadier Molina", ovr: 90 }, { name: "Will Smith", ovr: 89 },
+            { name: "J.T. Realmuto", ovr: 88 }, { name: "Jorge Posada", ovr: 88 }, { name: "Cal Raleigh", ovr: 87 },
+            { name: "Salvador Perez", ovr: 86 }, { name: "Yainer Diaz", ovr: 84 }, { name: "Sean Murphy", ovr: 84 }
+        ],
+        "1B": [
+            { name: "Lou Gehrig", ovr: 99 }, { name: "Albert Pujols", ovr: 98 }, { name: "Frank Thomas", ovr: 96 },
+            { name: "Freddie Freeman", ovr: 95 }, { name: "Bryce Harper", ovr: 94 }, { name: "Jim Thome", ovr: 93 },
+            { name: "Matt Olson", ovr: 91 }, { name: "Vladimir Guerrero Jr.", ovr: 90 }, { name: "Paul Goldschmidt", ovr: 89 },
+            { name: "Pete Alonso", ovr: 88 }, { name: "Joey Votto", ovr: 88 }, { name: "Christian Walker", ovr: 86 },
+            { name: "Triston Casas", ovr: 84 }, { name: "Josh Naylor", ovr: 84 }, { name: "Nathaniel Lowe", ovr: 83 }
+        ],
+        "2B": [
+            { name: "Rogers Hornsby", ovr: 98 }, { name: "Jackie Robinson", ovr: 97 }, { name: "Roberto Alomar", ovr: 95 },
+            { name: "Ryne Sandberg", ovr: 94 }, { name: "Chase Utley", ovr: 93 }, { name: "Jose Altuve", ovr: 92 },
+            { name: "Marcus Semien", ovr: 90 }, { name: "Ketel Marte", ovr: 91 }, { name: "Ozzie Albies", ovr: 88 },
+            { name: "Dustin Pedroia", ovr: 89 }, { name: "Andres Gimenez", ovr: 87 }, { name: "Nico Hoerner", ovr: 86 },
+            { name: "Bryson Stott", ovr: 85 }, { name: "Zack Gelof", ovr: 83 }, { name: "Gleyber Torres", ovr: 83 }
+        ],
+        "3B": [
+            { name: "Mike Schmidt", ovr: 98 }, { name: "George Brett", ovr: 97 }, { name: "Chipper Jones", ovr: 96 },
+            { name: "Adrian Beltre", ovr: 95 }, { name: "Jose Ramirez", ovr: 95 }, { name: "Manny Machado", ovr: 93 },
+            { name: "Austin Riley", ovr: 92 }, { name: "Rafael Devers", ovr: 91 }, { name: "Alex Rodriguez", ovr: 97 },
+            { name: "Nolan Arenado", ovr: 90 }, { name: "Gunnar Henderson", ovr: 94 }, { name: "Royce Lewis", ovr: 87 },
+            { name: "Josh Jung", ovr: 85 }, { name: "Maikel Garcia", ovr: 84 }, { name: "Ke'Bryan Hayes", ovr: 84 }
+        ],
+        SS: [
+            { name: "Honus Wagner", ovr: 98 }, { name: "Cal Ripken Jr.", ovr: 97 }, { name: "Derek Jeter", ovr: 95 },
+            { name: "Ozzie Smith", ovr: 94 }, { name: "Bobby Witt Jr.", ovr: 96 }, { name: "Corey Seager", ovr: 95 },
+            { name: "Francisco Lindor", ovr: 94 }, { name: "Trea Turner", ovr: 91 }, { name: "Bo Bichette", ovr: 88 },
+            { name: "Elly De La Cruz", ovr: 90 }, { name: "Dansby Swanson", ovr: 87 }, { name: "Willy Adames", ovr: 86 },
+            { name: "Anthony Volpe", ovr: 85 }, { name: "C.J. Abrams", ovr: 85 }, { name: "Ha-Seong Kim", ovr: 84 }
+        ],
+        LF: [
+            { name: "Ted Williams", ovr: 99 }, { name: "Barry Bonds", ovr: 99 }, { name: "Rickey Henderson", ovr: 97 },
+            { name: "Stan Musial", ovr: 97 }, { name: "Carl Yastrzemski", ovr: 95 }, { name: "Yordan Alvarez", ovr: 96 },
+            { name: "Juan Soto", ovr: 96 }, { name: "Christian Yelich", ovr: 89 }, { name: "Randy Arozarena", ovr: 87 },
+            { name: "Steven Kwan", ovr: 88 }, { name: "Lourdes Gurriel Jr.", ovr: 85 }, { name: "Bryan Reynolds", ovr: 86 },
+            { name: "Ian Happ", ovr: 84 }, { name: "Taylor Ward", ovr: 83 }, { name: "Riley Greene", ovr: 86 }
+        ],
+        CF: [
+            { name: "Willie Mays", ovr: 99 }, { name: "Mickey Mantle", ovr: 98 }, { name: "Ken Griffey Jr.", ovr: 98 },
+            { name: "Mike Trout", ovr: 96 }, { name: "Julio Rodriguez", ovr: 93 }, { name: "Michael Harris II", ovr: 89 },
+            { name: "Ceddanne Rafaela", ovr: 85 }, { name: "Jackson Chourio", ovr: 86 }, { name: "Luis Robert Jr.", ovr: 88 },
+            { name: "Cody Bellinger", ovr: 87 }, { name: "Byron Buxton", ovr: 87 }, { name: "Jarren Duran", ovr: 90 },
+            { name: "Pete Crow-Armstrong", ovr: 83 }, { name: "Brandon Nimmo", ovr: 86 }, { name: "Jazz Chisholm Jr.", ovr: 85 }
+        ],
+        RF: [
+            { name: "Babe Ruth", ovr: 99 }, { name: "Hank Aaron", ovr: 99 }, { name: "Roberto Clemente", ovr: 97 },
+            { name: "Tony Gwynn", ovr: 96 }, { name: "Ichiro Suzuki", ovr: 96 }, { name: "Mookie Betts", ovr: 97 },
+            { name: "Aaron Judge", ovr: 98 }, { name: "Ronald Acuña Jr.", ovr: 96 }, { name: "Kyle Tucker", ovr: 93 },
+            { name: "Fernando Tatis Jr.", ovr: 92 }, { name: "Corbin Carroll", ovr: 88 }, { name: "Teoscar Hernandez", ovr: 87 },
+            { name: "Adolis Garcia", ovr: 86 }, { name: "Seiya Suzuki", ovr: 85 }, { name: "Anthony Santander", ovr: 86 }
+        ],
+        SP: [
+            { name: "Pedro Martinez", ovr: 99 }, { name: "Randy Johnson", ovr: 98 }, { name: "Sandy Koufax", ovr: 98 },
+            { name: "Greg Maddux", ovr: 97 }, { name: "Nolan Ryan", ovr: 96 }, { name: "Shohei Ohtani", ovr: 97 },
+            { name: "Tarik Skubal", ovr: 96 }, { name: "Zack Wheeler", ovr: 95 }, { name: "Corbin Burnes", ovr: 94 },
+            { name: "Paul Skenes", ovr: 93 }, { name: "Logan Gilbert", ovr: 91 }, { name: "Cole Ragans", ovr: 90 },
+            { name: "George Kirby", ovr: 89 }, { name: "Tyler Glasnow", ovr: 90 }, { name: "Logan Webb", ovr: 89 },
+            { name: "Shota Imanaga", ovr: 88 }, { name: "Dylan Cease", ovr: 88 }, { name: "Freddy Peralta", ovr: 86 }
+        ]
+    };
+
+    Object.keys(playersDB).forEach(pos => {
+        playersDB[pos].forEach(p => p.cost = getPlayerCost(p.ovr));
+    });
+
+    const positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "SP"];
+    const TOTAL_BUDGET = 28.0;
+    let activeDraftPos = "C"; 
+    
+    let userTeam = {};
+    let opponentTeam = {};
+    let catalogChoices = {};
+
+    function initGame() {
+        positions.forEach(pos => {
+            userTeam[pos] = null;
+            let options = [...playersDB[pos]].sort(() => 0.5 - Math.random());
+            opponentTeam[pos] = options.find(p => p.cost <= 3.2) || options[options.length - 1];
+            
+            let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - Math.random());
+            catalogChoices[pos] = pool.slice(0, 4);
+        });
+
+        activeDraftPos = "C";
+
+        let totalOpponentCost = positions.reduce((sum, pos) => sum + opponentTeam[pos].cost, 0);
+        document.getElementById('opponent-section').querySelector('h2').innerText = `Opponent Lineup (Payroll: $${totalOpponentCost.toFixed(1)}M)`;
+        
+        renderOpponentLineup();
+        updateHudAndCatalog();
+    }
+
+    function changeActivePosition(pos) {
+        activeDraftPos = pos;
+        updateHudAndCatalog();
+    }
+
+    function calculateRemainingBudget() {
+        let spent = 0;
+        positions.forEach(pos => {
+            if (userTeam[pos]) spent += userTeam[pos].cost;
+        });
+        return TOTAL_BUDGET - spent;
+    }
+
+    function updateHudAndCatalog() {
+        let currentRemaining = calculateRemainingBudget();
+        
+        const bankEl = document.getElementById('hud-bank');
+        bankEl.innerText = `$${currentRemaining.toFixed(1)}M`;
+        bankEl.className = currentRemaining < 0 ? 'bankrupt' : '';
+
+        document.getElementById('hud-pos').innerText = activeDraftPos;
+
+        renderUserLineup();
+        renderDraftCatalog(currentRemaining);
+        checkSimulationReady();
+    }
+
+    function renderOpponentLineup() {
+        const oppDiv = document.getElementById('opponent-lineup');
+        oppDiv.innerHTML = positions.map(pos => {
+            const p = opponentTeam[pos];
+            return `
+                <div class="card">
+                    <div class="pos-label">${pos}</div>
+                    ${render8BitFaceHTML(p.name)}
+                    <strong class="player-name">${p.name}</strong>
+                    <div>
+                        <span class="badge price">-$${p.cost.toFixed(1)}M</span>
+                        <span class="badge ovr-badge">${p.ovr}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderUserLineup() {
+        const userDiv = document.getElementById('user-lineup');
+        userDiv.innerHTML = positions.map(pos => {
+            const p = userTeam[pos];
+            const isCurrent = pos === activeDraftPos ? 'selected-pos' : '';
+            
+            let cardPortrait = '<div style="height:40px; margin:6px 0; display:flex; align-items:center; color:#555; font-size:1.4em;">?</div>';
+            let cardName = '<span style="color:#777; font-size:0.8em;">Empty Slot</span>';
+            let cardBadges = '<span style="color:#555; font-size:0.75em;">Select</span>';
+            
+            if (p) {
+                cardPortrait = render8BitFaceHTML(p.name);
+                cardName = `<strong class="player-name">${p.name}</strong>`;
+                cardBadges = `<span class="badge price">-$${p.cost.toFixed(1)}M</span><span class="badge ovr-badge">${p.ovr}</span>`;
+            }
+            
+            return `
+                <div class="card active ${isCurrent}" onclick="changeActivePosition('${pos}')">
+                    <div class="pos-label">${pos}</div>
+                    ${cardPortrait}
+                    ${cardName}
+                    <div>${cardBadges}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderDraftCatalog(currentRemaining) {
+        const catalogDiv = document.getElementById('draft-catalog');
+        let choices = catalogChoices[activeDraftPos] || [];
+        
+        catalogDiv.innerHTML = ''; 
+        choices.forEach((p, index) => {
+            let currentPickCost = userTeam[activeDraftPos] ? userTeam[activeDraftPos].cost : 0;
+            let netBudgetChange = currentRemaining + currentPickCost;
+            const dynamicLocked = p.cost > netBudgetChange;
+            const isCurrentlyPicked = userTeam[activeDraftPos] && userTeam[activeDraftPos].name === p.name;
+
+            const card = document.createElement('div');
+            card.className = `card active ${dynamicLocked ? 'disabled' : ''}`;
+            if (isCurrentlyPicked) {
+                card.style.cssText = 'border-color: #2ea043; background: #162c1d;';
+            }
+            
+            card.innerHTML = `
+                <div class="pos-label">${activeDraftPos}</div>
+                ${render8BitFaceHTML(p.name)}
+                <strong style="margin: 4px 0;">${p.name}</strong>
+                <div>
+                    <span class="badge price">$${p.cost.toFixed(1)}M</span>
+                    <span class="badge ovr-badge">${p.ovr} OVR</span>
+                </div>
+            `;
+
+            if (!dynamicLocked) {
+                card.onclick = function() {
+                    executePlayerSelection(index);
+                };
+            }
+            catalogDiv.appendChild(card);
+        });
+    }
+
+    function executePlayerSelection(index) {
+        let player = catalogChoices[activeDraftPos][index];
+        pickPlayer(activeDraftPos, player.name, player.ovr, player.cost);
+    }
+
+    function pickPlayer(pos, name, ovr, cost) {
+        userTeam[pos] = { name, ovr, cost };
+        
+        // Advance to next unfilled position
+        let nextIndex = positions.indexOf(pos) + 1;
+        let foundEmpty = false;
+        
+        for (let i = nextIndex; i < positions.length; i++) {
+            if (!userTeam[positions[i]]) {
+                activeDraftPos = positions[i];
+                foundEmpty = true;
+                break;
+            }
+        }
+        if (!foundEmpty) {
+            for (let i = 0; i < positions.length; i++) {
+                if (!userTeam[positions[i]]) {
+                    activeDraftPos = positions[i];
+                    break;
+                }
+            }
+        }
+        
+        updateHudAndCatalog();
+    }
+
+    function checkSimulationReady() {
+        let complete = positions.every(pos => userTeam[pos] !== null);
+        let budgetValid = calculateRemainingBudget() >= 0;
+        
+        const simSection = document.getElementById('sim-section');
+        const simBtn = document.getElementById('sim-btn');
+        const simResults = document.getElementById('sim-results');
+        
+        if (complete && budgetValid) {
+            simSection.style.display = 'block';
+            simBtn.style.display = 'block';
+            simResults.style.display = 'none';
+        } else {
+            simSection.style.display = 'none';
+        }
+    }
+
+    function startLiveSimulation() {
+        const simBtn = document.getElementById('sim-btn');
+        simBtn.style.display = 'none';
+        
+        const resultsDiv = document.getElementById('sim-results');
+        resultsDiv.style.display = 'block';
+        
+        const userOVR = positions.reduce((sum, pos) => sum + userTeam[pos].ovr, 0) / positions.length;
+        const oppOVR = positions.reduce((sum, pos) => sum + opponentTeam[pos].ovr, 0) / positions.length;
+        
+        let currentGame = 0;
+        let userWins = 0;
+        let oppWins = 0;
+        const totalGames = 162;
+        
+        const simInterval = setInterval(() => {
+            currentGame++;
+            let baselineChance = 0.50;
+            if (userOVR > oppOVR) baselineChance = 0.58;
+            if (userOVR < oppOVR - 1.5) baselineChance = 0.42;
+            
+            let userChance = Math.max(0.25, Math.min(0.75, baselineChance));
+            if (Math.random() < userChance) userWins++;
+            if (Math.random() < 0.50) oppWins++; 
+            
+            resultsDiv.innerHTML = `
+                <h3 style="text-align: center;">⚾ Simulating 162-Game Regular Season...</h3>
+                <div class="live-counter" style="text-align: center;">
+                    YOUR CLUB: <span style="color:#2ea043;">${userWins} W</span> - <span style="color:#f85149;">${currentGame - userWins} L</span><br>
+                    RIVAL CLUB: <span style="color:#1f6feb;">${oppWins} W</span> - <span style="color:#e3b341;">${currentGame - oppWins} L</span>
+                </div>
+                <div style="color:#8b949e; font-size: 0.9em; text-align: center;">Processing Game ${currentGame} of ${totalGames}</div>
+            `;
+            
+            if (currentGame >= totalGames) {
+                clearInterval(simInterval);
+                displayFinalGraphicResults(userWins, oppWins);
+            }
+        }, 18); 
+    }
+
+    function displayFinalGraphicResults(userWins, oppWins) {
+        const resultsDiv = document.getElementById('sim-results');
+        const isWin = userWins >= oppWins;
+        let actionButtons = `
+            <div class="btn-container">
+                ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: #00cecb; color: #000; margin: 0;">🔄 Re-Sim Season</button>` : ''}
+                <button class="btn" onclick="resetToNewCampaign()" style="background: #f0f6fc; color: #000; margin: 0;">🎮 New Campaign</button>
+            </div>
+        `;
+        
+        let graphicHTML = `
+            <div class="result-graphic ${isWin ? 'win' : 'loss'}">
+                <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
+                <div class="graphic-banner">
+                    ${isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck in the offseason.'}
+                </div>
+                <div class="graphic-stats">
+                    <div>
+                        <span class="doc-label">Your Club</span>
+                        ${userWins}-${162 - userWins}
+                    </div>
+                    <div style="color: rgba(255,255,255,0.3); align-self: flex-end; padding-bottom: 5px;">vs</div>
+                    <div>
+                        <span class="doc-label">Rival Club</span>
+                        ${oppWins}-${162 - oppWins}
+                    </div>
+                </div>
+                <div style="margin-bottom: 25px;"></div>
+                ${actionButtons}
+            </div>
+        `;
+        resultsDiv.innerHTML = graphicHTML;
+    }
+    
+    function resetToNewCampaign() {
+        initGame();
+    }
+    
+    function retrySameMatch() {
+        positions.forEach(pos => userTeam[pos] = null);
+        activeDraftPos = "C";
+        document.getElementById('sim-section').style.display = 'none';
+        document.getElementById('draft-section').style.display = 'block';
+        updateHudAndCatalog();
+    }
+    
+    window.onload = initGame;
+</script>
+</body>
+</html>
