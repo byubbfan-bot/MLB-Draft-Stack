@@ -113,6 +113,16 @@
             font-size: 0.95em;
             line-height: 1.4;
         }
+        .strategy-pill {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            background: #238636;
+            color: #fff;
+        }
         .legend-bar {
             display: flex;
             justify-content: center;
@@ -510,6 +520,7 @@
 <script>
     let currentGameMode = "freeplay";
     let pseudoRandomSeed = 123456789;
+    let currentScoutStrategy = null; // Tracks target counter condition: 'stack_bats', 'speed_infield', or 'ace_rotation'
 
     function seededRandom() {
         pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
@@ -1053,15 +1064,41 @@
 
         let msg = "";
         if (sp.ovr <= 94 || rp.ovr <= 94) {
+            currentScoutStrategy = 'stack_bats';
             let targetPitcher = sp.ovr <= rp.ovr ? `${sp.name} in the rotation` : `${rp.name} in the bullpen`;
-            msg = `Rival pitching staff has late-inning command concerns with ${targetPitcher}. <strong>Strategy:</strong> Stack high-average <strong>[CNT]</strong> and slugging <strong>[PWR]</strong> bats in your heart of the order to blow open multi-run innings.`;
+            msg = `Rival pitching staff has late-inning command concerns with ${targetPitcher}. <strong>Strategy:</strong> Stack your lineup with high-average <strong>[CNT]</strong> and slugging <strong>[PWR]</strong> hitters to unlock a huge offensive bonus!`;
         } else if (lowestHitPlayer.ovr <= 94) {
-            msg = `Rival defensive alignment is vulnerable at <strong>${lowestHitPos}</strong> with ${lowestHitPlayer.name}. <strong>Strategy:</strong> Exploit this slot by signing a high-value <strong>[SPD]</strong> or <strong>[CNT]</strong> lead-off threat and investing savings into your starting rotation.`;
+            currentScoutStrategy = 'speed_infield';
+            msg = `Rival defense has a soft spot at <strong>${lowestHitPos}</strong> with ${lowestHitPlayer.name}. <strong>Strategy:</strong> Exploit their infield defense by drafting agile <strong>[SPD]</strong> players on the bases to force costly errors.`;
         } else {
-            msg = `Today's rival lineup is exceptionally stacked with sluggers across the heart of the order. <strong>Strategy:</strong> Do not compromise on your mound presence—invest your payroll in an elite top-tier starter to keep their bats in the yard.`;
+            currentScoutStrategy = 'ace_rotation';
+            msg = `Today's rival lineup is packed with sluggers from top to bottom. <strong>Strategy:</strong> Anchor your rotation with a high-caliber Starting Pitcher (SP) to quiet their power bats.`;
         }
 
         document.getElementById('scout-report-text').innerHTML = msg;
+    }
+
+    function checkStrategyFulfilled() {
+        if (currentGameMode !== 'daily' || !currentScoutStrategy) return false;
+        
+        if (currentScoutStrategy === 'stack_bats') {
+            let count = 0;
+            positions.forEach(pos => {
+                let p = userTeam[pos];
+                if (p && p.traits && (p.traits.includes('PWR') || p.traits.includes('CNT'))) count++;
+            });
+            return count >= 5;
+        } else if (currentScoutStrategy === 'speed_infield') {
+            let count = 0;
+            positions.forEach(pos => {
+                let p = userTeam[pos];
+                if (p && p.traits && p.traits.includes('SPD')) count++;
+            });
+            return count >= 3;
+        } else if (currentScoutStrategy === 'ace_rotation') {
+            return userTeam["SP"] && userTeam["SP"].cost >= 4.2;
+        }
+        return false;
     }
 
     function initGame() {
@@ -1424,17 +1461,23 @@
         let oppGameWinChance;
 
         if (currentGameMode === "daily") {
-            // Balanced so that an optimized squad reliably wins the season ~25% of the time
             let ovrDiff = userOVR - oppOVR; 
-            userGameWinChance = 0.49 + (ovrDiff * 0.025);
-            userGameWinChance = Math.max(0.38, Math.min(0.58, userGameWinChance));
-            oppGameWinChance = 0.53; // Realistic contender pace (85-88 wins) instead of an impossible juggernaut
+            let strategyBonus = checkStrategyFulfilled() ? 0.045 : 0.0;
+            
+            // Rebalanced: user chance sits at 50% - 55% when drafting smart + countering the scout report
+            userGameWinChance = 0.52 + (ovrDiff * 0.018) + strategyBonus;
+            userGameWinChance = Math.max(0.44, Math.min(0.60, userGameWinChance));
+            
+            // Opponent wins ~82-85 games on average, making a strategic team consistently winnable
+            oppGameWinChance = 0.51; 
         } else {
             userGameWinChance = 0.50;
             if (userOVR > oppOVR) userGameWinChance = 0.58;
             if (userOVR < oppOVR - 1.5) userGameWinChance = 0.42;
             oppGameWinChance = 0.50;
         }
+
+        let strategyTag = (currentGameMode === 'daily' && checkStrategyFulfilled()) ? '<div class="strategy-pill">🎯 STRATEGY COUNTER BONUS ACTIVE (+4.5% Win Rate)</div>' : '';
         
         const simInterval = setInterval(() => {
             currentGame++;
@@ -1443,6 +1486,7 @@
             
             resultsDiv.innerHTML = `
                 <h3 style="text-align: center;">⚾ Simulating 162-Game Regular Season...</h3>
+                ${strategyTag ? `<div style="text-align: center; margin-bottom: 8px;">${strategyTag}</div>` : ''}
                 <div class="live-counter" style="text-align: center;">
                     YOUR CLUB: <span style="color:#2ea043;">${userWins} W</span> - <span style="color:#f85149;">${currentGame - userWins} L</span><br>
                     RIVAL CLUB: <span style="color:#1f6feb;">${oppWins} W</span> - <span style="color:#e3b341;">${currentGame - oppWins} L</span>
@@ -1482,7 +1526,8 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell just short in the standings. Adjust your lineup to exploit the scouting report!`;
+                let scoutHint = checkStrategyFulfilled() ? "Good strategic build! The pennant race came down to the wire—re-sim or fine-tune one slot to push over the edge." : "You missed the strategic counter! Check the scouting report above and draft players that exploit their weaknesses.";
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). ${scoutHint}`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
