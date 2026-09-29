@@ -166,22 +166,44 @@
             font-size: 0.95em;
             line-height: 1.45;
         }
-        .agenda-reveal {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px dashed var(--accent-gold);
-            border-radius: 8px;
-            padding: 14px 18px;
-            margin: 20px auto;
-            font-size: 0.95em;
-            text-align: left;
-            color: #fef08a;
-            max-width: 540px;
-            box-sizing: border-box;
-            width: 100%;
+        /* 3x4 Agenda Tracker Grid */
+        .agenda-tracker-panel {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin: 15px 0 25px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
-        .agenda-reveal ul {
-            margin: 8px 0 0 20px;
-            padding: 0;
+        .agenda-grid-title {
+            font-size: 0.85em;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .grid-3x4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 200px;
+            margin: 0 auto;
+        }
+        .grid-box {
+            width: 40px;
+            height: 28px;
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .grid-box.filled {
+            background: var(--accent-green);
+            box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+            border-color: #6ee7b7;
         }
         .legend-bar {
             display: flex;
@@ -572,11 +594,11 @@
     
     <!-- RULES BANNER -->
     <div class="rules-banner">
-        <strong>📋 Daily Challenge Rules & Agenda:</strong>
+        <strong>📋 Daily Challenge Rules & Agenda Tracker:</strong>
         <ul>
             <li>Manage your $34.0M payroll to build a competitive 11-man roster.</li>
-            <li>Read the <strong>Dugout Scouting Report</strong> to decode the day's hidden <strong>Power, Contact, and Speed</strong> agenda targets.</li>
-            <li>Fulfilling all three hidden archetype goals simultaneously unlocks a legendary <strong>162–0 Sweep</strong>! Standard rosters simulate normally against a 93-win rival.</li>
+            <li>Decode the <strong>Dugout Scouting Report</strong> to hit the day's 12 hidden attribute targets.</li>
+            <li>The 3x4 grid below tracks your progress in real-time as you draft. Fulfill all 12 units to unlock a legendary <strong>162–0 Sweep</strong>!</li>
         </ul>
     </div>
 
@@ -592,6 +614,14 @@
             <div>All-Time Avg: <strong id="daily-average">--</strong></div>
             <div>Today: <strong id="daily-today-status">Attempt #1</strong></div>
             <div style="font-size: 0.85em; color: var(--text-muted);">Resets In: <span id="daily-timer" style="color: var(--accent-teal); font-weight: bold;">--:--:--</span></div>
+        </div>
+    </div>
+
+    <!-- 3x4 AGENDA TRACKER PANEL (DAILY MODE ONLY) -->
+    <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
+        <div class="agenda-grid-title">🎯 Secret Agenda Progress (12 Required Attribute Units)</div>
+        <div id="agenda-grid-3x4" class="grid-3x4">
+            <!-- 12 boxes populated by JS -->
         </div>
     </div>
 
@@ -641,7 +671,7 @@
 <script>
     let currentGameMode = "freeplay";
     let pseudoRandomSeed = 123456789;
-    let activeAgenda = { pwrReq: 5, cntReq: 4, spdReq: 4, text: '' };
+    let activeAgenda = { pwrReq: 5, cntReq: 4, spdReq: 3, text: '' };
 
     function seededRandom() {
         pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
@@ -745,12 +775,16 @@
     function switchGameMode(mode) {
         currentGameMode = mode;
         const dailyPanel = document.getElementById('daily-panel');
+        const agendaPanel = document.getElementById('agenda-tracker-container');
         if (mode === "daily") {
             dailyPanel.style.display = "flex";
+            agendaPanel.style.display = "block";
             updateDailyTallyDisplay();
             updateDailyCountdown();
+            renderAgendaGrid();
         } else {
             dailyPanel.style.display = "none";
+            agendaPanel.style.display = "none";
         }
         initGame();
     }
@@ -1186,6 +1220,7 @@
         activeAgenda = agendaPools[daySeed % agendaPools.length];
 
         document.getElementById('scout-report-text').innerHTML = activeAgenda.text;
+        renderAgendaGrid();
     }
 
     function checkAgendaProgress() {
@@ -1205,7 +1240,28 @@
         let cntHit = cntCount >= activeAgenda.cntReq;
         let spdHit = spdCount >= activeAgenda.spdReq;
 
-        return { pwrHit, cntHit, spdHit, allHit: (pwrHit && cntHit && spdHit) };
+        return { 
+            pwrCount, cntCount, spdCount,
+            pwrMet: Math.min(pwrCount, activeAgenda.pwrReq),
+            cntMet: Math.min(cntCount, activeAgenda.cntReq),
+            spdMet: Math.min(spdCount, activeAgenda.spdReq),
+            allHit: (pwrHit && cntHit && spdHit) 
+        };
+    }
+
+    function renderAgendaGrid() {
+        const gridEl = document.getElementById('agenda-grid-3x4');
+        if (!gridEl) return;
+
+        let progress = checkAgendaProgress();
+        let totalMet = progress.pwrMet + progress.cntMet + progress.spdMet; // Out of 12
+
+        let html = '';
+        for (let i = 0; i < 12; i++) {
+            let isFilled = i < totalMet ? 'filled' : '';
+            html += `<div class="grid-box ${isFilled}"></div>`;
+        }
+        gridEl.innerHTML = html;
     }
 
     function calculateTrueTeamWins(team, isUser) {
@@ -1241,13 +1297,14 @@
         if (isUser && currentGameMode === 'daily') {
             let agendaStatus = checkAgendaProgress();
             
-            // Triple agenda mastery locks in a 100% sweep (162 wins)
             if (agendaStatus.allHit) {
-                return 162;
+                return 162; // 100% Sweep!
             }
 
             let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
+            
+            // Severe penalty if agendas are missed, anchoring standard builds around 75-78 wins
             let agendaMissedPenalty = 14; 
             
             let baseAnchor = 84.0;
@@ -1320,6 +1377,7 @@
 
         renderUserLineup();
         renderDraftCatalog(currentRemaining);
+        renderAgendaGrid();
         checkSimulationReady();
     }
 
@@ -1725,19 +1783,6 @@
             </div>
         `;
         
-        let agendaStatus = checkAgendaProgress();
-        let revealBox = `
-            <div class="agenda-reveal">
-                <strong>🔍 Today's Hidden Agenda Breakdown:</strong>
-                <ul>
-                    <li>Power (PWR) target: <strong>${activeAgenda.pwrReq}</strong> players needed</li>
-                    <li>Contact (CNT) target: <strong>${activeAgenda.cntReq}</strong> players needed</li>
-                    <li>Speed (SPD) target: <strong>${activeAgenda.spdReq}</strong> players needed</li>
-                </ul>
-                <div style="margin-top: 6px; font-style: italic;">Status: ${agendaStatus.allHit ? '✅ All 3 Mastered (100% Sweep Triggered)' : '❌ Incomplete (Standard Simulation)'}</div>
-            </div>
-        `;
-
         let subBanner = '';
         if (hadTiebreaker) {
             subBanner = userWonTiebreaker 
@@ -1748,7 +1793,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Review the reveal breakdown below to see what secret targets were required!`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x4 progress grid above and test a different player archetype combination!`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
@@ -1761,7 +1806,6 @@
                 ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">${subBanner}</div>
-                ${currentGameMode === 'daily' ? revealBox : ''}
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
