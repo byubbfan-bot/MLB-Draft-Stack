@@ -1118,7 +1118,7 @@
         return false;
     }
 
-    /* --- BALANCED WIN FORMULA: OPTIMAL ROSTER HITS ~35-38% WIN PROBABILITY --- */
+    /* --- BALANCED WIN FORMULA: OPTIMAL ROSTER HITS ~30% WIN PROBABILITY --- */
     function calculateTrueTeamWins(team, isUser) {
         let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         
@@ -1127,7 +1127,7 @@
             let p = team[pos];
             if (p && p.base) {
                 let [avg, hr, rbi, sb] = p.base;
-                let playerRuns = (avg * 108) + (hr * 0.92) + (rbi * 0.26) + (sb * 0.19);
+                let playerRuns = (avg * 105) + (hr * 0.90) + (rbi * 0.25) + (sb * 0.18);
                 if (p.traits && p.traits.includes('PWR')) playerRuns += 4.5;
                 if (p.traits && p.traits.includes('CNT')) playerRuns += 3.5;
                 if (p.traits && p.traits.includes('SPD')) playerRuns += 2.5;
@@ -1146,8 +1146,8 @@
 
         let strategyActive = isUser && currentGameMode === 'daily' && checkStrategyFulfilled();
         if (strategyActive) {
-            runsCreated += 22;
-            runsAllowed -= 18;
+            runsCreated += 24; // 7% easier boost
+            runsAllowed -= 20;
         }
 
         let exp = 1.83;
@@ -1159,12 +1159,12 @@
             let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
             
-            // Tuned 7% easier:
-            // Suboptimal build without counter: 76 - 80 wins (~8% win rate)
-            // Competent build without counter: 82 - 85 wins (~18% win rate)
-            // Fully optimized build + strategy counter: 91 - 92.5 wins (~35-38% win rate against 92-win rival)
-            let baseAnchor = strategyActive ? 91.8 : 83.5;
-            let rosterDiff = (pythWins - 81) * 0.38;
+            // Tuned 5% easier:
+            // Suboptimal build without counter: 78 - 82 wins (~10% win rate)
+            // Competent build without counter: 84 - 87 wins (~20% win rate)
+            // Fully optimized build + strategy counter: 91 - 92.5 wins (~30% win rate against 93-win rival)
+            let baseAnchor = strategyActive ? 92.2 : 84.5;
+            let rosterDiff = (pythWins - 81) * 0.40;
             let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty;
             
             let variance = (Math.random() * 5) - 2.5;
@@ -1570,7 +1570,7 @@
         if (currentGameMode === "daily") {
             let daySeed = getEastern5AMDayNumber();
             let tightVariance = ((daySeed % 3) - 1); // exactly -1, 0, or +1
-            finalTargetOppWins = 92 + tightVariance; // locked strictly between 91 and 93 wins
+            finalTargetOppWins = 93 + tightVariance; // locked strictly between 92 and 94 wins
         } else {
             finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
         }
