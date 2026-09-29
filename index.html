@@ -1101,7 +1101,7 @@
         return false;
     }
 
-    /* --- SKILL-CALIBRATED TARGETS (TARGETING EXACTLY ~40% ON OPTIMAL BUILDS) --- */
+    /* --- REBALANCED USER WIN FORMULA: OPTIMAL ROSTER HITS ~40% WIN PROBABILITY --- */
     function calculateTrueTeamWins(team, isUser) {
         let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         
@@ -1130,8 +1130,8 @@
 
         let strategyEarned = isUser && currentGameMode === 'daily' && checkStrategyFulfilled();
         if (strategyEarned) {
-            totalEstRuns += 32;       
-            totalEstRunsAllowed -= 24; 
+            totalEstRuns += 28;       
+            totalEstRunsAllowed -= 20; 
         }
 
         let exp = 1.83;
@@ -1142,19 +1142,18 @@
         let baselineWins = pythagoreanWinPct * 162;
 
         if (isUser && currentGameMode === 'daily') {
-            // Carefully mapped tiers:
-            // Suboptimal / casual build: 75 - 80 wins (~5% - 10% chance)
-            // Competent build, no strategy counter: 82 - 85 wins (~20% - 25% chance)
-            // Fully optimized build + strategy counter: 87 - 91 wins (~40% chance against 87-88 rival)
+            // Re-anchored: 
+            // Suboptimal build without strategy: 78 - 82 wins (~10% win rate)
+            // Competent build without strategy: 83 - 85 wins (~20% win rate)
+            // Fully optimized build + strategy counter: 89 - 91 wins (~40% against 92-win rival)
             let userBudgetSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let efficiencyPenalty = Math.max(0, (33.0 - userBudgetSpent) * 1.5);
             
-            let dialedExpectedWins = strategyEarned ? 89.0 : 83.5;
-            dialedExpectedWins += ((baselineWins - 82) * 0.65) - efficiencyPenalty;
+            let dialedExpectedWins = strategyEarned ? 89.2 : 82.5;
+            dialedExpectedWins += ((baselineWins - 82) * 0.60) - efficiencyPenalty;
             
-            // Controlled natural luck variance (+/- 3 games)
-            let variance = (Math.random() * 6) - 3;
-            return Math.max(62, Math.min(108, Math.round(dialedExpectedWins + variance)));
+            let variance = (Math.random() * 5) - 2.5;
+            return Math.max(65, Math.min(105, Math.round(dialedExpectedWins + variance)));
         }
 
         let luckVariance = (Math.random() * 5) - 2.5; 
@@ -1519,8 +1518,8 @@
         let finalTargetOppWins;
         if (currentGameMode === "daily") {
             let daySeed = getEastern5AMDayNumber();
-            let tightVariance = ((daySeed % 3) - 1); // exactly -1, 0, or +1
-            finalTargetOppWins = 87 + tightVariance; // locked strictly to 86, 87, or 88 wins
+            let tightVariance = ((daySeed % 3) - 1); // -1, 0, or +1
+            finalTargetOppWins = 92 + tightVariance; // locked strictly between 91 and 93 wins
         } else {
             finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
         }
