@@ -31,7 +31,6 @@
             margin-bottom: 15px;
             font-size: 0.95em;
         }
-        /* Prominent Mode Bar */
         .mode-container {
             display: flex;
             justify-content: space-between;
@@ -76,15 +75,16 @@
             display: flex;
             align-items: center;
             gap: 16px;
-            font-size: 1em;
+            font-size: 0.95em;
             background: rgba(227, 179, 65, 0.12);
             padding: 8px 16px;
             border-radius: 8px;
             border: 1px solid rgba(227, 179, 65, 0.4);
+            flex-wrap: wrap;
         }
         .daily-tracker strong {
             color: #e3b341;
-            font-size: 1.1em;
+            font-size: 1.05em;
         }
         .hud-bar {
             display: flex;
@@ -391,7 +391,8 @@
             </select>
         </div>
         <div id="daily-panel" class="daily-tracker" style="display:none;">
-            <div>Challenge Record: <strong id="daily-tally">0W - 0L (0%)</strong></div>
+            <div>All-Time Avg: <strong id="daily-average">--</strong></div>
+            <div>Today: <strong id="daily-today-status">Attempt #1</strong></div>
             <div style="font-size: 0.85em; color: #aaa;">Resets In: <span id="daily-timer" style="color: #00cecb; font-weight: bold;">--:--:--</span></div>
         </div>
     </div>
@@ -467,30 +468,68 @@
     }
     setInterval(updateDailyCountdown, 1000);
 
-    function getDailyStats() {
-        let stats = localStorage.getItem('mlb_sim_daily_record');
-        if (!stats) return { wins: 0, losses: 0 };
+    /* --- PERSISTENT DAILY TRACKER --- */
+    function getDailyHistory() {
+        let raw = localStorage.getItem('mlb_daily_tries_data');
+        if (!raw) return { history: [], currentDay: null, triesToday: 0, todayWon: false };
         try {
-            return JSON.parse(stats);
+            return JSON.parse(raw);
         } catch(e) {
-            return { wins: 0, losses: 0 };
+            return { history: [], currentDay: null, triesToday: 0, todayWon: false };
         }
     }
 
-    function saveDailyResult(won) {
-        let stats = getDailyStats();
-        if (won) stats.wins++;
-        else stats.losses++;
-        localStorage.setItem('mlb_sim_daily_record', JSON.stringify(stats));
+    function syncDailyHistory() {
+        let data = getDailyHistory();
+        let today = getEastern5AMDayNumber();
+        if (data.currentDay !== today) {
+            data.currentDay = today;
+            data.triesToday = 0;
+            data.todayWon = false;
+            localStorage.setItem('mlb_daily_tries_data', JSON.stringify(data));
+        }
+        return data;
+    }
+
+    function recordDailyAttemptStart() {
+        let data = syncDailyHistory();
+        if (!data.todayWon) {
+            data.triesToday++;
+            localStorage.setItem('mlb_daily_tries_data', JSON.stringify(data));
+        }
+        updateDailyTallyDisplay();
+    }
+
+    function recordDailyAttemptWin() {
+        let data = syncDailyHistory();
+        if (!data.todayWon) {
+            data.todayWon = true;
+            data.history.push({ day: data.currentDay, tries: data.triesToday });
+            localStorage.setItem('mlb_daily_tries_data', JSON.stringify(data));
+        }
         updateDailyTallyDisplay();
     }
 
     function updateDailyTallyDisplay() {
-        let stats = getDailyStats();
-        let total = stats.wins + stats.losses;
-        let pct = total > 0 ? ((stats.wins / total) * 100).toFixed(1) : "0.0";
-        const tallyEl = document.getElementById('daily-tally');
-        if (tallyEl) tallyEl.innerText = `${stats.wins}W - ${stats.losses}L (${pct}%)`;
+        let data = syncDailyHistory();
+        
+        // Compute all-time average tries for completed challenge days
+        const avgEl = document.getElementById('daily-average');
+        if (data.history.length === 0) {
+            avgEl.innerText = "No Wins Yet";
+        } else {
+            let sum = data.history.reduce((acc, entry) => acc + entry.tries, 0);
+            let avg = (sum / data.history.length).toFixed(1);
+            avgEl.innerText = `${avg} Tries / Win (${data.history.length} Solved)`;
+        }
+
+        const todayEl = document.getElementById('daily-today-status');
+        if (data.todayWon) {
+            todayEl.innerHTML = `<span style="color:#2ea043;">Solved in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'} ✓</span>`;
+        } else {
+            let attemptNum = Math.max(1, data.triesToday);
+            todayEl.innerText = `Attempt #${attemptNum}`;
+        }
     }
 
     function switchGameMode(mode) {
@@ -1234,6 +1273,10 @@
         
         const resultsDiv = document.getElementById('sim-results');
         resultsDiv.style.display = 'block';
+
+        if (currentGameMode === "daily") {
+            recordDailyAttemptStart();
+        }
         
         const userOVR = positions.reduce((sum, pos) => sum + userTeam[pos].ovr, 0) / positions.length;
         const oppOVR = positions.reduce((sum, pos) => sum + opponentTeam[pos].ovr, 0) / positions.length;
@@ -1284,8 +1327,8 @@
         const winningTeam = isWin ? userTeam : opponentTeam;
         const winningWins = isWin ? userWins : oppWins;
         
-        if (currentGameMode === "daily") {
-            saveDailyResult(isWin);
+        if (currentGameMode === "daily" && isWin) {
+            recordDailyAttemptWin();
         }
 
         const mvpCardHTML = generateMvpCard(winningTeam, winningWins);
@@ -1297,12 +1340,22 @@
             </div>
         `;
         
+        let subBanner = '';
+        if (currentGameMode === 'daily') {
+            let data = syncDailyHistory();
+            if (isWin) {
+                subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
+            } else {
+                subBanner = `Attempt #${data.triesToday} fell short against the super-team. Tweak your picks and try again!`;
+            }
+        } else {
+            subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
+        }
+
         let graphicHTML = `
             <div class="result-graphic ${isWin ? 'win' : 'loss'}">
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
-                <div class="graphic-banner">
-                    ${isWin ? (currentGameMode === 'daily' ? 'Incredible! You overcame the daily super-team and captured October glory!' : 'Your roster captured the division pennant and booked a trip to October!') : (currentGameMode === 'daily' ? 'The daily challenge powerhouse prevailed. Adjust your roster strategy!' : 'The rival squad edged you out in the standings. Better luck next year.')}
-                </div>
+                <div class="graphic-banner">${subBanner}</div>
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
