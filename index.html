@@ -1785,7 +1785,7 @@
 
         const mvpCardHTML = generateMvpCard(winningTeam, winningWins);
 
-        // ONLY SHOW RETRY BUTTON ON LOSS (NO "NEW CAMPAIGN" CLUTTER)
+        // SINGLE RETRY BUTTON ON LOSS (PRESERVES SELECTED PLAYERS)
         let actionButtons = `
             <div class="btn-container">
                 ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: var(--accent-teal); color: #000; margin: 0;">Retry & Adjust Roster</button>` : ''}
@@ -1802,7 +1802,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x4 progress grid above, then click Retry to swap players!`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x4 progress grid above and adjust your lineup!`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
@@ -1834,14 +1834,8 @@
         resultsDiv.innerHTML = graphicHTML;
     }
     
-    function resetToNewCampaign() {
-        hasSubmittedOnce = false;
-        document.getElementById('agenda-tracker-container').style.display = 'none';
-        initGame();
-    }
-    
     function retrySameMatch() {
-        // Hides simulation view and returns to draft screen, keeping userTeam roster intact!
+        // Hides simulation view and returns to draft screen while keeping userTeam roster completely intact!
         document.getElementById('sim-section').style.display = 'none';
         document.getElementById('draft-section').style.display = 'block';
         updateHudAndCatalog();
