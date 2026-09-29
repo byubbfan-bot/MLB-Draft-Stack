@@ -1118,7 +1118,7 @@
         return false;
     }
 
-    /* --- STRICT 10% TOUGHER CALIBRATION (OPTIMAL CLUBS WIN ~25-28% OF SEASONS) --- */
+    /* --- BALANCED WIN FORMULA: OPTIMAL ROSTER HITS ~35-38% WIN PROBABILITY --- */
     function calculateTrueTeamWins(team, isUser) {
         let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         
@@ -1127,10 +1127,10 @@
             let p = team[pos];
             if (p && p.base) {
                 let [avg, hr, rbi, sb] = p.base;
-                let playerRuns = (avg * 105) + (hr * 0.90) + (rbi * 0.25) + (sb * 0.18);
-                if (p.traits && p.traits.includes('PWR')) playerRuns += 4;
-                if (p.traits && p.traits.includes('CNT')) playerRuns += 3;
-                if (p.traits && p.traits.includes('SPD')) playerRuns += 2;
+                let playerRuns = (avg * 108) + (hr * 0.92) + (rbi * 0.26) + (sb * 0.19);
+                if (p.traits && p.traits.includes('PWR')) playerRuns += 4.5;
+                if (p.traits && p.traits.includes('CNT')) playerRuns += 3.5;
+                if (p.traits && p.traits.includes('SPD')) playerRuns += 2.5;
                 runsCreated += playerRuns;
             } else {
                 runsCreated += 48;
@@ -1146,8 +1146,8 @@
 
         let strategyActive = isUser && currentGameMode === 'daily' && checkStrategyFulfilled();
         if (strategyActive) {
-            runsCreated += 15;
-            runsAllowed -= 12;
+            runsCreated += 20;
+            runsAllowed -= 16;
         }
 
         let exp = 1.83;
@@ -1157,18 +1157,18 @@
 
         if (isUser && currentGameMode === 'daily') {
             let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
-            let unspentPenalty = Math.max(0, (33.5 - userSpent) * 1.8);
+            let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
             
-            // Recalibrated 10% tougher against a 97-win powerhouse:
-            // Suboptimal build without counter: 74 - 78 wins (<5% win rate)
-            // Competent build without counter: 80 - 83 wins (~10% win rate)
-            // Fully optimized build + strategy counter: 89 - 90.5 wins (~25-28% against a 97-win rival)
-            let baseAnchor = strategyActive ? 89.5 : 81.0;
-            let rosterDiff = (pythWins - 81) * 0.35;
+            // Tuned 10% easier:
+            // Suboptimal build without counter: 76 - 80 wins (~8% win rate)
+            // Competent build without counter: 82 - 85 wins (~18% win rate)
+            // Fully optimized build + strategy counter: 91 - 92.5 wins (~35-38% win rate against 94-win rival)
+            let baseAnchor = strategyActive ? 91.5 : 83.0;
+            let rosterDiff = (pythWins - 81) * 0.38;
             let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty;
             
             let variance = (Math.random() * 5) - 2.5;
-            return Math.max(62, Math.min(98, Math.round(expectedUserWins + variance)));
+            return Math.max(65, Math.min(100, Math.round(expectedUserWins + variance)));
         }
 
         let variance = (Math.random() * 5) - 2.5; 
@@ -1537,7 +1537,7 @@
                 let oppTeamQuality = positions.reduce((sum, p) => sum + (opponentTeam[p] ? opponentTeam[p].ovr : 0), 0) / positions.length;
                 let stratBonus = (currentGameMode === 'daily' && checkStrategyFulfilled()) ? 0.08 : 0.0;
                 let userTbChance = 0.50 + ((userTeamQuality - oppTeamQuality) * 0.02) + stratBonus;
-                userTbChance = Math.max(0.32, Math.min(0.62, userTbChance));
+                userTbChance = Math.max(0.35, Math.min(0.65, userTbChance));
                 
                 let userWonTiebreaker = Math.random() < userTbChance;
                 let finalUserWins = userWonTiebreaker ? userWins + 1 : userWins;
@@ -1570,7 +1570,7 @@
         if (currentGameMode === "daily") {
             let daySeed = getEastern5AMDayNumber();
             let tightVariance = ((daySeed % 3) - 1); // exactly -1, 0, or +1
-            finalTargetOppWins = 97 + tightVariance; // strictly locked between 96 and 98 wins
+            finalTargetOppWins = 94 + tightVariance; // locked strictly between 93 and 95 wins
         } else {
             finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
         }
