@@ -12,7 +12,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
             background: #161b22;
             padding: 25px;
@@ -55,11 +55,16 @@
         }
         .lineup-grid {
             display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 6px;
             margin: 15px 0;
         }
-        @media (max-width: 900px) {
+        @media (max-width: 1100px) {
+            .lineup-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+        @media (max-width: 700px) {
             .lineup-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
@@ -68,7 +73,7 @@
             background: #21262d;
             border: 2px solid #30363d;
             border-radius: 8px;
-            padding: 10px 6px;
+            padding: 10px 4px;
             text-align: center;
             transition: 0.2s;
             position: relative;
@@ -112,7 +117,7 @@
             height: 5px;
         }
         .player-name {
-            font-size: 0.85em;
+            font-size: 0.82em;
             line-height: 1.15;
             margin: 4px 0;
             word-break: break-word;
@@ -124,7 +129,7 @@
             font-weight: bold;
             padding: 2px 4px;
             border-radius: 4px;
-            font-size: 0.7em;
+            font-size: 0.68em;
             margin-top: 3px;
         }
         .badge.price {
@@ -239,6 +244,8 @@
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
         }
+
+        /* MVP Box Styling */
         .mvp-container {
             margin: 25px auto 15px auto;
             max-width: 520px;
@@ -281,6 +288,11 @@
             max-width: 280px;
             margin: 0 auto;
         }
+        .mvp-stat-grid.reliever {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 360px;
+            margin: 0 auto;
+        }
         .mvp-stat-box {
             text-align: center;
         }
@@ -313,10 +325,10 @@
 <body>
 <div class="container">
     <h1>MLB Roster & Payroll Cap Simulation</h1>
-    <p class="subtitle">Draft a 9-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, SP) under the $28.0M luxury tax threshold.</p>
+    <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
     
     <div class="hud-bar">
-        <div class="hud-item">Remaining Payroll <span id="hud-bank">$28.0M</span></div>
+        <div class="hud-item">Remaining Payroll <span id="hud-bank">$34.0M</span></div>
         <div class="hud-item">Active Position <span id="hud-pos">C</span></div>
     </div>
     
@@ -332,7 +344,7 @@
     </div>
     
     <div id="user-section" style="margin-top:30px;">
-        <h2>Your Active 9-Man Roster</h2>
+        <h2>Your Active 11-Man Roster</h2>
         <div id="user-lineup" class="lineup-grid"></div>
     </div>
     
@@ -378,8 +390,9 @@
         return html;
     }
 
-    // Baselines for position players: [AVG, HR, RBI, SB]
-    // Baselines for starting pitchers: [W, L, ERA]
+    // Baselines for position players / DH: [AVG, HR, RBI, SB]
+    // Baselines for starting pitchers (SP): [W, L, ERA]
+    // Baselines for relief pitchers (RP): [W, L, ERA, SV]
     const playersDB = {
         C: [
             { name: "Johnny Bench", ovr: 98, base: [0.275, 40, 125, 4] },
@@ -637,6 +650,38 @@
             { name: "Max Kepler", ovr: 82, base: [0.245, 22, 68, 3] },
             { name: "Wilyer Abreu", ovr: 82, base: [0.260, 18, 65, 8] }
         ],
+        DH: [
+            { name: "David Ortiz", ovr: 97, base: [0.285, 42, 130, 1] },
+            { name: "Edgar Martinez", ovr: 96, base: [0.320, 28, 115, 4] },
+            { name: "Shohei Ohtani", ovr: 98, base: [0.300, 48, 115, 35] },
+            { name: "Giancarlo Stanton", ovr: 93, base: [0.260, 40, 105, 2] },
+            { name: "Nelson Cruz", ovr: 92, base: [0.275, 38, 108, 2] },
+            { name: "Harold Baines", ovr: 91, base: [0.290, 24, 98, 2] },
+            { name: "Don Baylor", ovr: 90, base: [0.265, 30, 105, 18] },
+            { name: "Travis Hafner", ovr: 90, base: [0.285, 33, 110, 1] },
+            { name: "Marcell Ozuna", ovr: 91, base: [0.290, 36, 105, 0] },
+            { name: "J.D. Martinez", ovr: 90, base: [0.285, 32, 100, 1] },
+            { name: "Kyle Schwarber", ovr: 89, base: [0.240, 42, 100, 6] },
+            { name: "Chili Davis", ovr: 88, base: [0.275, 25, 92, 3] },
+            { name: "Hal McRae", ovr: 88, base: [0.290, 18, 92, 10] },
+            { name: "Khris Davis", ovr: 87, base: [0.247, 43, 112, 1] },
+            { name: "Jorge Soler", ovr: 86, base: [0.245, 34, 88, 1] },
+            { name: "Brent Rooker", ovr: 87, base: [0.280, 36, 102, 3] },
+            { name: "Eloy Jimenez", ovr: 85, base: [0.275, 26, 85, 1] },
+            { name: "Justin Smoak", ovr: 84, base: [0.250, 28, 85, 0] },
+            { name: "Kendrys Morales", ovr: 85, base: [0.270, 26, 90, 0] },
+            { name: "Mitch Garver", ovr: 84, base: [0.240, 24, 75, 0] },
+            { name: "Christopher Morel", ovr: 84, base: [0.235, 26, 78, 14] },
+            { name: "Adam Dunn", ovr: 87, base: [0.240, 38, 96, 8] },
+            { name: "Brian Downing", ovr: 86, base: [0.270, 22, 78, 6] },
+            { name: "Carlos Santana", ovr: 85, base: [0.245, 24, 82, 3] },
+            { name: "Dan Vogelbach", ovr: 82, base: [0.230, 20, 65, 0] },
+            { name: "Willie Horton", ovr: 86, base: [0.270, 25, 88, 2] },
+            { name: "Cliff Johnson", ovr: 84, base: [0.255, 22, 74, 1] },
+            { name: "Ramon Laureano", ovr: 83, base: [0.250, 18, 62, 12] },
+            { name: "Harold Ramirez", ovr: 82, base: [0.285, 12, 60, 6] },
+            { name: "Frankie Montas", ovr: 81, base: [0.230, 16, 52, 0] }
+        ],
         SP: [
             { name: "Pedro Martinez", ovr: 99, base: [21, 5, 2.05] },
             { name: "Randy Johnson", ovr: 98, base: [21, 6, 2.45] },
@@ -644,7 +689,6 @@
             { name: "Bob Gibson", ovr: 98, base: [22, 7, 2.15] },
             { name: "Greg Maddux", ovr: 97, base: [20, 6, 2.30] },
             { name: "Roger Clemens", ovr: 97, base: [21, 6, 2.50] },
-            { name: "Shohei Ohtani", ovr: 97, base: [16, 5, 2.85] },
             { name: "Tom Seaver", ovr: 97, base: [21, 7, 2.40] },
             { name: "Nolan Ryan", ovr: 96, base: [19, 11, 2.80] },
             { name: "Steve Carlton", ovr: 96, base: [22, 9, 2.70] },
@@ -667,7 +711,40 @@
             { name: "Dylan Cease", ovr: 88, base: [14, 9, 3.35] },
             { name: "Freddy Peralta", ovr: 86, base: [12, 8, 3.60] },
             { name: "Hunter Greene", ovr: 85, base: [11, 7, 3.30] },
-            { name: "Bailey Ober", ovr: 84, base: [12, 8, 3.80] }
+            { name: "Bailey Ober", ovr: 84, base: [12, 8, 3.80] },
+            { name: "Nestor Cortes", ovr: 83, base: [11, 8, 3.75] }
+        ],
+        RP: [
+            { name: "Mariano Rivera", ovr: 99, base: [5, 2, 1.70, 44] },
+            { name: "Trevor Hoffman", ovr: 97, base: [4, 3, 2.30, 42] },
+            { name: "Dennis Eckersley", ovr: 96, base: [5, 2, 2.15, 45] },
+            { name: "Billy Wagner", ovr: 96, base: [4, 2, 2.10, 40] },
+            { name: "Craig Kimbrel", ovr: 94, base: [3, 3, 2.20, 43] },
+            { name: "Aroldis Chapman", ovr: 93, base: [4, 2, 2.35, 38] },
+            { name: "Emmanuel Clase", ovr: 96, base: [5, 2, 1.45, 46] },
+            { name: "Mason Miller", ovr: 94, base: [4, 2, 1.85, 36] },
+            { name: "Josh Hader", ovr: 93, base: [4, 3, 2.40, 37] },
+            { name: "Edwin Díaz", ovr: 93, base: [3, 2, 2.25, 39] },
+            { name: "Kenley Jansen", ovr: 92, base: [4, 3, 2.50, 38] },
+            { name: "Rollie Fingers", ovr: 93, base: [7, 5, 2.65, 32] },
+            { name: "Rich Gossage", ovr: 93, base: [8, 6, 2.45, 30] },
+            { name: "Bruce Sutter", ovr: 92, base: [6, 5, 2.55, 34] },
+            { name: "Jonathan Papelbon", ovr: 90, base: [4, 3, 2.45, 38] },
+            { name: "Robb Nen", ovr: 90, base: [5, 4, 2.70, 40] },
+            { name: "Troy Percival", ovr: 89, base: [4, 3, 2.80, 37] },
+            { name: "Bryan Abreu", ovr: 89, base: [5, 3, 2.15, 12] },
+            { name: "Ryan Helsley", ovr: 92, base: [4, 2, 1.95, 42] },
+            { name: "Devin Williams", ovr: 91, base: [3, 2, 1.80, 34] },
+            { name: "Andres Muñoz", ovr: 90, base: [4, 3, 2.10, 32] },
+            { name: "David Bednar", ovr: 88, base: [3, 3, 2.75, 33] },
+            { name: "Robert Suarez", ovr: 89, base: [4, 3, 2.35, 36] },
+            { name: "Raisel Iglesias", ovr: 89, base: [3, 2, 2.40, 35] },
+            { name: "Pete Fairbanks", ovr: 87, base: [3, 3, 2.65, 28] },
+            { name: "Camilo Doval", ovr: 87, base: [4, 4, 2.90, 32] },
+            { name: "Jeff Hoffman", ovr: 87, base: [5, 3, 2.20, 16] },
+            { name: "Jason Foley", ovr: 85, base: [4, 4, 2.95, 25] },
+            { name: "Carlos Estevez", ovr: 85, base: [3, 4, 3.10, 30] },
+            { name: "Kyle Finnegan", ovr: 84, base: [3, 4, 3.35, 32] }
         ]
     };
 
@@ -675,8 +752,8 @@
         playersDB[pos].forEach(p => p.cost = getPlayerCost(p.ovr));
     });
 
-    const positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "SP"];
-    const TOTAL_BUDGET = 28.0;
+    const positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "SP", "RP"];
+    const TOTAL_BUDGET = 34.0;
     let activeDraftPos = "C"; 
     
     let userTeam = {};
@@ -862,7 +939,6 @@
         positions.forEach(pos => {
             if (team && team[pos]) {
                 let p = team[pos];
-                // Weight slightly toward higher OVR with small season variance
                 let variance = (Math.random() * 8) - 4;
                 candidates.push({
                     pos: pos,
@@ -879,25 +955,20 @@
         candidates.sort((a, b) => b.score - a.score);
         let mvp = candidates[0];
         
-        // Find profile fallback if base wasn't carried
         let base = mvp.base;
         if (!base) {
             let matched = playersDB[mvp.pos].find(x => x.name === mvp.name);
-            base = matched ? matched.base : (mvp.pos === 'SP' ? [15, 7, 3.20] : [0.280, 25, 85, 10]);
+            base = matched ? matched.base : (mvp.pos === 'SP' ? [16, 6, 2.75] : (mvp.pos === 'RP' ? [4, 2, 2.10, 38] : [0.280, 25, 85, 10]));
         }
 
-        let teamWinRatio = wins / 162; // ~0.45 to ~0.70
+        let teamWinRatio = wins / 162; 
 
         if (mvp.pos === 'SP') {
             let [baseW, baseL, baseERA] = base;
-            
-            // Adjust pitcher record based on team wins
             let winMultiplier = teamWinRatio / 0.55; 
             let w = Math.round(baseW * winMultiplier + (Math.random() * 2 - 1));
             w = Math.max(10, Math.min(wins, w));
-            
             let l = Math.max(2, Math.round(baseL / (winMultiplier * 0.9) + (Math.random() * 2 - 1)));
-            
             let eraMod = (0.55 - teamWinRatio) * 0.5 + (Math.random() * 0.25 - 0.12);
             let era = Math.max(1.45, (baseERA + eraMod)).toFixed(2);
 
@@ -919,10 +990,39 @@
                     </div>
                 </div>
             `;
+        } else if (mvp.pos === 'RP') {
+            let [baseW, baseL, baseERA, baseSV] = base;
+            let winMultiplier = teamWinRatio / 0.55;
+            let w = Math.max(1, Math.round(baseW + (Math.random() * 2 - 1)));
+            let l = Math.max(0, Math.round(baseL + (Math.random() * 2 - 1)));
+            let eraMod = (0.55 - teamWinRatio) * 0.4 + (Math.random() * 0.20 - 0.10);
+            let era = Math.max(1.05, (baseERA + eraMod)).toFixed(2);
+            let sv = Math.max(15, Math.round(baseSV * winMultiplier + (Math.random() * 4 - 2)));
+
+            return `
+                <div class="mvp-container">
+                    <div class="mvp-heading">⭐ Winning Team MVP</div>
+                    ${render8BitFaceHTML(mvp.name)}
+                    <div class="mvp-name">${mvp.name}</div>
+                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Lockdown Bullpen Ace</div>
+                    <div class="mvp-stat-grid reliever">
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${era}</div>
+                            <div class="mvp-stat-lbl">ERA</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${sv}</div>
+                            <div class="mvp-stat-lbl">SV</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${w}-${l}</div>
+                            <div class="mvp-stat-lbl">W-L</div>
+                        </div>
+                    </div>
+                </div>
+            `;
         } else {
             let [baseAVG, baseHR, baseRBI, baseSB] = base;
-            
-            // Realistic season variance applied to individual career baseline
             let avgDelta = (Math.random() * 0.024) - 0.012;
             let finalAvg = Math.max(0.210, Math.min(0.395, baseAVG + avgDelta));
             let avgStr = finalAvg.toFixed(3).replace(/^0/, '');
@@ -930,7 +1030,6 @@
             let hrDelta = Math.round((Math.random() * 6) - 3);
             let finalHR = Math.max(1, baseHR + hrDelta);
             
-            // Runs batted in scale with team performance
             let rbiScale = 0.85 + (teamWinRatio * 0.3);
             let rbiDelta = Math.round((Math.random() * 8) - 4);
             let finalRBI = Math.max(25, Math.round(baseRBI * rbiScale + rbiDelta));
