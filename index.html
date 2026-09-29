@@ -148,21 +148,19 @@
             font-size: 0.95em;
             line-height: 1.45;
         }
-        .strategy-pill {
-            display: inline-block;
-            margin-top: 8px;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8em;
-            font-weight: bold;
-            background: rgba(52, 211, 153, 0.2);
-            color: var(--accent-green);
-            border: 1px solid rgba(52, 211, 153, 0.4);
+        .agenda-reveal {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px dashed var(--accent-gold);
+            border-radius: 8px;
+            padding: 12px 16px;
+            margin: 15px 0;
+            font-size: 0.9em;
+            text-align: left;
+            color: #fef08a;
         }
-        .strategy-pill.failed {
-            background: rgba(248, 113, 113, 0.2);
-            color: var(--accent-red);
-            border: 1px solid rgba(248, 113, 113, 0.4);
+        .agenda-reveal ul {
+            margin: 6px 0 0 20px;
+            padding: 0;
         }
         .legend-bar {
             display: flex;
@@ -609,7 +607,7 @@
 <script>
     let currentGameMode = "freeplay";
     let pseudoRandomSeed = 123456789;
-    let activeBlueprint = { type: 'pwr', targetCount: 4, directive: '', hint: '' };
+    let activeAgenda = { pwrReq: 4, cntReq: 3, spdReq: 3, text: '' };
 
     function seededRandom() {
         pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
@@ -1144,39 +1142,36 @@
 
         document.getElementById('scout-report-box').style.display = 'flex';
         
-        let blueprintTypes = [
-            { type: 'pwr', targetCount: 4, directive: "Focus heavily on Power by drafting more sluggers (PWR) to crack their pitching staff", hint: "Add more power bats to your lineup" },
-            { type: 'spd', target: 3, directive: "Focus on Speed by prioritizing agile base runners (SPD) to disrupt their defensive alignment", hint: "Add more speed to the lineup" },
-            { type: 'ace', target: 5.0, directive: "Focus on Pitching by acquiring a top-tier ace Starting Pitcher ($5.0M) to silence their heavy hitters", hint: "Invest in a shutdown ace on the mound" }
+        let agendaOptions = [
+            { text: "Rival club is heavily shifting their defensive focus outward. <strong>Scouting Report: Focus on Power</strong> in your batting order to drive the ball over their outfield wall.", pwrReq: 4, cntReq: 2, spdReq: 2 },
+            { text: "Rival pitching staff relies heavily on slow breaking balls. <strong>Scouting Report: Focus on Contact</strong> to string together multi-hit innings.", pwrReq: 2, cntReq: 5, spdReq: 2 },
+            { text: "Rival defensive alignment is slow on ground balls. <strong>Scouting Report: Focus on Speed</strong> at the top of the order to stretch singles into doubles.", pwrReq: 2, cntReq: 2, spdReq: 4 }
         ];
 
-        let seedIndex = Math.floor((pseudoRandomSeed % 99) / 33);
-        activeBlueprint = blueprintTypes[seedIndex % blueprintTypes.length];
+        let daySeed = getEastern5AMDayNumber();
+        activeAgenda = agendaOptions[daySeed % agendaOptions.length];
 
-        document.getElementById('scout-report-text').innerHTML = `Rival club is presenting a tough tactical matchup. <strong>Scouting Directive: ${activeBlueprint.directive}</strong>.`;
+        document.getElementById('scout-report-text').innerHTML = activeAgenda.text;
     }
 
-    function checkStrategyFulfilled() {
-        if (currentGameMode !== 'daily' || !activeBlueprint) return false;
-        
-        if (activeBlueprint.type === 'pwr') {
-            let count = 0;
-            positions.forEach(pos => {
-                let p = userTeam[pos];
-                if (p && p.traits && p.traits.includes('PWR')) count++;
-            });
-            return count >= activeBlueprint.targetCount;
-        } else if (activeBlueprint.type === 'spd') {
-            let count = 0;
-            positions.forEach(pos => {
-                let p = userTeam[pos];
-                if (p && p.traits && p.traits.includes('SPD')) count++;
-            });
-            return count >= activeBlueprint.targetCount;
-        } else if (activeBlueprint.type === 'ace') {
-            return userTeam["SP"] && userTeam["SP"].cost >= activeBlueprint.target;
-        }
-        return false;
+    function checkAgendaProgress() {
+        if (currentGameMode !== 'daily') return { pwrHit: true, cntHit: true, spdHit: true, allHit: true };
+
+        let pwrCount = 0, cntCount = 0, spdCount = 0;
+        positions.forEach(pos => {
+            let p = userTeam[pos];
+            if (p && p.traits) {
+                if (p.traits.includes('PWR')) pwrCount++;
+                if (p.traits.includes('CNT')) cntCount++;
+                if (p.traits.includes('SPD')) spdCount++;
+            }
+        });
+
+        let pwrHit = pwrCount >= activeAgenda.pwrReq;
+        let cntHit = cntCount >= activeAgenda.cntReq;
+        let spdHit = spdCount >= activeAgenda.spdReq;
+
+        return { pwrHit, cntHit, spdHit, allHit: (pwrHit && cntHit && spdHit) };
     }
 
     function calculateTrueTeamWins(team, isUser) {
@@ -1204,30 +1199,28 @@
         let staffEra = (spEra * 0.65) + (rpEra * 0.35);
         let runsAllowed = (staffEra / 4.00) * 735;
 
-        let strategyActive = isUser && currentGameMode === 'daily' && checkStrategyFulfilled();
-        if (strategyActive) {
-            runsCreated += 24;
-            runsAllowed -= 20;
-        }
-
         let exp = 1.83;
         let rsPow = Math.pow(Math.max(400, runsCreated), exp);
         let raPow = Math.pow(Math.max(400, runsAllowed), exp);
         let pythWins = (rsPow / (rsPow + raPow)) * 162;
 
         if (isUser && currentGameMode === 'daily') {
+            let agendaStatus = checkAgendaProgress();
+            
+            // If all three secret agendas (Power, Contact, Speed) are met, unlock 100% Sweep (162 wins)!
+            if (agendaStatus.allHit) {
+                return 162;
+            }
+
             let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
             
-            // If the organic scouting directive is missed, penalize wins to enforce strategy
-            let directivePenalty = strategyActive ? 0 : 35;
-            
-            let baseAnchor = 84.0;
-            let rosterDiff = (pythWins - 81) * 0.38;
-            let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty - directivePenalty;
+            let baseAnchor = 84.5;
+            let rosterDiff = (pythWins - 81) * 0.40;
+            let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty;
             
             let variance = (Math.random() * 5) - 2.5;
-            return Math.max(55, Math.min(100, Math.round(expectedUserWins + variance)));
+            return Math.max(65, Math.min(100, Math.round(expectedUserWins + variance)));
         }
 
         let variance = (Math.random() * 5) - 2.5; 
@@ -1594,9 +1587,10 @@
                 
                 let userTeamQuality = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].ovr : 0), 0) / positions.length;
                 let oppTeamQuality = positions.reduce((sum, p) => sum + (opponentTeam[p] ? opponentTeam[p].ovr : 0), 0) / positions.length;
-                let stratBonus = (currentGameMode === 'daily' && checkStrategyFulfilled()) ? 0.08 : 0.0;
+                let agendaStatus = checkAgendaProgress();
+                let stratBonus = agendaStatus.allHit ? 0.15 : 0.0;
                 let userTbChance = 0.50 + ((userTeamQuality - oppTeamQuality) * 0.02) + stratBonus;
-                userTbChance = Math.max(0.35, Math.min(0.65, userTbChance));
+                userTbChance = Math.max(0.35, Math.min(0.95, userTbChance));
                 
                 let userWonTiebreaker = Math.random() < userTbChance;
                 let finalUserWins = userWonTiebreaker ? userWins + 1 : userWins;
@@ -1634,13 +1628,13 @@
             finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
         }
 
-        let strategyFulfilled = checkStrategyFulfilled();
+        let agendaStatus = checkAgendaProgress();
         let strategyTag = '';
         if (currentGameMode === 'daily') {
-            if (strategyFulfilled) {
-                strategyTag = '<div class="strategy-pill">🎯 SCOUTING DIRECTIVE FULFILLED</div>';
+            if (agendaStatus.allHit) {
+                strategyTag = '<div class="strategy-pill">🌟 TRIPLE AGENDA MASTERED (100% Sweep Unlocked)</div>';
             } else {
-                strategyTag = '<div class="strategy-pill failed">⚠️ SCOUTING DIRECTIVE MISSED</div>';
+                strategyTag = '<div class="strategy-pill failed">⚠️ SECRET AGENDA INCOMPLETE (Standard Play)</div>';
             }
         }
         
@@ -1696,18 +1690,33 @@
             </div>
         `;
         
+        let agendaStatus = checkAgendaProgress();
+        let revealBox = '';
+        if (currentGameMode === 'daily') {
+            revealBox = `
+                <div class="agenda-reveal">
+                    <strong>🔍 Today's Hidden Agenda Breakdown:</strong>
+                    <ul>
+                        <li>Power (PWR) target: <strong>${activeAgenda.pwrReq}</strong> players needed</li>
+                        <li>Contact (CNT) target: <strong>${activeAgenda.cntReq}</strong> players needed</li>
+                        <li>Speed (SPD) target: <strong>${activeAgenda.spdReq}</strong> players needed</li>
+                    </ul>
+                    <div style="margin-top: 6px; font-style: italic;">Status: ${agendaStatus.allHit ? '✅ All 3 Mastered (100% Sweep Triggered)' : '❌ Incomplete (Standard Simulation)'}</div>
+                </div>
+            `;
+        }
+
         let subBanner = '';
         if (hadTiebreaker) {
             subBanner = userWonTiebreaker 
                 ? 'CLUTCH! You tied after 162 games and walked it off in Game 163 to capture the pennant!' 
                 : 'Heartbreaker! You forced Game 163 after a 162-game tie, but the rival club took extra innings.';
         } else if (currentGameMode === 'daily') {
-            let data = syncDailyHistory();
+            let data = getDailyHistory();
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                let scoutHint = checkStrategyFulfilled() ? "Great strategic build! The pennant race came down to the wire—re-sim or optimize one more bargain pick to claim the crown." : `You missed the scouting key: <strong>${activeBlueprint.hint}</strong>.`;
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). ${scoutHint}`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Hint: Try balancing your roster across all archetypes or reviewing the scouting report for structural clues.`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
@@ -1720,6 +1729,7 @@
                 ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">${subBanner}</div>
+                ${revealBox}
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
