@@ -61,7 +61,6 @@
             margin-bottom: 20px;
             font-size: 1em;
         }
-        /* Rules / Info Banner */
         .rules-banner {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
             border: 1px solid var(--accent-teal);
@@ -570,8 +569,8 @@
         <strong>📋 Daily Challenge Rules & Agenda:</strong>
         <ul>
             <li>Manage your $34.0M payroll to build a competitive 11-man roster.</li>
-            <li>Read the <strong>Dugout Scouting Report</strong> carefully to decode the day's hidden <strong>Power, Contact, and Speed</strong> agenda targets.</li>
-            <li>Fulfilling all three hidden archetype goals simultaneously unlocks a legendary <strong>162–0 Sweep</strong>! Otherwise, standard season simulation applies.</li>
+            <li>Read the <strong>Dugout Scouting Report</strong> to decode the day's hidden <strong>Power, Contact, and Speed</strong> agenda targets.</li>
+            <li>Fulfilling all three hidden archetype goals simultaneously unlocks a legendary <strong>162–0 Sweep</strong>! Standard rosters simulate normally against a 93-win rival.</li>
         </ul>
     </div>
 
@@ -1173,7 +1172,7 @@
         
         let agendaPools = [
             { text: "Rival club is playing heavily station-to-station. <strong>Scouting Report: Focus on Power & Contact</strong> to out-slug their defense, while maintaining aggressive <strong>Speed</strong> on the bases.", pwrReq: 5, cntReq: 4, spdReq: 3 },
-            { text: "Rival pitching staff is relying on soft off-speed stuff. <strong>Scouting Report: Focus on Contact & Speed</strong> to slap balls into gaps, backed by strong <strong>Power</strong> threats in the middle of the order.", pwrReq: 3, cntReq: 5, spdReq: 4 },
+            { text: "Rival pitching staff is relying heavily on soft off-speed stuff. <strong>Scouting Report: Focus on Contact & Speed</strong> to slap balls into gaps, backed by strong <strong>Power</strong> threats in the middle of the order.", pwrReq: 3, cntReq: 5, spdReq: 4 },
             { text: "Rival defense is vulnerable to gap-to-gap hitting and base-path pressure. <strong>Scouting Report: Focus on Speed & Power</strong> to stretch hits, while leaning on high <strong>Contact</strong> hitters to keep the line moving.", pwrReq: 4, cntReq: 3, spdReq: 5 }
         ];
 
@@ -1241,12 +1240,14 @@
                 return 162;
             }
 
-            let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
+            // Severe penalty if agendas are missed, anchoring standard builds around 75-78 wins
             let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
-            
+            let agendaMissedPenalty = 14; 
+
+            let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let baseAnchor = 84.0;
             let rosterDiff = (pythWins - 81) * 0.40;
-            let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty;
+            let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty - agendaMissedPenalty;
             
             let variance = (Math.random() * 5) - 2.5;
             return Math.max(65, Math.min(100, Math.round(expectedUserWins + variance)));
