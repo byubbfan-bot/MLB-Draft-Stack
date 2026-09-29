@@ -520,7 +520,7 @@
 <script>
     let currentGameMode = "freeplay";
     let pseudoRandomSeed = 123456789;
-    let currentScoutStrategy = null; // Tracks target counter condition: 'stack_bats', 'speed_infield', or 'ace_rotation'
+    let currentScoutStrategy = null;
 
     function seededRandom() {
         pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
@@ -1101,6 +1101,57 @@
         return false;
     }
 
+    /* --- REALISTIC PYTHAGOREAN TEAM RUN PRODUCTION & WIN CALCULATION --- */
+    function calculateTrueTeamWins(team, isUser) {
+        let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
+        
+        // 1. Offense: Projected Runs Scored (RS)
+        let totalEstRuns = 0;
+        hitPositions.forEach(pos => {
+            let p = team[pos];
+            if (p && p.base) {
+                let [avg, hr, rbi, sb] = p.base;
+                // Direct production based on actual slash line & traits
+                let playerRunProd = (avg * 160) + (hr * 1.45) + (rbi * 0.72) + (sb * 0.35);
+                if (p.traits && p.traits.includes('PWR')) playerRunProd += 12;
+                if (p.traits && p.traits.includes('CNT')) playerRunProd += 10;
+                if (p.traits && p.traits.includes('SPD')) playerRunProd += 8;
+                totalEstRuns += playerRunProd;
+            } else {
+                totalEstRuns += 60; // Replacement player baseline
+            }
+        });
+
+        // 2. Pitching: Projected Runs Allowed (RA)
+        let sp = team["SP"];
+        let rp = team["RP"];
+        let spEra = sp && sp.base ? sp.base[2] : 4.50;
+        let rpEra = rp && rp.base ? rp.base[2] : 4.20;
+        
+        // Starting pitcher accounts for ~65% of innings, bullpen ~35%
+        let staffEra = (spEra * 0.65) + (rpEra * 0.35);
+        let totalEstRunsAllowed = (staffEra * 162) + 30; // League standard runs allowed translation
+
+        // 3. Strategy Perk adjustments in daily mode
+        if (isUser && currentGameMode === 'daily' && checkStrategyFulfilled()) {
+            totalEstRuns += 45;       // Counter-strategy produces extra runs
+            totalEstRunsAllowed -= 35; // Better prep suppresses runs allowed
+        }
+
+        // 4. Bill James Pythagorean Expectation Formula: W% = RS^1.83 / (RS^1.83 + RA^1.83)
+        let exp = 1.83;
+        let rsPow = Math.pow(Math.max(500, totalEstRuns), exp);
+        let raPow = Math.pow(Math.max(450, totalEstRunsAllowed), exp);
+        let pythagoreanWinPct = rsPow / (rsPow + raPow);
+
+        // Expected wins anchored tightly to actual player quality with minor natural luck (+/- 3 games)
+        let baselineWins = Math.round(pythagoreanWinPct * 162);
+        let luckVariance = (Math.random() * 5) - 2.5; 
+        let finalWins = Math.max(50, Math.min(115, Math.round(baselineWins + luckVariance)));
+        
+        return finalWins;
+    }
+
     function initGame() {
         if (currentGameMode === "daily") {
             const dayNum = getEastern5AMDayNumber();
@@ -1449,40 +1500,36 @@
             recordDailyAttemptStart();
         }
         
-        const userOVR = positions.reduce((sum, pos) => sum + userTeam[pos].ovr, 0) / positions.length;
-        const oppOVR = positions.reduce((sum, pos) => sum + opponentTeam[pos].ovr, 0) / positions.length;
-        
         let currentGame = 0;
         let userWins = 0;
         let oppWins = 0;
         const totalGames = 162;
 
-        let userGameWinChance;
-        let oppGameWinChance;
-
+        // TRUE ROSTER CALCULATION: Derived from actual player stats, archetypes & Pythagorean expectation
+        const finalTargetUserWins = calculateTrueTeamWins(userTeam, true);
+        
+        let finalTargetOppWins;
         if (currentGameMode === "daily") {
-            let ovrDiff = userOVR - oppOVR; 
-            let strategyBonus = checkStrategyFulfilled() ? 0.045 : 0.0;
-            
-            // Rebalanced: user chance sits at 50% - 55% when drafting smart + countering the scout report
-            userGameWinChance = 0.52 + (ovrDiff * 0.018) + strategyBonus;
-            userGameWinChance = Math.max(0.44, Math.min(0.60, userGameWinChance));
-            
-            // Opponent wins ~82-85 games on average, making a strategic team consistently winnable
-            oppGameWinChance = 0.51; 
+            let daySeed = getEastern5AMDayNumber();
+            let tightVariance = ((daySeed % 5) - 2); // exactly -2, -1, 0, 1, or 2
+            finalTargetOppWins = 86 + tightVariance; // locked strictly between 84 and 88 wins
         } else {
-            userGameWinChance = 0.50;
-            if (userOVR > oppOVR) userGameWinChance = 0.58;
-            if (userOVR < oppOVR - 1.5) userGameWinChance = 0.42;
-            oppGameWinChance = 0.50;
+            finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
         }
 
-        let strategyTag = (currentGameMode === 'daily' && checkStrategyFulfilled()) ? '<div class="strategy-pill">🎯 STRATEGY COUNTER BONUS ACTIVE (+4.5% Win Rate)</div>' : '';
+        let strategyTag = (currentGameMode === 'daily' && checkStrategyFulfilled()) ? '<div class="strategy-pill">🎯 STRATEGY COUNTER BONUS ACTIVE</div>' : '';
         
         const simInterval = setInterval(() => {
             currentGame++;
-            if (Math.random() < userGameWinChance) userWins++;
-            if (Math.random() < oppGameWinChance) oppWins++; 
+            
+            // Pacing simulation toward the exact roster-driven win targets
+            let userTargetPace = (finalTargetUserWins / totalGames) * currentGame;
+            let userPaceChance = (userTargetPace - userWins) > 0 ? 0.68 : 0.32;
+            if (Math.random() < userPaceChance) userWins++;
+
+            let oppTargetPace = (finalTargetOppWins / totalGames) * currentGame;
+            let oppPaceChance = (oppTargetPace - oppWins) > 0 ? 0.68 : 0.32;
+            if (Math.random() < oppPaceChance) oppWins++;
             
             resultsDiv.innerHTML = `
                 <h3 style="text-align: center;">⚾ Simulating 162-Game Regular Season...</h3>
@@ -1526,7 +1573,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                let scoutHint = checkStrategyFulfilled() ? "Good strategic build! The pennant race came down to the wire—re-sim or fine-tune one slot to push over the edge." : "You missed the strategic counter! Check the scouting report above and draft players that exploit their weaknesses.";
+                let scoutHint = checkStrategyFulfilled() ? "Great roster balance! The pennant race came down to the wire—re-sim or upgrade one slot to push over the edge." : "You missed the strategic counter! Check the scouting report above and draft players that exploit their weaknesses.";
                 subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). ${scoutHint}`;
             }
         } else {
