@@ -598,7 +598,7 @@
         <ul>
             <li>Manage your $34.0M payroll to build a competitive 11-man roster.</li>
             <li>Read the <strong>Dugout Scouting Report</strong> to decode the day's hidden 12 attribute units.</li>
-            <li>The 3x4 grid below unlocks and fills up with green units <strong>after you submit your season simulation</strong>, helping you calibrate your lineup on retry!</li>
+            <li>The 3x4 grid below fills up with green units <strong>after you submit your simulation</strong>, remaining visible above your draft catalog so you can swap players on retry!</li>
         </ul>
     </div>
 
@@ -780,7 +780,7 @@
         const agendaPanel = document.getElementById('agenda-tracker-container');
         if (mode === "daily") {
             dailyPanel.style.display = "flex";
-            agendaPanel.style.display = "none"; // Hidden until first simulation submission
+            agendaPanel.style.display = "none";
             updateDailyTallyDisplay();
             updateDailyCountdown();
         } else {
@@ -1375,6 +1375,11 @@
 
         renderUserLineup();
         renderDraftCatalog(currentRemaining);
+        
+        if (hasSubmittedOnce && currentGameMode === 'daily') {
+            renderAgendaGrid();
+        }
+
         checkSimulationReady();
     }
 
@@ -1780,10 +1785,10 @@
 
         const mvpCardHTML = generateMvpCard(winningTeam, winningWins);
 
+        // ONLY SHOW RETRY BUTTON ON LOSS (NO "NEW CAMPAIGN" CLUTTER)
         let actionButtons = `
             <div class="btn-container">
-                ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: var(--accent-teal); color: #000; margin: 0;">Re-Sim Season</button>` : ''}
-                <button class="btn" onclick="resetToNewCampaign()" style="background: #fff; color: #000; margin: 0;">New Campaign</button>
+                ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: var(--accent-teal); color: #000; margin: 0;">Retry & Adjust Roster</button>` : ''}
             </div>
         `;
         
@@ -1797,7 +1802,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x4 progress grid above and adjust your lineup on retry to find the right combination!`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x4 progress grid above, then click Retry to swap players!`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
@@ -1836,8 +1841,7 @@
     }
     
     function retrySameMatch() {
-        positions.forEach(pos => userTeam[pos] = null);
-        activeDraftPos = "C";
+        // Hides simulation view and returns to draft screen, keeping userTeam roster intact!
         document.getElementById('sim-section').style.display = 'none';
         document.getElementById('draft-section').style.display = 'block';
         updateHudAndCatalog();
