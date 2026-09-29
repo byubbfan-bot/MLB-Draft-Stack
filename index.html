@@ -1101,63 +1101,67 @@
         return false;
     }
 
-    /* --- REBALANCED USER WIN FORMULA: OPTIMAL ROSTER HITS ~40% WIN PROBABILITY --- */
+    /* --- REALISTIC RUN ESTIMATION WITH REAL-WORLD BASEBALL ANCHORING --- */
     function calculateTrueTeamWins(team, isUser) {
         let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         
-        let totalEstRuns = 0;
+        // Calibrated baseline: League-average MLB team scores ~730 runs per season
+        let runsCreated = 0;
         hitPositions.forEach(pos => {
             let p = team[pos];
             if (p && p.base) {
                 let [avg, hr, rbi, sb] = p.base;
-                let playerRunProd = (avg * 155) + (hr * 1.35) + (rbi * 0.68) + (sb * 0.30);
-                if (p.traits && p.traits.includes('PWR')) playerRunProd += 10;
-                if (p.traits && p.traits.includes('CNT')) playerRunProd += 8;
-                if (p.traits && p.traits.includes('SPD')) playerRunProd += 6;
-                totalEstRuns += playerRunProd;
+                // Realistic run contribution per lineup spot (70-95 runs each)
+                let playerRuns = (avg * 110) + (hr * 0.95) + (rbi * 0.28) + (sb * 0.20);
+                if (p.traits && p.traits.includes('PWR')) playerRuns += 5;
+                if (p.traits && p.traits.includes('CNT')) playerRuns += 4;
+                if (p.traits && p.traits.includes('SPD')) playerRuns += 3;
+                runsCreated += playerRuns;
             } else {
-                totalEstRuns += 55;
+                runsCreated += 50; // Replacement player
             }
         });
 
+        // Pitching baseline: League-average runs allowed ~730 runs
         let sp = team["SP"];
         let rp = team["RP"];
         let spEra = sp && sp.base ? sp.base[2] : 4.40;
         let rpEra = rp && rp.base ? rp.base[2] : 4.10;
-        
         let staffEra = (spEra * 0.65) + (rpEra * 0.35);
-        let totalEstRunsAllowed = (staffEra * 162) + 20;
+        let runsAllowed = (staffEra / 4.00) * 730;
 
-        let strategyEarned = isUser && currentGameMode === 'daily' && checkStrategyFulfilled();
-        if (strategyEarned) {
-            totalEstRuns += 28;       
-            totalEstRunsAllowed -= 20; 
+        let strategyActive = isUser && currentGameMode === 'daily' && checkStrategyFulfilled();
+        if (strategyActive) {
+            runsCreated += 25;   // ~2.5 win boost
+            runsAllowed -= 20;
         }
 
+        // Bill James Pythagorean expectation
         let exp = 1.83;
-        let rsPow = Math.pow(Math.max(500, totalEstRuns), exp);
-        let raPow = Math.pow(Math.max(450, totalEstRunsAllowed), exp);
-        let pythagoreanWinPct = rsPow / (rsPow + raPow);
-
-        let baselineWins = pythagoreanWinPct * 162;
+        let rsPow = Math.pow(Math.max(400, runsCreated), exp);
+        let raPow = Math.pow(Math.max(400, runsAllowed), exp);
+        let pythWins = (rsPow / (rsPow + raPow)) * 162;
 
         if (isUser && currentGameMode === 'daily') {
-            // Re-anchored: 
-            // Suboptimal build without strategy: 78 - 82 wins (~10% win rate)
-            // Competent build without strategy: 83 - 85 wins (~20% win rate)
-            // Fully optimized build + strategy counter: 89 - 91 wins (~40% against 92-win rival)
-            let userBudgetSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
-            let efficiencyPenalty = Math.max(0, (33.0 - userBudgetSpent) * 1.5);
+            // Efficiency check: penalize unspent payroll
+            let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
+            let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
             
-            let dialedExpectedWins = strategyEarned ? 89.2 : 82.5;
-            dialedExpectedWins += ((baselineWins - 82) * 0.60) - efficiencyPenalty;
+            // Scaled win expectation:
+            // Suboptimal build without strategy: 80 - 84 wins (~10-15% win chance)
+            // Decent build without strategy: 84 - 87 wins (~25% win chance)
+            // Optimal build + strategy counter: 89 - 92 wins (~40% win chance against 91-92 rival)
+            let baseAnchor = strategyActive ? 89.0 : 83.5;
+            let rosterDiff = (pythWins - 81) * 0.45;
+            let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty;
             
-            let variance = (Math.random() * 5) - 2.5;
-            return Math.max(65, Math.min(105, Math.round(dialedExpectedWins + variance)));
+            // Controlled variance +/- 3 games
+            let variance = (Math.random() * 6) - 3;
+            return Math.max(68, Math.min(100, Math.round(expectedUserWins + variance)));
         }
 
-        let luckVariance = (Math.random() * 5) - 2.5; 
-        return Math.max(50, Math.min(115, Math.round(baselineWins + luckVariance)));
+        let variance = (Math.random() * 5) - 2.5; 
+        return Math.max(55, Math.min(105, Math.round(pythWins + variance)));
     }
 
     function initGame() {
@@ -1518,8 +1522,8 @@
         let finalTargetOppWins;
         if (currentGameMode === "daily") {
             let daySeed = getEastern5AMDayNumber();
-            let tightVariance = ((daySeed % 3) - 1); // -1, 0, or +1
-            finalTargetOppWins = 92 + tightVariance; // locked strictly between 91 and 93 wins
+            let tightVariance = ((daySeed % 3) - 1); // exactly -1, 0, or +1
+            finalTargetOppWins = 91 + tightVariance; // locked strictly between 90 and 92 wins
         } else {
             finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
         }
