@@ -58,8 +58,27 @@
             text-align: center;
             color: var(--text-muted);
             margin-top: 0;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             font-size: 1em;
+        }
+        /* Rules / Info Banner */
+        .rules-banner {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+            border: 1px solid var(--accent-teal);
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .rules-banner strong {
+            color: var(--accent-teal);
+        }
+        .rules-banner ul {
+            margin: 6px 0 0 18px;
+            padding: 0;
+            color: #cbd5e1;
         }
         .mode-container {
             display: flex;
@@ -546,6 +565,16 @@
     <h1>MLB Roster & Luxury Tax Cap Simulation</h1>
     <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
     
+    <!-- RULES BANNER -->
+    <div class="rules-banner">
+        <strong>📋 Daily Challenge Rules & Agenda:</strong>
+        <ul>
+            <li>Manage your $34.0M payroll to build a competitive 11-man roster.</li>
+            <li>Read the <strong>Dugout Scouting Report</strong> carefully to decode the day's hidden <strong>Power, Contact, and Speed</strong> agenda targets.</li>
+            <li>Fulfilling all three hidden archetype goals simultaneously unlocks a legendary <strong>162–0 Sweep</strong>! Otherwise, standard season simulation applies.</li>
+        </ul>
+    </div>
+
     <div class="mode-container" id="mode-bar">
         <div class="mode-control">
             <span class="mode-label">Game Mode:</span>
@@ -607,7 +636,7 @@
 <script>
     let currentGameMode = "freeplay";
     let pseudoRandomSeed = 123456789;
-    let activeAgenda = { pwrReq: 4, cntReq: 3, spdReq: 3, text: '' };
+    let activeAgenda = { pwrReq: 5, cntReq: 4, spdReq: 4, text: '' };
 
     function seededRandom() {
         pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
@@ -1142,14 +1171,14 @@
 
         document.getElementById('scout-report-box').style.display = 'flex';
         
-        let agendaOptions = [
-            { text: "Rival club is heavily shifting their defensive focus outward. <strong>Scouting Report: Focus on Power</strong> in your batting order to drive the ball over their outfield wall.", pwrReq: 4, cntReq: 2, spdReq: 2 },
-            { text: "Rival pitching staff relies heavily on slow breaking balls. <strong>Scouting Report: Focus on Contact</strong> to string together multi-hit innings.", pwrReq: 2, cntReq: 5, spdReq: 2 },
-            { text: "Rival defensive alignment is slow on ground balls. <strong>Scouting Report: Focus on Speed</strong> at the top of the order to stretch singles into doubles.", pwrReq: 2, cntReq: 2, spdReq: 4 }
+        let agendaPools = [
+            { text: "Rival club is playing heavily station-to-station. <strong>Scouting Report: Focus on Power & Contact</strong> to out-slug their defense, while maintaining aggressive <strong>Speed</strong> on the bases.", pwrReq: 5, cntReq: 4, spdReq: 3 },
+            { text: "Rival pitching staff is relying on soft off-speed stuff. <strong>Scouting Report: Focus on Contact & Speed</strong> to slap balls into gaps, backed by strong <strong>Power</strong> threats in the middle of the order.", pwrReq: 3, cntReq: 5, spdReq: 4 },
+            { text: "Rival defense is vulnerable to gap-to-gap hitting and base-path pressure. <strong>Scouting Report: Focus on Speed & Power</strong> to stretch hits, while leaning on high <strong>Contact</strong> hitters to keep the line moving.", pwrReq: 4, cntReq: 3, spdReq: 5 }
         ];
 
         let daySeed = getEastern5AMDayNumber();
-        activeAgenda = agendaOptions[daySeed % agendaOptions.length];
+        activeAgenda = agendaPools[daySeed % agendaPools.length];
 
         document.getElementById('scout-report-text').innerHTML = activeAgenda.text;
     }
@@ -1207,7 +1236,7 @@
         if (isUser && currentGameMode === 'daily') {
             let agendaStatus = checkAgendaProgress();
             
-            // If all three secret agendas (Power, Contact, Speed) are met, unlock 100% Sweep (162 wins)!
+            // Triple agenda mastery locks in a 100% sweep (162 wins)
             if (agendaStatus.allHit) {
                 return 162;
             }
@@ -1215,7 +1244,7 @@
             let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
             
-            let baseAnchor = 84.5;
+            let baseAnchor = 84.0;
             let rosterDiff = (pythWins - 81) * 0.40;
             let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty;
             
@@ -1588,7 +1617,7 @@
                 let userTeamQuality = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].ovr : 0), 0) / positions.length;
                 let oppTeamQuality = positions.reduce((sum, p) => sum + (opponentTeam[p] ? opponentTeam[p].ovr : 0), 0) / positions.length;
                 let agendaStatus = checkAgendaProgress();
-                let stratBonus = agendaStatus.allHit ? 0.15 : 0.0;
+                let stratBonus = agendaStatus.allHit ? 0.20 : 0.0;
                 let userTbChance = 0.50 + ((userTeamQuality - oppTeamQuality) * 0.02) + stratBonus;
                 userTbChance = Math.max(0.35, Math.min(0.95, userTbChance));
                 
@@ -1634,7 +1663,7 @@
             if (agendaStatus.allHit) {
                 strategyTag = '<div class="strategy-pill">🌟 TRIPLE AGENDA MASTERED (100% Sweep Unlocked)</div>';
             } else {
-                strategyTag = '<div class="strategy-pill failed">⚠️ SECRET AGENDA INCOMPLETE (Standard Play)</div>';
+                strategyTag = '<div class="strategy-pill failed">⚠️ STANDARD ROSTER BUILD</div>';
             }
         }
         
@@ -1691,20 +1720,17 @@
         `;
         
         let agendaStatus = checkAgendaProgress();
-        let revealBox = '';
-        if (currentGameMode === 'daily') {
-            revealBox = `
-                <div class="agenda-reveal">
-                    <strong>🔍 Today's Hidden Agenda Breakdown:</strong>
-                    <ul>
-                        <li>Power (PWR) target: <strong>${activeAgenda.pwrReq}</strong> players needed</li>
-                        <li>Contact (CNT) target: <strong>${activeAgenda.cntReq}</strong> players needed</li>
-                        <li>Speed (SPD) target: <strong>${activeAgenda.spdReq}</strong> players needed</li>
-                    </ul>
-                    <div style="margin-top: 6px; font-style: italic;">Status: ${agendaStatus.allHit ? '✅ All 3 Mastered (100% Sweep Triggered)' : '❌ Incomplete (Standard Simulation)'}</div>
-                </div>
-            `;
-        }
+        let revealBox = `
+            <div class="agenda-reveal">
+                <strong>🔍 Today's Hidden Agenda Breakdown:</strong>
+                <ul>
+                    <li>Power (PWR) target: <strong>${activeAgenda.pwrReq}</strong> players needed</li>
+                    <li>Contact (CNT) target: <strong>${activeAgenda.cntReq}</strong> players needed</li>
+                    <li>Speed (SPD) target: <strong>${activeAgenda.spdReq}</strong> players needed</li>
+                </ul>
+                <div style="margin-top: 6px; font-style: italic;">Status: ${agendaStatus.allHit ? '✅ All 3 Mastered (100% Sweep Triggered)' : '❌ Incomplete (Standard Simulation)'}</div>
+            </div>
+        `;
 
         let subBanner = '';
         if (hadTiebreaker) {
@@ -1716,7 +1742,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Hint: Try balancing your roster across all archetypes or reviewing the scouting report for structural clues.`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Review the reveal breakdown below to see what secret targets were required!`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
@@ -1729,7 +1755,7 @@
                 ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">${subBanner}</div>
-                ${revealBox}
+                ${currentGameMode === 'daily' ? revealBox : ''}
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
