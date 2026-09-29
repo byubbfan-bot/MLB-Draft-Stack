@@ -378,6 +378,19 @@
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
         }
+        .tiebreaker-banner {
+            background: #ff9800;
+            color: #000;
+            font-weight: 900;
+            font-size: 1.1em;
+            padding: 8px 14px;
+            border-radius: 6px;
+            margin: 10px auto;
+            max-width: 400px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            animation: pulse 1s infinite alternate;
+        }
         .mvp-container {
             margin: 25px auto 15px auto;
             max-width: 520px;
@@ -451,6 +464,10 @@
         @keyframes scaleUp {
             0% { transform: scale(0.9); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.98); }
+            100% { transform: scale(1.02); }
         }
     </style>
 </head>
@@ -1087,7 +1104,7 @@
                 let p = userTeam[pos];
                 if (p && p.traits && (p.traits.includes('PWR') || p.traits.includes('CNT'))) count++;
             });
-            return count >= 6; // Requires intentional roster construction
+            return count >= 6;
         } else if (currentScoutStrategy === 'speed_infield') {
             let count = 0;
             positions.forEach(pos => {
@@ -1101,7 +1118,7 @@
         return false;
     }
 
-    /* --- STRICTLY CALIBRATED USER WIN FORMULA: OPTIMAL ROSTER HITS ~35-40% WIN PROBABILITY --- */
+    /* --- STRICT 10% TOUGHER CALIBRATION (OPTIMAL CLUBS WIN ~30-35% OF SEASONS) --- */
     function calculateTrueTeamWins(team, isUser) {
         let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         
@@ -1129,8 +1146,8 @@
 
         let strategyActive = isUser && currentGameMode === 'daily' && checkStrategyFulfilled();
         if (strategyActive) {
-            runsCreated += 22;
-            runsAllowed -= 18;
+            runsCreated += 18;
+            runsAllowed -= 15;
         }
 
         let exp = 1.83;
@@ -1142,12 +1159,12 @@
             let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
             
-            // Strictly calibrated targets against a 94-win daily powerhouse:
-            // Suboptimal build without counter: 78 - 82 wins (~5-8% chance)
-            // Full-spend build without counter: 83 - 86 wins (~15-20% chance)
-            // Master build + strategy counter: 91 - 92.5 expected wins (~35-40% chance against 94-win rival)
-            let baseAnchor = strategyActive ? 91.5 : 84.0;
-            let rosterDiff = (pythWins - 81) * 0.40;
+            // Tuned ~10% harder:
+            // Suboptimal build without counter: 76 - 80 wins (~5% win rate)
+            // Competent build without counter: 81 - 84 wins (~12% win rate)
+            // Fully optimized build + strategy counter: 90 - 91 wins (~30-35% win rate against 95-win rival)
+            let baseAnchor = strategyActive ? 89.8 : 82.5;
+            let rosterDiff = (pythWins - 81) * 0.38;
             let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty;
             
             let variance = (Math.random() * 5) - 2.5;
@@ -1495,6 +1512,43 @@
         }
     }
 
+    function runTiebreakerGame(userWins, oppWins, hadTie) {
+        const resultsDiv = document.getElementById('sim-results');
+        
+        let tbTics = 0;
+        let tbInterval = setInterval(() => {
+            tbTics++;
+            let inningText = tbTics === 1 ? 'Top 9th: Bases Loaded...' : (tbTics === 2 ? 'Bottom 9th: 2 Outs Full Count...' : 'Bottom 10th: Walk-Off Opportunity!');
+            
+            resultsDiv.innerHTML = `
+                <div class="tiebreaker-banner">⚡ GAME 163 TIEBREAKER IN PROGRESS ⚡</div>
+                <h3 style="text-align: center; color: #ff9800;">${inningText}</h3>
+                <div class="live-counter" style="text-align: center;">
+                    YOUR CLUB: <span style="color:#2ea043;">${userWins} W</span><br>
+                    RIVAL CLUB: <span style="color:#1f6feb;">${oppWins} W</span>
+                </div>
+                <div style="color:#8b949e; font-size: 0.9em; text-align: center;">Winner Takes The Pennant!</div>
+            `;
+
+            if (tbTics >= 3) {
+                clearInterval(tbInterval);
+                
+                // Tiebreaker probability favors team with higher quality + strategy
+                let userTeamQuality = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].ovr : 0), 0) / positions.length;
+                let oppTeamQuality = positions.reduce((sum, p) => sum + (opponentTeam[p] ? opponentTeam[p].ovr : 0), 0) / positions.length;
+                let stratBonus = (currentGameMode === 'daily' && checkStrategyFulfilled()) ? 0.08 : 0.0;
+                let userTbChance = 0.50 + ((userTeamQuality - oppTeamQuality) * 0.02) + stratBonus;
+                userTbChance = Math.max(0.35, Math.min(0.65, userTbChance));
+                
+                let userWonTiebreaker = Math.random() < userTbChance;
+                let finalUserWins = userWonTiebreaker ? userWins + 1 : userWins;
+                let finalOppWins = userWonTiebreaker ? oppWins : oppWins + 1;
+                
+                displayFinalGraphicResults(finalUserWins, finalOppWins, true, userWonTiebreaker);
+            }
+        }, 600);
+    }
+
     function startLiveSimulation() {
         const simBtn = document.getElementById('sim-btn');
         simBtn.style.display = 'none';
@@ -1517,7 +1571,7 @@
         if (currentGameMode === "daily") {
             let daySeed = getEastern5AMDayNumber();
             let tightVariance = ((daySeed % 3) - 1); // exactly -1, 0, or +1
-            finalTargetOppWins = 94 + tightVariance; // locked strictly between 93 and 95 wins (a true 90+ win division winner)
+            finalTargetOppWins = 95 + tightVariance; // locked strictly between 94 and 96 wins (powerhouse division pace)
         } else {
             finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
         }
@@ -1547,14 +1601,20 @@
             
             if (currentGame >= totalGames) {
                 clearInterval(simInterval);
-                displayFinalGraphicResults(userWins, oppWins);
+                
+                // If records are tied after 162 games, trigger Game 163 Tiebreaker
+                if (userWins === oppWins) {
+                    runTiebreakerGame(userWins, oppWins);
+                } else {
+                    displayFinalGraphicResults(userWins, oppWins, false, false);
+                }
             }
         }, 18); 
     }
 
-    function displayFinalGraphicResults(userWins, oppWins) {
+    function displayFinalGraphicResults(userWins, oppWins, hadTiebreaker, userWonTiebreaker) {
         const resultsDiv = document.getElementById('sim-results');
-        const isWin = userWins >= oppWins;
+        const isWin = userWins > oppWins;
         const winningTeam = isWin ? userTeam : opponentTeam;
         const winningWins = isWin ? userWins : oppWins;
         
@@ -1572,7 +1632,11 @@
         `;
         
         let subBanner = '';
-        if (currentGameMode === 'daily') {
+        if (hadTiebreaker) {
+            subBanner = userWonTiebreaker 
+                ? 'CLUTCH! You tied after 162 games and walked it off in Game 163 to capture the pennant!' 
+                : 'Heartbreaker! You forced Game 163 after a 162-game tie, but the rival club took extra innings.';
+        } else if (currentGameMode === 'daily') {
             let data = syncDailyHistory();
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
@@ -1584,19 +1648,22 @@
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
         }
 
+        let totalSeasonGames = hadTiebreaker ? 163 : 162;
+
         let graphicHTML = `
             <div class="result-graphic ${isWin ? 'win' : 'loss'}">
+                ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">${subBanner}</div>
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
-                        ${userWins}-${162 - userWins}
+                        ${userWins}-${totalSeasonGames - userWins}
                     </div>
                     <div style="color: rgba(255,255,255,0.3); align-self: flex-end; padding-bottom: 5px;">vs</div>
                     <div>
                         <span class="doc-label">${currentGameMode === 'daily' ? 'Daily Rival' : 'Rival Club'}</span>
-                        ${oppWins}-${162 - oppWins}
+                        ${oppWins}-${totalSeasonGames - oppWins}
                     </div>
                 </div>
                 ${mvpCardHTML}
