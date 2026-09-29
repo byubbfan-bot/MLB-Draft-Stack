@@ -172,7 +172,7 @@
             border: 1px solid rgba(251, 191, 36, 0.3);
             border-radius: 10px;
             padding: 14px 20px;
-            margin: 15px 0 25px 0;
+            margin: 25px 0 20px 0;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
@@ -597,8 +597,8 @@
         <strong>📋 Daily Challenge Rules & Agenda Tracker:</strong>
         <ul>
             <li>Manage your $34.0M payroll to build a competitive 11-man roster.</li>
-            <li>Decode the <strong>Dugout Scouting Report</strong> to hit the day's 12 hidden attribute targets.</li>
-            <li>The 3x4 grid below tracks your progress in real-time as you draft. Fulfill all 12 units to unlock a legendary <strong>162–0 Sweep</strong>!</li>
+            <li>Read the <strong>Dugout Scouting Report</strong> to decode the day's hidden 12 attribute units.</li>
+            <li>The 3x4 grid below unlocks and fills up with green units <strong>after you submit your season simulation</strong>, helping you calibrate your lineup on retry!</li>
         </ul>
     </div>
 
@@ -617,14 +617,6 @@
         </div>
     </div>
 
-    <!-- 3x4 AGENDA TRACKER PANEL (DAILY MODE ONLY) -->
-    <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
-        <div class="agenda-grid-title">🎯 Secret Agenda Progress (12 Required Attribute Units)</div>
-        <div id="agenda-grid-3x4" class="grid-3x4">
-            <!-- 12 boxes populated by JS -->
-        </div>
-    </div>
-
     <div id="opponent-section">
         <h2>Opponent Lineup</h2>
         <div id="scout-report-box" class="scout-box" style="display: none;">
@@ -635,6 +627,14 @@
             </div>
         </div>
         <div id="opponent-lineup" class="lineup-grid"></div>
+    </div>
+
+    <!-- 3x4 AGENDA TRACKER PANEL (ABOVE DRAFTING, VISIBLE AFTER 1ST SUBMISSION) -->
+    <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
+        <div class="agenda-grid-title">🎯 Secret Agenda Scorecard (Submitted Roster Evaluation)</div>
+        <div id="agenda-grid-3x4" class="grid-3x4">
+            <!-- 12 boxes populated by JS -->
+        </div>
     </div>
 
     <div class="legend-bar">
@@ -672,6 +672,7 @@
     let currentGameMode = "freeplay";
     let pseudoRandomSeed = 123456789;
     let activeAgenda = { pwrReq: 5, cntReq: 4, spdReq: 3, text: '' };
+    let hasSubmittedOnce = false;
 
     function seededRandom() {
         pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
@@ -774,14 +775,14 @@
 
     function switchGameMode(mode) {
         currentGameMode = mode;
+        hasSubmittedOnce = false;
         const dailyPanel = document.getElementById('daily-panel');
         const agendaPanel = document.getElementById('agenda-tracker-container');
         if (mode === "daily") {
             dailyPanel.style.display = "flex";
-            agendaPanel.style.display = "block";
+            agendaPanel.style.display = "none"; // Hidden until first simulation submission
             updateDailyTallyDisplay();
             updateDailyCountdown();
-            renderAgendaGrid();
         } else {
             dailyPanel.style.display = "none";
             agendaPanel.style.display = "none";
@@ -1220,7 +1221,6 @@
         activeAgenda = agendaPools[daySeed % agendaPools.length];
 
         document.getElementById('scout-report-text').innerHTML = activeAgenda.text;
-        renderAgendaGrid();
     }
 
     function checkAgendaProgress() {
@@ -1303,8 +1303,6 @@
 
             let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
-            
-            // Severe penalty if agendas are missed, anchoring standard builds around 75-78 wins
             let agendaMissedPenalty = 14; 
             
             let baseAnchor = 84.0;
@@ -1377,7 +1375,6 @@
 
         renderUserLineup();
         renderDraftCatalog(currentRemaining);
-        renderAgendaGrid();
         checkSimulationReady();
     }
 
@@ -1695,6 +1692,13 @@
     }
 
     function startLiveSimulation() {
+        hasSubmittedOnce = true;
+        const agendaPanel = document.getElementById('agenda-tracker-container');
+        if (agendaPanel && currentGameMode === 'daily') {
+            agendaPanel.style.display = 'block';
+            renderAgendaGrid();
+        }
+
         const simBtn = document.getElementById('sim-btn');
         simBtn.style.display = 'none';
         
@@ -1793,7 +1797,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x4 progress grid above and test a different player archetype combination!`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x4 progress grid above and adjust your lineup on retry to find the right combination!`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
@@ -1826,6 +1830,8 @@
     }
     
     function resetToNewCampaign() {
+        hasSubmittedOnce = false;
+        document.getElementById('agenda-tracker-container').style.display = 'none';
         initGame();
     }
     
