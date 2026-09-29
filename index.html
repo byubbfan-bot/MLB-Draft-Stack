@@ -31,41 +31,60 @@
             margin-bottom: 15px;
             font-size: 0.95em;
         }
+        /* Prominent Mode Bar */
         .mode-container {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
-            background: #090d13;
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #30363d;
+            background: #0d1117;
+            padding: 16px 24px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #00cecb;
+            box-shadow: 0 0 15px rgba(0, 206, 203, 0.2);
             flex-wrap: wrap;
+            gap: 15px;
+        }
+        .mode-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .mode-label {
+            font-size: 1.1em;
+            font-weight: 800;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .mode-select {
             background: #21262d;
             color: #00cecb;
-            border: 1px solid #00cecb;
-            padding: 8px 14px;
-            font-size: 1em;
+            border: 2px solid #00cecb;
+            padding: 10px 16px;
+            font-size: 1.05em;
             font-weight: bold;
-            border-radius: 6px;
+            border-radius: 8px;
             outline: none;
             cursor: pointer;
+        }
+        .mode-select option {
+            background: #161b22;
+            color: #fff;
         }
         .daily-tracker {
             display: flex;
             align-items: center;
-            gap: 18px;
-            font-size: 0.95em;
-            background: rgba(0, 206, 203, 0.1);
-            padding: 6px 14px;
-            border-radius: 6px;
-            border: 1px solid rgba(0, 206, 203, 0.3);
+            gap: 16px;
+            font-size: 1em;
+            background: rgba(227, 179, 65, 0.12);
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(227, 179, 65, 0.4);
         }
         .daily-tracker strong {
             color: #e3b341;
+            font-size: 1.1em;
         }
         .hud-bar {
             display: flex;
@@ -280,6 +299,7 @@
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
         }
+
         .mvp-container {
             margin: 25px auto 15px auto;
             max-width: 520px;
@@ -361,17 +381,18 @@
     <h1>MLB Roster & Payroll Cap Simulation</h1>
     <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
     
-    <div class="mode-container">
-        <div>
-            <label for="mode-select" style="font-weight: bold; margin-right: 8px;">Game Mode:</label>
-            <select id="mode-select" class="mode-select" onchange="switchGameMode(this.value)">
-                <option value="freeplay">🎮 Free Play</option>
+    <!-- HIGH-VISIBILITY MODE SELECTOR BAR -->
+    <div class="mode-container" id="mode-bar">
+        <div class="mode-control">
+            <span class="mode-label">Game Mode:</span>
+            <select id="mode-dropdown" class="mode-select">
+                <option value="freeplay" selected>🎮 Free Play</option>
                 <option value="daily">🔥 Daily Challenge</option>
             </select>
         </div>
         <div id="daily-panel" class="daily-tracker" style="display:none;">
             <div>Challenge Record: <strong id="daily-tally">0W - 0L (0%)</strong></div>
-            <div style="font-size: 0.85em; color: #aaa;">Next Challenge: <span id="daily-timer" style="color: #00cecb;">--:--:--</span></div>
+            <div style="font-size: 0.85em; color: #aaa;">Resets In: <span id="daily-timer" style="color: #00cecb; font-weight: bold;">--:--:--</span></div>
         </div>
     </div>
 
@@ -418,9 +439,9 @@
     function getEastern5AMDayNumber() {
         const now = new Date();
         const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
-        // Eastern Time is UTC - 5 hours
+        // Eastern Time is UTC - 5
         const easternDate = new Date(utcMs - (5 * 3600000));
-        // Reset point is 5:00 AM, so subtract 5 hours to align the 24-hour cycle
+        // Reset point is 5:00 AM, subtract 5 hours
         const cycleDate = new Date(easternDate.getTime() - (5 * 3600000));
         return Math.floor(cycleDate.getTime() / 86400000);
     }
@@ -468,7 +489,8 @@
         let stats = getDailyStats();
         let total = stats.wins + stats.losses;
         let pct = total > 0 ? ((stats.wins / total) * 100).toFixed(1) : "0.0";
-        document.getElementById('daily-tally').innerText = `${stats.wins}W - ${stats.losses}L (${pct}%)`;
+        const tallyEl = document.getElementById('daily-tally');
+        if (tallyEl) tallyEl.innerText = `${stats.wins}W - ${stats.losses}L (${pct}%)`;
     }
 
     function switchGameMode(mode) {
@@ -896,7 +918,6 @@
             userTeam[pos] = null;
             let options = [...playersDB[pos]].sort(() => 0.5 - getRandom());
             
-            // In Daily Challenge, the opponent fields a dominant high-OVR squad
             if (currentGameMode === "daily") {
                 opponentTeam[pos] = options.find(p => p.cost >= 4.2) || options[0];
             } else {
@@ -1224,8 +1245,7 @@
 
         let baselineChance;
         if (currentGameMode === "daily") {
-            // Calibrated so skilled drafting (maximizing OVR) lands right at ~25% regular season pennant wins
-            let ovrAdvantage = userOVR - oppOVR; // Typically -2.0 to -4.0 against daily juggernaut
+            let ovrAdvantage = userOVR - oppOVR; 
             baselineChance = 0.32 + (ovrAdvantage * 0.035);
             baselineChance = Math.max(0.18, Math.min(0.42, baselineChance));
         } else {
@@ -1315,6 +1335,12 @@
     }
     
     window.onload = function() {
+        const dropdown = document.getElementById('mode-dropdown');
+        if (dropdown) {
+            dropdown.addEventListener('change', function() {
+                switchGameMode(this.value);
+            });
+        }
         initGame();
     };
 </script>
