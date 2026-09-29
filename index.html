@@ -28,8 +28,44 @@
             text-align: center;
             color: #8b949e;
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-size: 0.95em;
+        }
+        .mode-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            background: #090d13;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #30363d;
+            flex-wrap: wrap;
+        }
+        .mode-select {
+            background: #21262d;
+            color: #00cecb;
+            border: 1px solid #00cecb;
+            padding: 8px 14px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+        }
+        .daily-tracker {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            font-size: 0.95em;
+            background: rgba(0, 206, 203, 0.1);
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 206, 203, 0.3);
+        }
+        .daily-tracker strong {
+            color: #e3b341;
         }
         .hud-bar {
             display: flex;
@@ -244,8 +280,6 @@
             border-radius: 8px;
             border: 1px solid rgba(255,255,255,0.1);
         }
-
-        /* MVP Box Styling */
         .mvp-container {
             margin: 25px auto 15px auto;
             max-width: 520px;
@@ -327,6 +361,20 @@
     <h1>MLB Roster & Payroll Cap Simulation</h1>
     <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
     
+    <div class="mode-container">
+        <div>
+            <label for="mode-select" style="font-weight: bold; margin-right: 8px;">Game Mode:</label>
+            <select id="mode-select" class="mode-select" onchange="switchGameMode(this.value)">
+                <option value="freeplay">🎮 Free Play</option>
+                <option value="daily">🔥 Daily Challenge</option>
+            </select>
+        </div>
+        <div id="daily-panel" class="daily-tracker" style="display:none;">
+            <div>Challenge Record: <strong id="daily-tally">0W - 0L (0%)</strong></div>
+            <div style="font-size: 0.85em; color: #aaa;">Next Challenge: <span id="daily-timer" style="color: #00cecb;">--:--:--</span></div>
+        </div>
+    </div>
+
     <div class="hud-bar">
         <div class="hud-item">Remaining Payroll <span id="hud-bank">$34.0M</span></div>
         <div class="hud-item">Active Position <span id="hud-pos">C</span></div>
@@ -355,6 +403,87 @@
 </div>
 
 <script>
+    let currentGameMode = "freeplay";
+    let pseudoRandomSeed = 123456789;
+
+    function seededRandom() {
+        pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
+        return pseudoRandomSeed / 233280;
+    }
+
+    function getRandom() {
+        return currentGameMode === "daily" ? seededRandom() : Math.random();
+    }
+
+    function getEastern5AMDayNumber() {
+        const now = new Date();
+        const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+        // Eastern Time is UTC - 5 hours
+        const easternDate = new Date(utcMs - (5 * 3600000));
+        // Reset point is 5:00 AM, so subtract 5 hours to align the 24-hour cycle
+        const cycleDate = new Date(easternDate.getTime() - (5 * 3600000));
+        return Math.floor(cycleDate.getTime() / 86400000);
+    }
+
+    function updateDailyCountdown() {
+        const now = new Date();
+        const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const easternDate = new Date(utcMs - (5 * 3600000));
+        
+        let target = new Date(easternDate);
+        target.setHours(5, 0, 0, 0);
+        if (easternDate.getTime() >= target.getTime()) {
+            target.setDate(target.getDate() + 1);
+        }
+        
+        const diff = Math.max(0, target.getTime() - easternDate.getTime());
+        const hours = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        const minutes = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        
+        const timerEl = document.getElementById('daily-timer');
+        if (timerEl) timerEl.innerText = `${hours}h ${minutes}m ${seconds}s`;
+    }
+    setInterval(updateDailyCountdown, 1000);
+
+    function getDailyStats() {
+        let stats = localStorage.getItem('mlb_sim_daily_record');
+        if (!stats) return { wins: 0, losses: 0 };
+        try {
+            return JSON.parse(stats);
+        } catch(e) {
+            return { wins: 0, losses: 0 };
+        }
+    }
+
+    function saveDailyResult(won) {
+        let stats = getDailyStats();
+        if (won) stats.wins++;
+        else stats.losses++;
+        localStorage.setItem('mlb_sim_daily_record', JSON.stringify(stats));
+        updateDailyTallyDisplay();
+    }
+
+    function updateDailyTallyDisplay() {
+        let stats = getDailyStats();
+        let total = stats.wins + stats.losses;
+        let pct = total > 0 ? ((stats.wins / total) * 100).toFixed(1) : "0.0";
+        document.getElementById('daily-tally').innerText = `${stats.wins}W - ${stats.losses}L (${pct}%)`;
+    }
+
+    function switchGameMode(mode) {
+        currentGameMode = mode;
+        const dailyPanel = document.getElementById('daily-panel');
+        if (mode === "daily") {
+            dailyPanel.style.display = "flex";
+            updateDailyTallyDisplay();
+            updateDailyCountdown();
+        } else {
+            dailyPanel.style.display = "none";
+        }
+        initGame();
+    }
+
     function getPlayerCost(ovr) {
         if (ovr >= 97) return 5.0; 
         if (ovr >= 95) return 4.2; 
@@ -390,9 +519,6 @@
         return html;
     }
 
-    // Baselines for position players / DH: [AVG, HR, RBI, SB]
-    // Baselines for starting pitchers (SP): [W, L, ERA]
-    // Baselines for relief pitchers (RP): [W, L, ERA, SV]
     const playersDB = {
         C: [
             { name: "Johnny Bench", ovr: 98, base: [0.275, 40, 125, 4] },
@@ -761,22 +887,37 @@
     let catalogChoices = {};
 
     function initGame() {
+        if (currentGameMode === "daily") {
+            const dayNum = getEastern5AMDayNumber();
+            pseudoRandomSeed = (dayNum * 1234567) % 2147483647;
+        }
+
         positions.forEach(pos => {
             userTeam[pos] = null;
-            let options = [...playersDB[pos]].sort(() => 0.5 - Math.random());
-            opponentTeam[pos] = options.find(p => p.cost <= 3.2) || options[options.length - 1];
+            let options = [...playersDB[pos]].sort(() => 0.5 - getRandom());
             
-            let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - Math.random());
+            // In Daily Challenge, the opponent fields a dominant high-OVR squad
+            if (currentGameMode === "daily") {
+                opponentTeam[pos] = options.find(p => p.cost >= 4.2) || options[0];
+            } else {
+                opponentTeam[pos] = options.find(p => p.cost <= 3.2) || options[options.length - 1];
+            }
+            
+            let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - getRandom());
             catalogChoices[pos] = pool.slice(0, 4);
         });
 
         activeDraftPos = "C";
 
         let totalOpponentCost = positions.reduce((sum, pos) => sum + opponentTeam[pos].cost, 0);
-        document.getElementById('opponent-section').querySelector('h2').innerText = `Opponent Lineup (Payroll: $${totalOpponentCost.toFixed(1)}M)`;
+        const prefix = currentGameMode === "daily" ? "🔥 Daily Challenge Opponent" : "Opponent Lineup";
+        document.getElementById('opponent-section').querySelector('h2').innerText = `${prefix} (Payroll: $${totalOpponentCost.toFixed(1)}M)`;
         
         renderOpponentLineup();
         updateHudAndCatalog();
+        
+        document.getElementById('sim-section').style.display = 'none';
+        document.getElementById('draft-section').style.display = 'block';
     }
 
     function changeActivePosition(pos) {
@@ -1080,16 +1221,26 @@
         let userWins = 0;
         let oppWins = 0;
         const totalGames = 162;
+
+        let baselineChance;
+        if (currentGameMode === "daily") {
+            // Calibrated so skilled drafting (maximizing OVR) lands right at ~25% regular season pennant wins
+            let ovrAdvantage = userOVR - oppOVR; // Typically -2.0 to -4.0 against daily juggernaut
+            baselineChance = 0.32 + (ovrAdvantage * 0.035);
+            baselineChance = Math.max(0.18, Math.min(0.42, baselineChance));
+        } else {
+            baselineChance = 0.50;
+            if (userOVR > oppOVR) baselineChance = 0.58;
+            if (userOVR < oppOVR - 1.5) baselineChance = 0.42;
+        }
         
         const simInterval = setInterval(() => {
             currentGame++;
-            let baselineChance = 0.50;
-            if (userOVR > oppOVR) baselineChance = 0.58;
-            if (userOVR < oppOVR - 1.5) baselineChance = 0.42;
-            
-            let userChance = Math.max(0.25, Math.min(0.75, baselineChance));
+            let userChance = Math.max(0.15, Math.min(0.80, baselineChance));
             if (Math.random() < userChance) userWins++;
-            if (Math.random() < 0.50) oppWins++; 
+            
+            let oppChance = currentGameMode === "daily" ? 0.62 : 0.50;
+            if (Math.random() < oppChance) oppWins++; 
             
             resultsDiv.innerHTML = `
                 <h3 style="text-align: center;">⚾ Simulating 162-Game Regular Season...</h3>
@@ -1113,6 +1264,10 @@
         const winningTeam = isWin ? userTeam : opponentTeam;
         const winningWins = isWin ? userWins : oppWins;
         
+        if (currentGameMode === "daily") {
+            saveDailyResult(isWin);
+        }
+
         const mvpCardHTML = generateMvpCard(winningTeam, winningWins);
 
         let actionButtons = `
@@ -1126,7 +1281,7 @@
             <div class="result-graphic ${isWin ? 'win' : 'loss'}">
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">
-                    ${isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.'}
+                    ${isWin ? (currentGameMode === 'daily' ? 'Incredible! You overcame the daily super-team and captured October glory!' : 'Your roster captured the division pennant and booked a trip to October!') : (currentGameMode === 'daily' ? 'The daily challenge powerhouse prevailed. Adjust your roster strategy!' : 'The rival squad edged you out in the standings. Better luck next year.')}
                 </div>
                 <div class="graphic-stats">
                     <div>
@@ -1135,7 +1290,7 @@
                     </div>
                     <div style="color: rgba(255,255,255,0.3); align-self: flex-end; padding-bottom: 5px;">vs</div>
                     <div>
-                        <span class="doc-label">Rival Club</span>
+                        <span class="doc-label">${currentGameMode === 'daily' ? 'Daily Rival' : 'Rival Club'}</span>
                         ${oppWins}-${162 - oppWins}
                     </div>
                 </div>
@@ -1159,7 +1314,9 @@
         updateHudAndCatalog();
     }
     
-    window.onload = initGame;
+    window.onload = function() {
+        initGame();
+    };
 </script>
 </body>
 </html>
