@@ -1164,6 +1164,7 @@
         if (currentGameMode !== 'daily') return { pwrHit: true, cntHit: true, spdHit: true, allHit: true };
 
         let pwrCount = 0, cntCount = 0, spdCount = 0;
+        // Only evaluate the 9 hitters (C, 1B, 2B, 3B, SS, LF, CF, RF, DH)
         let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         
         hitPositions.forEach(pos => {
