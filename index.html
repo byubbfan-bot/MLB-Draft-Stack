@@ -6,74 +6,598 @@
     <title>MLB Strategy & Luxury Tax Cap Simulation</title>
     <style>
         :root {
-            --bg-base: #080c14; --bg-panel: #111827; --bg-card: #1f293d;
-            --border-color: #334155; --accent-teal: #00f2fe; --accent-gold: #fbbf24;
-            --accent-green: #34d399; --accent-red: #f87171; --text-main: #f8fafc; --text-muted: #94a3b8;
+            --bg-base: #080c14;
+            --bg-panel: #111827;
+            --bg-card: #1f293d;
+            --border-color: #334155;
+            --accent-teal: #00f2fe;
+            --accent-gold: #fbbf24;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
-        body { font-family: 'Segoe UI', sans-serif; background: radial-gradient(circle at top, #111e30 0%, var(--bg-base) 100%); color: var(--text-main); padding: 20px; min-height: 100vh; }
-        .container { max-width: 1250px; margin: 0 auto; background: var(--bg-panel); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid var(--border-color); }
-        h1, h2 { color: var(--text-main); text-align: center; }
-        h1 { font-size: 2.2em; background: linear-gradient(90deg, #fff, var(--accent-teal)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        h2 { font-size: 1.3em; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid var(--border-color); padding-bottom: 6px; }
-        .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 20px; }
-        .rules-banner { background: rgba(15, 23, 42, 0.9); border: 1px solid var(--accent-teal); border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; font-size: 0.9em; color: var(--text-muted); }
-        .rules-banner strong { color: var(--accent-teal); }
-        .rules-banner ul { margin: 6px 0 0 18px; padding: 0; color: #cbd5e1; }
-        .mode-container { display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.7); padding: 18px 24px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border-color); flex-wrap: wrap; gap: 15px; }
-        .mode-select { background: var(--bg-card); color: var(--accent-teal); border: 2px solid var(--accent-teal); padding: 10px 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        .daily-tracker { display: flex; align-items: center; gap: 18px; background: rgba(251, 191, 36, 0.1); padding: 10px 18px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.3); }
-        .daily-tracker strong { color: var(--accent-gold); }
-        .scout-box { background: linear-gradient(135deg, #1e293b, #0f172a); border-left: 5px solid var(--accent-gold); border-radius: 10px; padding: 16px 22px; margin: 15px 0 25px 0; display: flex; align-items: center; gap: 18px; }
-        .agenda-tracker-panel { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 10px; padding: 14px 20px; margin: 25px 0 20px 0; text-align: center; }
-        .agenda-grid-title { font-size: 0.85em; color: var(--accent-gold); text-transform: uppercase; font-weight: 800; margin-bottom: 8px; }
-        .grid-3x3 { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); gap: 8px; max-width: 150px; margin: 0 auto; }
-        .grid-box { width: 40px; height: 32px; background: #1e293b; border: 1px solid var(--border-color); border-radius: 4px; }
-        .grid-box.filled { background: var(--accent-green); box-shadow: 0 0 10px rgba(52, 211, 153, 0.5); border-color: #6ee7b7; }
-        .legend-bar { display: flex; justify-content: center; align-items: center; gap: 16px; background: rgba(15, 23, 42, 0.5); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); margin: 20px 0; font-size: 0.85em; flex-wrap: wrap; }
-        .hud-bar { display: flex; justify-content: space-around; background: #0f172a; padding: 18px; border-radius: 12px; margin-bottom: 25px; border: 1px solid var(--border-color); }
-        .hud-item { text-align: center; text-transform: uppercase; }
-        .hud-item span { display: block; font-weight: 800; font-size: 1.4em; color: var(--accent-teal); }
-        .hud-item span.bankrupt { color: var(--accent-red); }
-        .lineup-grid { display: grid; grid-template-columns: repeat(11, 1fr); gap: 8px; margin: 15px 0; }
-        @media (max-width: 1200px) { .lineup-grid { grid-template-columns: repeat(6, 1fr); } }
-        @media (max-width: 750px) { .lineup-grid { grid-template-columns: repeat(3, 1fr); } }
-        .card { background: var(--bg-card); border: 2px solid var(--border-color); border-radius: 10px; padding: 10px 6px; text-align: center; min-height: 185px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; }
-        .card.active { border-color: #475569; cursor: pointer; }
-        .card.active:hover:not(.disabled) { background: #283548; border-color: var(--accent-teal); }
-        .card.disabled { opacity: 0.3; cursor: not-allowed; }
-        .pixel-portrait { display: grid; grid-template-columns: repeat(8, 5px); grid-template-rows: repeat(8, 5px); width: 40px; height: 40px; background: rgba(0,0,0,0.2); border-radius: 4px; margin: 6px auto; }
-        .p-block { width: 5px; height: 5px; }
-        .player-name { font-size: 0.82em; font-weight: 600; margin: 4px 0; word-break: break-word; }
-        .badge-row { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
-        .badge { background: #334155; color: #fff; font-weight: 700; padding: 2px 5px; border-radius: 4px; font-size: 0.65em; }
-        .badge.price { background: var(--accent-green); color: #064e3b; }
-        .badge.ovr-badge { background: #2563eb; color: #fff; }
-        .badge.pwr { background: rgba(248, 113, 113, 0.2); color: var(--accent-red); }
-        .badge.cnt { background: rgba(251, 191, 36, 0.2); color: var(--accent-gold); }
-        .badge.spd { background: rgba(163, 113, 247, 0.2); color: #c084fc; }
-        .pos-label { font-size: 0.75em; color: var(--text-muted); font-weight: 800; text-transform: uppercase; background: rgba(0,0,0,0.3); width: 100%; padding: 2px 0; border-radius: 4px; }
-        .btn { display: block; width: 100%; max-width: 260px; margin: 30px auto; padding: 16px; background: linear-gradient(135deg, var(--accent-teal), #00b4b1); border: none; color: #080c14; font-weight: 800; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
-        .draft-pool { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 20px 0; }
-        @media (max-width: 850px) { .draft-pool { grid-template-columns: repeat(2, 1fr); } }
-        .live-counter { font-size: 2.2em; font-weight: 800; color: var(--accent-teal); margin: 20px 0; text-align: center; }
-        .result-graphic { padding: 40px 20px; border-radius: 16px; text-align: center; margin: 25px 0; width: 100%; box-sizing: border-box; }
-        .result-graphic.win { background: linear-gradient(135deg, #064e3b, #022c22); border: 3px solid var(--accent-green); }
-        .result-graphic.loss { background: linear-gradient(135deg, #7f1d1d, #450a0a); border: 3px solid var(--accent-red); }
-        .graphic-title { font-size: 2.8em; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; }
-        .graphic-stats { display: flex; justify-content: center; gap: 30px; margin: 20px auto; font-size: 1.6em; font-weight: 800; background: rgba(0,0,0,0.4); padding: 14px; border-radius: 10px; max-width: 400px; }
-        .tiebreaker-banner { background: var(--accent-gold); color: #000; font-weight: 900; padding: 8px 16px; border-radius: 6px; margin: 0 auto 15px auto; max-width: 420px; text-transform: uppercase; }
-        .mvp-container { margin: 25px auto; max-width: 500px; background: rgba(15, 23, 42, 0.95); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 18px; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            background: radial-gradient(circle at top, #111e30 0%, var(--bg-base) 100%);
+            color: var(--text-main);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+            background: var(--bg-panel);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+            border: 1px solid var(--border-color);
+        }
+        h1 {
+            color: var(--text-main);
+            text-align: center;
+            font-size: 2.2em;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #fff, var(--accent-teal));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        h2 {
+            color: var(--text-main);
+            font-size: 1.3em;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+        .rules-banner {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
+            border: 1px solid var(--accent-teal);
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+        }
+        .rules-banner strong {
+            color: var(--accent-teal);
+        }
+        .rules-banner ul {
+            margin: 6px 0 0 18px;
+            padding: 0;
+            color: #cbd5e1;
+        }
+        .mode-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.7);
+            padding: 18px 24px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .mode-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .mode-label {
+            font-size: 1.05em;
+            font-weight: 700;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .mode-select {
+            background: var(--bg-card);
+            color: var(--accent-teal);
+            border: 2px solid var(--accent-teal);
+            padding: 10px 16px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .mode-select:hover {
+            background: #283548;
+        }
+        .mode-select option {
+            background: var(--bg-panel);
+            color: #fff;
+        }
+        .daily-tracker {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            font-size: 0.95em;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            flex-wrap: wrap;
+        }
+        .daily-tracker strong {
+            color: var(--accent-gold);
+            font-size: 1.1em;
+        }
+        .scout-box {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            border-left: 5px solid var(--accent-gold);
+            border-radius: 10px;
+            padding: 16px 22px;
+            margin: 15px 0 25px 0;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        }
+        .scout-icon {
+            font-size: 2.2em;
+        }
+        .scout-title {
+            color: var(--accent-gold);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85em;
+            margin-bottom: 4px;
+        }
+        .scout-text {
+            color: #cbd5e1;
+            font-size: 0.95em;
+            line-height: 1.45;
+        }
+        /* 3x3 Agenda Tracker Grid */
+        .agenda-tracker-panel {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin: 25px 0 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .agenda-grid-title {
+            font-size: 0.85em;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .grid-3x3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 150px;
+            margin: 0 auto;
+        }
+        .grid-box {
+            width: 40px;
+            height: 32px;
+            background: #1e293b;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            transition: 0.3s;
+        }
+        .grid-box.filled {
+            background: var(--accent-green);
+            box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
+            border-color: #6ee7b7;
+        }
+        .legend-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin: 20px 0;
+            font-size: 0.85em;
+        }
+        .legend-title {
+            color: var(--text-muted);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-main);
+        }
+        .hud-bar {
+            display: flex;
+            justify-content: space-around;
+            background: #0f172a;
+            padding: 18px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .hud-item {
+            text-align: center;
+            font-size: 1.05em;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .hud-item span {
+            display: block;
+            font-weight: 800;
+            font-size: 1.4em;
+            color: var(--accent-teal);
+            margin-top: 2px;
+        }
+        .hud-item span.bankrupt {
+            color: var(--accent-red);
+        }
+        .lineup-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 8px;
+            margin: 15px 0;
+        }
+        @media (max-width: 1200px) {
+            .lineup-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+        }
+        @media (max-width: 750px) {
+            .lineup-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 6px;
+            text-align: center;
+            transition: all 0.25s ease;
+            position: relative;
+            min-height: 185px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .card.active {
+            border-color: #475569;
+            cursor: pointer;
+        }
+        .card.active:hover:not(.disabled) {
+            background: #283548;
+            border-color: var(--accent-teal);
+            transform: translateY(-4px);
+            box-shadow: 0 6px 15px rgba(0, 242, 254, 0.2);
+        }
+        .card.selected-pos {
+            border-color: var(--accent-green) !important;
+            background: rgba(52, 211, 153, 0.05);
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.3);
+        }
+        .card.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: var(--border-color);
+        }
+        .pixel-portrait {
+            display: grid;
+            grid-template-columns: repeat(8, 5px);
+            grid-template-rows: repeat(8, 5px);
+            gap: 0;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+            margin: 6px auto;
+            image-rendering: pixelated;
+        }
+        .p-block {
+            width: 5px;
+            height: 5px;
+        }
+        .player-name {
+            font-size: 0.82em;
+            font-weight: 600;
+            line-height: 1.2;
+            margin: 4px 0;
+            word-break: break-word;
+            color: var(--text-main);
+        }
+        .badge-row {
+            display: flex;
+            gap: 3px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+        .badge {
+            display: inline-block;
+            background: #334155;
+            color: #fff;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.65em;
+            letter-spacing: 0.3px;
+        }
+        .badge.price {
+            background: var(--accent-green);
+            color: #064e3b;
+        }
+        .badge.ovr-badge {
+            background: #2563eb;
+            color: #fff;
+        }
+        .badge.pwr {
+            background: rgba(248, 113, 113, 0.2);
+            color: var(--accent-red);
+            border: 1px solid rgba(248, 113, 113, 0.4);
+        }
+        .badge.cnt {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--accent-gold);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+        .badge.spd {
+            background: rgba(163, 113, 247, 0.2);
+            color: #c084fc;
+            border: 1px solid rgba(163, 113, 247, 0.4);
+        }
+        .pos-label {
+            font-size: 0.75em;
+            color: var(--text-muted);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 2px;
+            background: rgba(0,0,0,0.3);
+            width: 100%;
+            padding: 2px 0;
+            border-radius: 4px;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            max-width: 260px;
+            margin: 30px auto;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--accent-teal), #00b4b1);
+            border: none;
+            color: #080c14;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.15em;
+            transition: all 0.25s ease;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 242, 254, 0.5);
+            background: linear-gradient(135deg, #26f4ff, var(--accent-teal));
+        }
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        .draft-pool {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin: 20px 0;
+        }
+        @media (max-width: 850px) {
+            .draft-pool {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .live-counter {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: var(--accent-teal);
+            margin: 20px 0;
+            letter-spacing: 1px;
+            line-height: 1.4;
+            text-shadow: 0 0 20px rgba(0,242,254,0.3);
+        }
+        .result-graphic {
+            padding: 40px 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin: 25px 0;
+            animation: scaleUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .result-graphic.win {
+            background: linear-gradient(135deg, #064e3b, #022c22);
+            border: 3px solid var(--accent-green);
+        }
+        .result-graphic.loss {
+            background: linear-gradient(135deg, #7f1d1d, #450a0a);
+            border: 3px solid var(--accent-red);
+        }
+        .graphic-title {
+            font-size: 2.8em;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 0 0 10px 0;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
+        }
+        .win .graphic-title {
+            color: var(--accent-green);
+        }
+        .loss .graphic-title {
+            color: var(--accent-red);
+        }
+        .graphic-banner {
+            font-size: 1.15em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #e2e8f0;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .graphic-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px auto;
+            font-size: 1.6em;
+            font-weight: 800;
+            background: rgba(0,0,0,0.4);
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            max-width: 400px;
+            box-sizing: border-box;
+        }
+        .tiebreaker-banner {
+            background: var(--accent-gold);
+            color: #000;
+            font-weight: 900;
+            font-size: 1.1em;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin: 0 auto 15px auto;
+            max-width: 420px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+            animation: pulse 1s infinite alternate;
+        }
+        .mvp-container {
+            margin: 25px auto 15px auto;
+            max-width: 500px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 8px 25px rgba(251, 191, 36, 0.25);
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .mvp-heading {
+            color: var(--accent-gold);
+            font-size: 1.05em;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+        .mvp-name {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: #fff;
+            margin: 4px 0 2px 0;
+        }
+        .mvp-meta {
+            color: var(--text-muted);
+            font-size: 0.85em;
+            margin-bottom: 12px;
+        }
+        .mvp-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .mvp-stat-grid.pitcher {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 260px;
+            margin: 0 auto;
+        }
+        .mvp-stat-grid.reliever {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 320px;
+            margin: 0 auto;
+        }
+        .mvp-stat-box {
+            text-align: center;
+        }
+        .mvp-stat-val {
+            font-size: 1.3em;
+            font-weight: 900;
+            color: var(--accent-teal);
+        }
+        .mvp-stat-lbl {
+            font-size: 0.7em;
+            color: var(--text-muted);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 2px;
+        }
+        .doc-label {
+            font-size: 0.45em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+            letter-spacing: 1px;
+        }
+        @keyframes scaleUp {
+            0% { transform: scale(0.92); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.98); }
+            100% { transform: scale(1.02); }
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>MLB Roster & Luxury Tax Cap Simulation</h1>
-    <p class="subtitle">Draft an 11-man squad under the $34.0M luxury tax threshold.</p>
+    <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
     
+    <!-- RULES BANNER -->
     <div class="rules-banner">
         <strong>📋 Daily Challenge Rules & Agenda Tracker:</strong>
         <ul>
-            <li>Manage your $34.0M payroll to build an 11-man roster. Each hitter has <strong>one unique attribute</strong>.</li>
+            <li>Manage your $34.0M payroll to build a competitive 11-man roster.</li>
+            <li>Each hitter features <strong>one unique attribute</strong>. Read the <strong>Dugout Scouting Report</strong> to decode the 9 hidden requirements.</li>
             <li>The 3x3 grid below fills up with green units <strong>after you submit your simulation</strong>, remaining visible above your draft catalog so you can swap players on retry!</li>
         </ul>
     </div>
@@ -89,6 +613,7 @@
         <div id="daily-panel" class="daily-tracker" style="display:none;">
             <div>All-Time Avg: <strong id="daily-average">--</strong></div>
             <div>Today: <strong id="daily-today-status">Attempt #1</strong></div>
+            <div style="font-size: 0.85em; color: var(--text-muted);">Resets In: <span id="daily-timer" style="color: var(--accent-teal); font-weight: bold;">--:--:--</span></div>
         </div>
     </div>
 
@@ -104,16 +629,21 @@
         <div id="opponent-lineup" class="lineup-grid"></div>
     </div>
 
+    <!-- 3x3 AGENDA TRACKER PANEL (ABOVE DRAFTING, VISIBLE AFTER 1ST SUBMISSION) -->
     <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
         <div class="agenda-grid-title">🎯 Secret Agenda Scorecard (9 Required Attribute Units)</div>
-        <div id="agenda-grid-3x3" class="grid-3x3"></div>
+        <div id="agenda-grid-3x3" class="grid-3x3">
+            <!-- 9 boxes populated by JS -->
+        </div>
     </div>
 
     <div class="legend-bar">
-        <span class="legend-title">Legend:</span>
-        <div class="legend-item"><span class="badge pwr">PWR</span> Power</div>
-        <div class="legend-item"><span class="badge cnt">CNT</span> Contact</div>
-        <div class="legend-item"><span class="badge spd">SPD</span> Speed</div>
+        <span class="legend-title">Player Profile Legend:</span>
+        <div class="legend-item"><span class="badge pwr">PWR</span> Power Threat</div>
+        <div class="legend-item"><span class="badge cnt">CNT</span> High Contact</div>
+        <div class="legend-item"><span class="badge spd">SPD</span> Speed Threat</div>
+        <div class="legend-item"><span class="badge ovr-badge">OVR</span> Overall Rating</div>
+        <div class="legend-item"><span class="badge price">$$$</span> Payroll Cost</div>
     </div>
 
     <div class="hud-bar">
@@ -123,6 +653,7 @@
     
     <div id="draft-section">
         <h2>Available Free Agent Catalog</h2>
+        <p style="text-align:center; color:var(--text-muted); font-size:0.95em;">Click any position card anytime to switch targets. Click a candidate below to sign them.</p>
         <div id="draft-catalog" class="draft-pool"></div>
     </div>
     
@@ -132,167 +663,1195 @@
     </div>
     
     <div id="sim-section" style="display:none; text-align: center; margin-top: 25px;">
-        <button class="btn" onclick="startLiveSimulation()">Play 162-Game Season</button>
+        <button class="btn" id="sim-btn" onclick="startLiveSimulation()">Play 162-Game Season</button>
         <div id="sim-results" style="display:none; text-align: left;"></div>
     </div>
 </div>
 
 <script>
-    let currentGameMode = "freeplay", pseudoRandomSeed = 123456789, activeAgenda = { pwrReq: 4, cntReq: 3, spdReq: 2 }, hasSubmittedOnce = false;
-    function seededRandom() { pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280; return pseudoRandomSeed / 233280; }
-    function getRandom() { return currentGameMode === "daily" ? seededRandom() : Math.random(); }
-    function getEastern5AMDayNumber() { const now = new Date(); return Math.floor((now.getTime() - (5 * 3600000)) / 86400000); }
+    let currentGameMode = "freeplay";
+    let pseudoRandomSeed = 123456789;
+    let activeAgenda = { pwrReq: 4, cntReq: 3, spdReq: 2, text: '' };
+    let hasSubmittedOnce = false;
+
+    function seededRandom() {
+        pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
+        return pseudoRandomSeed / 233280;
+    }
+
+    function getRandom() {
+        return currentGameMode === "daily" ? seededRandom() : Math.random();
+    }
+
+    function getEastern5AMDayNumber() {
+        const now = new Date();
+        const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const easternDate = new Date(utcMs - (5 * 3600000));
+        const cycleDate = new Date(easternDate.getTime() - (5 * 3600000));
+        return Math.floor(cycleDate.getTime() / 86400000);
+    }
+
+    function updateDailyCountdown() {
+        const now = new Date();
+        const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const easternDate = new Date(utcMs - (5 * 3600000));
+        
+        let target = new Date(easternDate);
+        target.setHours(5, 0, 0, 0);
+        if (easternDate.getTime() >= target.getTime()) {
+            target.setDate(target.getDate() + 1);
+        }
+        
+        const diff = Math.max(0, target.getTime() - easternDate.getTime());
+        const hours = String(Math.floor(diff / 3600000)).padStart(2, '0');
+        const minutes = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+        const seconds = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+        
+        const timerEl = document.getElementById('daily-timer');
+        if (timerEl) timerEl.innerText = `${hours}h ${minutes}m ${seconds}s`;
+    }
+    setInterval(updateDailyCountdown, 1000);
+
+    function getDailyHistory() {
+        let raw = localStorage.getItem('mlb_daily_tries_data');
+        if (!raw) return { history: [], currentDay: null, triesToday: 0, todayWon: false };
+        try {
+            return JSON.parse(raw);
+        } catch(e) {
+            return { history: [], currentDay: null, triesToday: 0, todayWon: false };
+        }
+    }
+
+    function syncDailyHistory() {
+        let data = getDailyHistory();
+        let today = getEastern5AMDayNumber();
+        if (data.currentDay !== today) {
+            data.currentDay = today;
+            data.triesToday = 0;
+            data.todayWon = false;
+            localStorage.setItem('mlb_daily_tries_data', JSON.stringify(data));
+        }
+        return data;
+    }
+
+    function recordDailyAttemptStart() {
+        let data = syncDailyHistory();
+        if (!data.todayWon) {
+            data.triesToday++;
+            localStorage.setItem('mlb_daily_tries_data', JSON.stringify(data));
+        }
+        updateDailyTallyDisplay();
+    }
+
+    function recordDailyAttemptWin() {
+        let data = syncDailyHistory();
+        if (!data.todayWon) {
+            data.todayWon = true;
+            data.history.push({ day: data.currentDay, tries: data.triesToday });
+            localStorage.setItem('mlb_daily_tries_data', JSON.stringify(data));
+        }
+        updateDailyTallyDisplay();
+    }
+
+    function updateDailyTallyDisplay() {
+        let data = syncDailyHistory();
+        const avgEl = document.getElementById('daily-average');
+        if (data.history.length === 0) {
+            avgEl.innerText = "No Wins Yet";
+        } else {
+            let sum = data.history.reduce((acc, entry) => acc + entry.tries, 0);
+            let avg = (sum / data.history.length).toFixed(1);
+            avgEl.innerText = `${avg} Tries / Win (${data.history.length} Solved)`;
+        }
+
+        const todayEl = document.getElementById('daily-today-status');
+        if (data.todayWon) {
+            todayEl.innerHTML = `<span style="color:var(--accent-green);">Solved in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'} ✓</span>`;
+        } else {
+            let attemptNum = Math.max(1, data.triesToday);
+            todayEl.innerText = `Attempt #${attemptNum}`;
+        }
+    }
+
     function switchGameMode(mode) {
-        currentGameMode = mode; hasSubmittedOnce = false;
-        document.getElementById('daily-panel').style.display = mode === "daily" ? "flex" : "none";
-        document.getElementById('agenda-tracker-container').style.display = "none";
+        currentGameMode = mode;
+        hasSubmittedOnce = false;
+        const dailyPanel = document.getElementById('daily-panel');
+        const agendaPanel = document.getElementById('agenda-tracker-container');
+        if (mode === "daily") {
+            dailyPanel.style.display = "flex";
+            agendaPanel.style.display = "none";
+            updateDailyTallyDisplay();
+            updateDailyCountdown();
+        } else {
+            dailyPanel.style.display = "none";
+            agendaPanel.style.display = "none";
+        }
         initGame();
     }
-    function getPlayerCost(ovr) { return ovr >= 97 ? 5.0 : ovr >= 95 ? 4.2 : ovr >= 92 ? 3.2 : ovr >= 88 ? 2.2 : 1.2; }
+
+    function getPlayerCost(ovr) {
+        if (ovr >= 97) return 5.0; 
+        if (ovr >= 95) return 4.2; 
+        if (ovr >= 92) return 3.2; 
+        if (ovr >= 88) return 2.2; 
+        return 1.2;                
+    }
+
     function render8BitFaceHTML(name) {
-        let seed = (name || "MLB").split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        if (!name) name = "MLB Player";
+        let seed = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const skinColors = ["#dfa070", "#c68a5c", "#a0653d", "#eec590", "#f5d0b0"];
+        const hairColors = ["#000000", "#4a2306", "#9a3300", "#d8b020", "#666666"];
+        const capColors = ["#0c2340", "#ba0c2f", "#005a9c", "#005c5c", "#ff5910", "#003831"];
+        
+        let skin = skinColors[seed % skinColors.length];
+        let hair = hairColors[(seed >> 2) % hairColors.length];
+        let cap = capColors[(seed >> 4) % capColors.length];
+        let background = "rgba(0,0,0,0.15)";
+        
         let html = '<div class="pixel-portrait">';
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
-                let color = (r <= 2 && c >= 2 && c <= 5) ? "#0c2340" : ((r >= 3 && r <= 5 && c >= 2 && c <= 5) ? "#dfa070" : "transparent");
+                let color = background;
+                if (r <= 2 && c >= 2 && c <= 5) color = cap;
+                else if (r === 2 && (c === 1 || c === 6)) color = hair;
+                else if (r >= 3 && r <= 5 && c >= 2 && c <= 5) color = skin;
+                else if (r >= 6) color = cap;
                 html += `<div class="p-block" style="background:${color}"></div>`;
             }
         }
-        return html + '</div>';
+        html += '</div>';
+        return html;
     }
+
     function renderArchetypeBadgesHTML(traits) {
-        if (!traits) return '';
-        return traits.map(t => `<span class="badge ${t.toLowerCase()}">${t}</span>`).join('');
+        if (!traits || traits.length === 0) return '';
+        return traits.map(t => {
+            let cls = 'badge';
+            if (t === 'PWR') cls += ' pwr';
+            else if (t === 'CNT') cls += ' cnt';
+            else if (t === 'SPD') cls += ' spd';
+            return `<span class="${cls}">${t}</span>`;
+        }).join('');
     }
 
     const playersDB = {
-        C: [{name:"Johnny Bench",ovr:98,base:[0.275,40,125,4],traits:["PWR"]},{name:"Yogi Berra",ovr:97,base:[0.295,28,110,2],traits:["CNT"]},{name:"Ivan Rodriguez",ovr:96,base:[0.315,26,98,18],traits:["SPD"]},{name:"Mike Piazza",ovr:95,base:[0.325,36,115,1],traits:["PWR"]}],
-        "1B": [{name:"Lou Gehrig",ovr:99,base:[0.345,41,155,6],traits:["PWR"]},{name:"Albert Pujols",ovr:98,base:[0.328,42,125,8],traits:["PWR"]},{name:"Freddie Freeman",ovr:95,base:[0.315,28,100,14],traits:["CNT"]},{name:"Jeff Bagwell",ovr:95,base:[0.300,39,120,25],traits:["SPD"]}],
-        "2B": [{name:"Rogers Hornsby",ovr:98,base:[0.365,32,125,12],traits:["CNT"]},{name:"Jackie Robinson",ovr:97,base:[0.325,18,90,28],traits:["SPD"]},{name:"Joe Morgan",ovr:97,base:[0.295,24,92,55],traits:["SPD"]},{name:"Ryne Sandberg",ovr:94,base:[0.290,28,92,30],traits:["PWR"]}],
-        "3B": [{name:"Mike Schmidt",ovr:98,base:[0.270,42,118,14],traits:["PWR"]},{name:"George Brett",ovr:97,base:[0.320,24,105,16],traits:["CNT"]},{name:"Alex Rodriguez",ovr:97,base:[0.300,44,125,18],traits:["PWR"]},{name:"Jose Ramirez",ovr:95,base:[0.285,34,110,36],traits:["SPD"]}],
-        SS: [{name:"Honus Wagner",ovr:98,base:[0.340,14,98,52],traits:["SPD"]},{name:"Cal Ripken Jr.",ovr:97,base:[0.285,28,102,4],traits:["PWR"]},{name:"Bobby Witt Jr.",ovr:96,base:[0.315,32,105,35],traits:["SPD"]},{name:"Derek Jeter",ovr:95,base:[0.315,18,82,24],traits:["CNT"]}],
-        LF: [{name:"Ted Williams",ovr:99,base:[0.350,38,130,2],traits:["CNT"]},{name:"Barry Bonds",ovr:99,base:[0.315,48,125,24],traits:["PWR"]},{name:"Rickey Henderson",ovr:97,base:[0.285,22,75,78],traits:["SPD"]},{name:"Yordan Alvarez",ovr:96,base:[0.300,38,110,2],traits:["PWR"]}],
-        CF: [{name:"Willie Mays",ovr:99,base:[0.310,44,125,26],traits:["SPD"]},{name:"Mickey Mantle",ovr:98,base:[0.315,42,118,16],traits:["PWR"]},{name:"Ken Griffey Jr.",ovr:98,base:[0.295,48,130,16],traits:["PWR"]},{name:"Mike Trout",ovr:96,base:[0.300,40,105,18],traits:["PWR"]}],
-        RF: [{name:"Babe Ruth",ovr:99,base:[0.345,50,140,6],traits:["PWR"]},{name:"Hank Aaron",ovr:99,base:[0.310,42,125,14],traits:["PWR"]},{name:"Mookie Betts",ovr:97,base:[0.300,32,95,20],traits:["SPD"]},{name:"Aaron Judge",ovr:98,base:[0.290,52,128,8],traits:["PWR"]}],
-        DH: [{name:"David Ortiz",ovr:97,base:[0.285,42,130,1],traits:["PWR"]},{name:"Shohei Ohtani",ovr:98,base:[0.300,48,115,35],traits:["PWR"]},{name:"Edgar Martinez",ovr:96,base:[0.320,28,115,4],traits:["CNT"]},{name:"Giancarlo Stanton",ovr:93,base:[0.260,40,105,2],traits:["PWR"]}],
-        SP: [{name:"Pedro Martinez",ovr:99,base:[21,5,2.05],traits:[]},{name:"Randy Johnson",ovr:98,base:[21,6,2.45],traits:[]},{name:"Sandy Koufax",ovr:98,base:[23,6,2.10],traits:[]}],
-        RP: [{name:"Mariano Rivera",ovr:99,base:[5,2,1.70,44],traits:[]},{name:"Trevor Hoffman",ovr:97,base:[4,3,2.30,42],traits:[]},{name:"Emmanuel Clase",ovr:96,base:[5,2,1.45,46],traits:[]}]
+        C: [
+            { name: "Johnny Bench", ovr: 98, base: [0.275, 40, 125, 4], traits: ["PWR"] },
+            { name: "Yogi Berra", ovr: 97, base: [0.295, 28, 110, 2], traits: ["CNT"] },
+            { name: "Ivan Rodriguez", ovr: 96, base: [0.315, 26, 98, 18], traits: ["SPD"] },
+            { name: "Mike Piazza", ovr: 95, base: [0.325, 36, 115, 1], traits: ["PWR"] },
+            { name: "Carlton Fisk", ovr: 95, base: [0.280, 26, 92, 7], traits: ["PWR"] },
+            { name: "Gary Carter", ovr: 94, base: [0.270, 29, 102, 2], traits: ["PWR"] },
+            { name: "Buster Posey", ovr: 94, base: [0.318, 22, 92, 3], traits: ["CNT"] },
+            { name: "Thurman Munson", ovr: 93, base: [0.300, 17, 95, 8], traits: ["CNT"] },
+            { name: "Adley Rutschman", ovr: 92, base: [0.280, 21, 85, 3], traits: ["CNT"] },
+            { name: "Roy Campanella", ovr: 92, base: [0.285, 32, 110, 2], traits: ["PWR"] },
+            { name: "William Contreras", ovr: 91, base: [0.285, 22, 88, 7], traits: ["CNT"] },
+            { name: "Joe Mauer", ovr: 91, base: [0.340, 18, 86, 6], traits: ["CNT"] },
+            { name: "Yadier Molina", ovr: 90, base: [0.280, 16, 75, 4], traits: ["CNT"] },
+            { name: "Ted Simmons", ovr: 90, base: [0.295, 20, 95, 2], traits: ["CNT"] },
+            { name: "Will Smith", ovr: 89, base: [0.265, 22, 82, 2], traits: ["PWR"] },
+            { name: "Bill Dickey", ovr: 89, base: [0.315, 22, 105, 3], traits: ["CNT"] },
+            { name: "J.T. Realmuto", ovr: 88, base: [0.270, 20, 78, 16], traits: ["SPD"] },
+            { name: "Jorge Posada", ovr: 88, base: [0.275, 23, 90, 1], traits: ["PWR"] },
+            { name: "Gene Tenace", ovr: 88, base: [0.250, 24, 80, 5], traits: ["PWR"] },
+            { name: "Cal Raleigh", ovr: 87, base: [0.230, 32, 88, 3], traits: ["PWR"] },
+            { name: "Jason Varitek", ovr: 87, base: [0.260, 20, 78, 3], traits: ["PWR"] },
+            { name: "Salvador Perez", ovr: 86, base: [0.260, 28, 92, 0], traits: ["PWR"] },
+            { name: "Brian McCann", ovr: 86, base: [0.265, 22, 82, 2], traits: ["PWR"] },
+            { name: "Russell Martin", ovr: 85, base: [0.260, 17, 72, 12], traits: ["CNT"] },
+            { name: "Yainer Diaz", ovr: 85, base: [0.288, 22, 80, 1], traits: ["CNT"] },
+            { name: "Sean Murphy", ovr: 84, base: [0.250, 21, 74, 1], traits: ["PWR"] },
+            { name: "Alejandro Kirk", ovr: 84, base: [0.275, 14, 62, 0], traits: ["CNT"] },
+            { name: "Logan O'Hoppe", ovr: 83, base: [0.250, 22, 68, 2], traits: ["PWR"] },
+            { name: "Francisco Alvarez", ovr: 83, base: [0.235, 24, 66, 2], traits: ["PWR"] },
+            { name: "Gabriel Moreno", ovr: 82, base: [0.285, 10, 56, 7], traits: ["CNT"] }
+        ],
+        "1B": [
+            { name: "Lou Gehrig", ovr: 99, base: [0.345, 41, 155, 6], traits: ["PWR"] },
+            { name: "Albert Pujols", ovr: 98, base: [0.328, 42, 125, 8], traits: ["PWR"] },
+            { name: "Jimmie Foxx", ovr: 97, base: [0.330, 45, 145, 6], traits: ["PWR"] },
+            { name: "Frank Thomas", ovr: 96, base: [0.325, 38, 120, 3], traits: ["PWR"] },
+            { name: "Freddie Freeman", ovr: 95, base: [0.315, 28, 100, 14], traits: ["CNT"] },
+            { name: "Jeff Bagwell", ovr: 95, base: [0.300, 39, 120, 25], traits: ["SPD"] },
+            { name: "Bryce Harper", ovr: 94, base: [0.295, 33, 100, 11], traits: ["PWR"] },
+            { name: "Eddie Murray", ovr: 94, base: [0.290, 30, 110, 5], traits: ["PWR"] },
+            { name: "Jim Thome", ovr: 93, base: [0.280, 42, 115, 2], traits: ["PWR"] },
+            { name: "Harmon Killebrew", ovr: 93, base: [0.260, 44, 115, 1], traits: ["PWR"] },
+            { name: "Willie McCovey", ovr: 92, base: [0.275, 38, 110, 2], traits: ["PWR"] },
+            { name: "Rafael Palmeiro", ovr: 92, base: [0.290, 38, 115, 3], traits: ["PWR"] },
+            { name: "Matt Olson", ovr: 91, base: [0.260, 43, 118, 1], traits: ["PWR"] },
+            { name: "Todd Helton", ovr: 91, base: [0.335, 32, 115, 5], traits: ["CNT"] },
+            { name: "Vladimir Guerrero Jr.", ovr: 90, base: [0.295, 32, 102, 4], traits: ["CNT"] },
+            { name: "Keith Hernandez", ovr: 90, base: [0.305, 16, 90, 9], traits: ["CNT"] },
+            { name: "Paul Goldschmidt", ovr: 89, base: [0.290, 31, 98, 10], traits: ["PWR"] },
+            { name: "John Olerud", ovr: 89, base: [0.310, 19, 94, 2], traits: ["CNT"] },
+            { name: "Pete Alonso", ovr: 88, base: [0.250, 41, 112, 3], traits: ["PWR"] },
+            { name: "Joey Votto", ovr: 88, base: [0.305, 28, 92, 5], traits: ["CNT"] },
+            { name: "Derrek Lee", ovr: 87, base: [0.295, 30, 98, 11], traits: ["PWR"] },
+            { name: "Anthony Rizzo", ovr: 87, base: [0.265, 29, 94, 5], traits: ["PWR"] },
+            { name: "Christian Walker", ovr: 86, base: [0.260, 31, 92, 5], traits: ["PWR"] },
+            { name: "Mark Grace", ovr: 86, base: [0.305, 15, 88, 3], traits: ["CNT"] },
+            { name: "Triston Casas", ovr: 85, base: [0.265, 27, 85, 0], traits: ["PWR"] },
+            { name: "Josh Naylor", ovr: 85, base: [0.275, 26, 95, 8], traits: ["PWR"] },
+            { name: "Nathaniel Lowe", ovr: 84, base: [0.275, 20, 78, 2], traits: ["CNT"] },
+            { name: "Vinnie Pasquantino", ovr: 84, base: [0.270, 22, 85, 1], traits: ["CNT"] },
+            { name: "Ryan Mountcastle", ovr: 83, base: [0.260, 24, 82, 3], traits: ["PWR"] },
+            { name: "Spencer Torkelson", ovr: 82, base: [0.240, 27, 80, 2], traits: ["PWR"] }
+        ],
+        "2B": [
+            { name: "Rogers Hornsby", ovr: 98, base: [0.365, 32, 125, 12], traits: ["CNT"] },
+            { name: "Jackie Robinson", ovr: 97, base: [0.325, 18, 90, 28], traits: ["SPD"] },
+            { name: "Joe Morgan", ovr: 97, base: [0.295, 24, 92, 55], traits: ["SPD"] },
+            { name: "Eddie Collins", ovr: 96, base: [0.340, 7, 75, 52], traits: ["SPD"] },
+            { name: "Roberto Alomar", ovr: 95, base: [0.305, 18, 85, 38], traits: ["SPD"] },
+            { name: "Rod Carew", ovr: 95, base: [0.345, 12, 78, 25], traits: ["CNT"] },
+            { name: "Ryne Sandberg", ovr: 94, base: [0.290, 28, 92, 30], traits: ["PWR"] },
+            { name: "Craig Biggio", ovr: 94, base: [0.290, 20, 80, 36], traits: ["SPD"] },
+            { name: "Chase Utley", ovr: 93, base: [0.285, 29, 98, 16], traits: ["PWR"] },
+            { name: "Charlie Gehringer", ovr: 93, base: [0.325, 18, 102, 15], traits: ["CNT"] },
+            { name: "Jose Altuve", ovr: 92, base: [0.310, 24, 78, 25], traits: ["SPD"] },
+            { name: "Jeff Kent", ovr: 92, base: [0.290, 31, 108, 6], traits: ["PWR"] },
+            { name: "Ketel Marte", ovr: 91, base: [0.295, 26, 85, 7], traits: ["CNT"] },
+            { name: "Robinson Cano", ovr: 91, base: [0.308, 26, 96, 4], traits: ["CNT"] },
+            { name: "Marcus Semien", ovr: 90, base: [0.265, 32, 92, 15], traits: ["PWR"] },
+            { name: "Lou Whitaker", ovr: 90, base: [0.280, 19, 78, 10], traits: ["CNT"] },
+            { name: "Dustin Pedroia", ovr: 89, base: [0.300, 18, 80, 18], traits: ["CNT"] },
+            { name: "Bobby Grich", ovr: 89, base: [0.270, 20, 78, 10], traits: ["PWR"] },
+            { name: "Ozzie Albies", ovr: 88, base: [0.275, 28, 92, 14], traits: ["PWR"] },
+            { name: "Ian Kinsler", ovr: 88, base: [0.275, 24, 82, 26], traits: ["SPD"] },
+            { name: "Andres Gimenez", ovr: 87, base: [0.265, 15, 68, 30], traits: ["SPD"] },
+            { name: "Brian Dozier", ovr: 87, base: [0.250, 30, 85, 16], traits: ["PWR"] },
+            { name: "Nico Hoerner", ovr: 86, base: [0.280, 8, 65, 36], traits: ["SPD"] },
+            { name: "Daniel Murphy", ovr: 86, base: [0.315, 20, 88, 4], traits: ["CNT"] },
+            { name: "Bryson Stott", ovr: 85, base: [0.270, 14, 62, 28], traits: ["SPD"] },
+            { name: "Jonathan India", ovr: 84, base: [0.255, 18, 68, 14], traits: ["CNT"] },
+            { name: "Zack Gelof", ovr: 84, base: [0.245, 22, 68, 22], traits: ["PWR"] },
+            { name: "Gleyber Torres", ovr: 83, base: [0.260, 22, 75, 8], traits: ["PWR"] },
+            { name: "Brice Turang", ovr: 83, base: [0.255, 7, 55, 45], traits: ["SPD"] },
+            { name: "Luis Arraez", ovr: 82, base: [0.335, 5, 55, 4], traits: ["CNT"] }
+        ],
+        "3B": [
+            { name: "Mike Schmidt", ovr: 98, base: [0.270, 42, 118, 14], traits: ["PWR"] },
+            { name: "George Brett", ovr: 97, base: [0.320, 24, 105, 16], traits: ["CNT"] },
+            { name: "Alex Rodriguez", ovr: 97, base: [0.300, 44, 125, 18], traits: ["PWR"] },
+            { name: "Eddie Mathews", ovr: 96, base: [0.275, 38, 105, 6], traits: ["PWR"] },
+            { name: "Chipper Jones", ovr: 96, base: [0.315, 32, 108, 12], traits: ["CNT"] },
+            { name: "Brooks Robinson", ovr: 95, base: [0.270, 20, 88, 2], traits: ["CNT"] },
+            { name: "Adrian Beltre", ovr: 95, base: [0.295, 32, 104, 8], traits: ["PWR"] },
+            { name: "Jose Ramirez", ovr: 95, base: [0.285, 34, 110, 36], traits: ["SPD"] },
+            { name: "Wade Boggs", ovr: 94, base: [0.340, 11, 75, 3], traits: ["CNT"] },
+            { name: "Gunnar Henderson", ovr: 94, base: [0.280, 35, 95, 20], traits: ["PWR"] },
+            { name: "Manny Machado", ovr: 93, base: [0.285, 32, 98, 8], traits: ["PWR"] },
+            { name: "Ron Santo", ovr: 93, base: [0.280, 28, 102, 4], traits: ["PWR"] },
+            { name: "Austin Riley", ovr: 92, base: [0.275, 36, 100, 2], traits: ["PWR"] },
+            { name: "Scott Rolen", ovr: 92, base: [0.285, 26, 98, 10], traits: ["PWR"] },
+            { name: "Rafael Devers", ovr: 91, base: [0.285, 33, 102, 4], traits: ["PWR"] },
+            { name: "Ken Caminiti", ovr: 91, base: [0.280, 30, 105, 7], traits: ["PWR"] },
+            { name: "Nolan Arenado", ovr: 90, base: [0.285, 33, 105, 3], traits: ["PWR"] },
+            { name: "David Wright", ovr: 90, base: [0.300, 27, 98, 20], traits: ["CNT"] },
+            { name: "Josh Donaldson", ovr: 89, base: [0.275, 34, 100, 5], traits: ["PWR"] },
+            { name: "Evan Longoria", ovr: 89, base: [0.270, 30, 95, 5], traits: ["PWR"] },
+            { name: "Matt Chapman", ovr: 88, base: [0.250, 28, 82, 8], traits: ["PWR"] },
+            { name: "Robin Ventura", ovr: 88, base: [0.270, 24, 92, 3], traits: ["PWR"] },
+            { name: "Royce Lewis", ovr: 87, base: [0.280, 28, 88, 6], traits: ["PWR"] },
+            { name: "Justin Turner", ovr: 86, base: [0.290, 22, 82, 3], traits: ["CNT"] },
+            { name: "Josh Jung", ovr: 85, base: [0.260, 26, 80, 3], traits: ["PWR"] },
+            { name: "Maikel Garcia", ovr: 85, base: [0.265, 9, 62, 34], traits: ["SPD"] },
+            { name: "Ke'Bryan Hayes", ovr: 84, base: [0.265, 15, 65, 14], traits: ["SPD"] },
+            { name: "Max Muncy", ovr: 84, base: [0.235, 32, 90, 2], traits: ["PWR"] },
+            { name: "Ryan McMahon", ovr: 83, base: [0.250, 23, 76, 5], traits: ["PWR"] },
+            { name: "Alec Bohm", ovr: 83, base: [0.280, 18, 92, 4], traits: ["CNT"] }
+        ],
+        SS: [
+            { name: "Honus Wagner", ovr: 98, base: [0.340, 14, 98, 52], traits: ["SPD"] },
+            { name: "Cal Ripken Jr.", ovr: 97, base: [0.285, 28, 102, 4], traits: ["PWR"] },
+            { name: "Ernie Banks", ovr: 97, base: [0.285, 42, 118, 4], traits: ["PWR"] },
+            { name: "Bobby Witt Jr.", ovr: 96, base: [0.315, 32, 105, 35], traits: ["SPD"] },
+            { name: "Arky Vaughan", ovr: 96, base: [0.325, 12, 82, 14], traits: ["CNT"] },
+            { name: "Derek Jeter", ovr: 95, base: [0.315, 18, 82, 24], traits: ["CNT"] },
+            { name: "Corey Seager", ovr: 95, base: [0.300, 33, 98, 2], traits: ["PWR"] },
+            { name: "Robin Yount", ovr: 95, base: [0.305, 22, 92, 18], traits: ["CNT"] },
+            { name: "Ozzie Smith", ovr: 94, base: [0.265, 4, 55, 38], traits: ["SPD"] },
+            { name: "Francisco Lindor", ovr: 94, base: [0.275, 31, 94, 26], traits: ["PWR"] },
+            { name: "Barry Larkin", ovr: 93, base: [0.300, 18, 78, 32], traits: ["CNT"] },
+            { name: "Alan Trammell", ovr: 92, base: [0.290, 18, 80, 18], traits: ["CNT"] },
+            { name: "Trea Turner", ovr: 91, base: [0.300, 22, 76, 32], traits: ["SPD"] },
+            { name: "Nomar Garciaparra", ovr: 91, base: [0.325, 26, 102, 12], traits: ["CNT"] },
+            { name: "Elly De La Cruz", ovr: 90, base: [0.260, 26, 78, 65], traits: ["SPD"] },
+            { name: "Troy Tulowitzki", ovr: 90, base: [0.295, 29, 95, 8], traits: ["PWR"] },
+            { name: "Bo Bichette", ovr: 88, base: [0.295, 22, 84, 10], traits: ["CNT"] },
+            { name: "Jimmy Rollins", ovr: 88, base: [0.270, 20, 78, 38], traits: ["SPD"] },
+            { name: "Dansby Swanson", ovr: 87, base: [0.255, 22, 82, 12], traits: ["PWR"] },
+            { name: "Miguel Tejada", ovr: 87, base: [0.290, 30, 115, 4], traits: ["PWR"] },
+            { name: "Willy Adames", ovr: 86, base: [0.250, 29, 95, 12], traits: ["PWR"] },
+            { name: "Omar Vizquel", ovr: 86, base: [0.275, 5, 58, 28], traits: ["SPD"] },
+            { name: "Anthony Volpe", ovr: 85, base: [0.250, 18, 68, 28], traits: ["SPD"] },
+            { name: "C.J. Abrams", ovr: 85, base: [0.255, 19, 68, 36], traits: ["SPD"] },
+            { name: "Ha-Seong Kim", ovr: 84, base: [0.255, 16, 62, 30], traits: ["SPD"] },
+            { name: "J.P. Crawford", ovr: 84, base: [0.265, 14, 62, 4], traits: ["CNT"] },
+            { name: "Masyn Winn", ovr: 83, base: [0.270, 12, 55, 16], traits: ["CNT"] },
+            { name: "Ezequiel Tovar", ovr: 83, base: [0.265, 22, 74, 8], traits: ["PWR"] },
+            { name: "Oneil Cruz", ovr: 83, base: [0.255, 25, 78, 22], traits: ["PWR"] },
+            { name: "Jeremy Pena", ovr: 82, base: [0.265, 16, 65, 18], traits: ["SPD"] }
+        ],
+        LF: [
+            { name: "Ted Williams", ovr: 99, base: [0.350, 38, 130, 2], traits: ["CNT"] },
+            { name: "Barry Bonds", ovr: 99, base: [0.315, 48, 125, 24], traits: ["PWR"] },
+            { name: "Rickey Henderson", ovr: 97, base: [0.285, 22, 75, 78], traits: ["SPD"] },
+            { name: "Stan Musial", ovr: 97, base: [0.335, 32, 120, 6], traits: ["CNT"] },
+            { name: "Yordan Alvarez", ovr: 96, base: [0.300, 38, 110, 2], traits: ["PWR"] },
+            { name: "Juan Soto", ovr: 96, base: [0.295, 38, 112, 10], traits: ["CNT"] },
+            { name: "Carl Yastrzemski", ovr: 95, base: [0.290, 30, 105, 8], traits: ["PWR"] },
+            { name: "Al Simmons", ovr: 94, base: [0.335, 26, 125, 6], traits: ["CNT"] },
+            { name: "Tim Raines", ovr: 93, base: [0.295, 14, 68, 62], traits: ["SPD"] },
+            { name: "Willie Stargell", ovr: 92, base: [0.285, 36, 110, 2], traits: ["PWR"] },
+            { name: "Ralph Kiner", ovr: 91, base: [0.280, 42, 115, 2], traits: ["PWR"] },
+            { name: "Lou Brock", ovr: 90, base: [0.295, 12, 60, 65], traits: ["SPD"] },
+            { name: "Christian Yelich", ovr: 89, base: [0.300, 24, 80, 24], traits: ["CNT"] },
+            { name: "Matt Holliday", ovr: 89, base: [0.305, 27, 98, 8], traits: ["PWR"] },
+            { name: "Steven Kwan", ovr: 88, base: [0.300, 10, 52, 18], traits: ["CNT"] },
+            { name: "Moises Alou", ovr: 88, base: [0.305, 28, 98, 6], traits: ["PWR"] },
+            { name: "Randy Arozarena", ovr: 87, base: [0.255, 23, 80, 25], traits: ["SPD"] },
+            { name: "Lance Berkman", ovr: 87, base: [0.295, 32, 102, 5], traits: ["PWR"] },
+            { name: "Bryan Reynolds", ovr: 86, base: [0.275, 25, 84, 6], traits: ["CNT"] },
+            { name: "Riley Greene", ovr: 86, base: [0.270, 24, 78, 5], traits: ["PWR"] },
+            { name: "Lourdes Gurriel Jr.", ovr: 85, base: [0.270, 22, 80, 5], traits: ["CNT"] },
+            { name: "Michael Brantley", ovr: 85, base: [0.305, 15, 75, 10], traits: ["CNT"] },
+            { name: "Ian Happ", ovr: 84, base: [0.245, 24, 82, 12], traits: ["PWR"] },
+            { name: "Alex Verdugo", ovr: 84, base: [0.270, 14, 65, 5], traits: ["CNT"] },
+            { name: "Taylor Ward", ovr: 83, base: [0.255, 24, 75, 5], traits: ["PWR"] },
+            { name: "Jurickson Profar", ovr: 83, base: [0.275, 20, 78, 8], traits: ["CNT"] },
+            { name: "Andrew Benintendi", ovr: 82, base: [0.265, 15, 68, 12], traits: ["CNT"] },
+            { name: "Austin Hays", ovr: 82, base: [0.260, 18, 65, 4], traits: ["PWR"] },
+            { name: "Chas McCormick", ovr: 81, base: [0.250, 18, 60, 12], traits: ["PWR"] },
+            { name: "Eddie Rosario", ovr: 81, base: [0.255, 22, 72, 5], traits: ["PWR"] }
+        ],
+        CF: [
+            { name: "Willie Mays", ovr: 99, base: [0.310, 44, 125, 26], traits: ["SPD"] },
+            { name: "Mickey Mantle", ovr: 98, base: [0.315, 42, 118, 16], traits: ["PWR"] },
+            { name: "Ken Griffey Jr.", ovr: 98, base: [0.295, 48, 130, 16], traits: ["PWR"] },
+            { name: "Joe DiMaggio", ovr: 98, base: [0.325, 34, 128, 5], traits: ["CNT"] },
+            { name: "Ty Cobb", ovr: 98, base: [0.365, 9, 90, 58], traits: ["SPD"] },
+            { name: "Mike Trout", ovr: 96, base: [0.300, 40, 105, 18], traits: ["PWR"] },
+            { name: "Tris Speaker", ovr: 96, base: [0.345, 8, 85, 30], traits: ["CNT"] },
+            { name: "Duke Snider", ovr: 95, base: [0.300, 38, 118, 8], traits: ["PWR"] },
+            { name: "Carlos Beltran", ovr: 94, base: [0.280, 32, 105, 28], traits: ["SPD"] },
+            { name: "Julio Rodriguez", ovr: 93, base: [0.280, 30, 92, 32], traits: ["SPD"] },
+            { name: "Kenny Lofton", ovr: 93, base: [0.300, 10, 60, 55], traits: ["SPD"] },
+            { name: "Andruw Jones", ovr: 92, base: [0.260, 38, 110, 10], traits: ["PWR"] },
+            { name: "Jim Edmonds", ovr: 91, base: [0.285, 32, 98, 6], traits: ["PWR"] },
+            { name: "Jarren Duran", ovr: 90, base: [0.285, 20, 75, 38], traits: ["SPD"] },
+            { name: "Bernie Williams", ovr: 90, base: [0.305, 24, 96, 12], traits: ["CNT"] },
+            { name: "Michael Harris II", ovr: 89, base: [0.285, 20, 72, 22], traits: ["SPD"] },
+            { name: "Torii Hunter", ovr: 89, base: [0.275, 26, 92, 14], traits: ["PWR"] },
+            { name: "Luis Robert Jr.", ovr: 88, base: [0.265, 32, 85, 24], traits: ["SPD"] },
+            { name: "Cody Bellinger", ovr: 87, base: [0.270, 28, 88, 16], traits: ["PWR"] },
+            { name: "Byron Buxton", ovr: 87, base: [0.255, 28, 76, 16], traits: ["SPD"] },
+            { name: "Jackson Chourio", ovr: 86, base: [0.275, 22, 78, 26], traits: ["SPD"] },
+            { name: "Brandon Nimmo", ovr: 86, base: [0.265, 22, 75, 8], traits: ["CNT"] },
+            { name: "Ceddanne Rafaela", ovr: 85, base: [0.255, 17, 72, 20], traits: ["SPD"] },
+            { name: "Jazz Chisholm Jr.", ovr: 85, base: [0.255, 24, 76, 32], traits: ["SPD"] },
+            { name: "Harrison Bader", ovr: 84, base: [0.250, 15, 58, 18], traits: ["SPD"] },
+            { name: "Jung Hoo Lee", ovr: 84, base: [0.285, 10, 55, 12], traits: ["CNT"] },
+            { name: "Pete Crow-Armstrong", ovr: 83, base: [0.245, 14, 52, 32], traits: ["SPD"] },
+            { name: "Jose Siri", ovr: 82, base: [0.225, 23, 62, 18], traits: ["SPD"] },
+            { name: "Kevin Kiermaier", ovr: 82, base: [0.245, 12, 50, 16], traits: ["SPD"] },
+            { name: "TJ Friedl", ovr: 81, base: [0.265, 14, 55, 22], traits: ["SPD"] }
+        ],
+        RF: [
+            { name: "Babe Ruth", ovr: 99, base: [0.345, 50, 140, 6], traits: ["PWR"] },
+            { name: "Hank Aaron", ovr: 99, base: [0.310, 42, 125, 14], traits: ["PWR"] },
+            { name: "Roberto Clemente", ovr: 97, base: [0.325, 20, 95, 8], traits: ["CNT"] },
+            { name: "Frank Robinson", ovr: 97, base: [0.300, 38, 118, 10], traits: ["PWR"] },
+            { name: "Mookie Betts", ovr: 97, base: [0.300, 32, 95, 20], traits: ["SPD"] },
+            { name: "Aaron Judge", ovr: 98, base: [0.290, 52, 128, 8], traits: ["PWR"] },
+            { name: "Tony Gwynn", ovr: 96, base: [0.348, 8, 65, 25], traits: ["CNT"] },
+            { name: "Ichiro Suzuki", ovr: 96, base: [0.335, 9, 60, 42], traits: ["CNT"] },
+            { name: "Ronald Acuña Jr.", ovr: 96, base: [0.305, 38, 98, 55], traits: ["SPD"] },
+            { name: "Al Kaline", ovr: 95, base: [0.300, 24, 96, 8], traits: ["CNT"] },
+            { name: "Reggie Jackson", ovr: 94, base: [0.265, 36, 108, 12], traits: ["PWR"] },
+            { name: "Dave Winfield", ovr: 94, base: [0.285, 28, 105, 12], traits: ["PWR"] },
+            { name: "Vladimir Guerrero", ovr: 93, base: [0.320, 34, 115, 18], traits: ["PWR"] },
+            { name: "Kyle Tucker", ovr: 93, base: [0.280, 32, 105, 24], traits: ["SPD"] },
+            { name: "Fernando Tatis Jr.", ovr: 92, base: [0.285, 34, 92, 22], traits: ["SPD"] },
+            { name: "Sammy Sosa", ovr: 92, base: [0.280, 48, 125, 12], traits: ["PWR"] },
+            { name: "Larry Walker", ovr: 91, base: [0.320, 35, 115, 18], traits: ["PWR"] },
+            { name: "Dwight Evans", ovr: 90, base: [0.275, 26, 96, 6], traits: ["PWR"] },
+            { name: "Corbin Carroll", ovr: 88, base: [0.265, 22, 74, 45], traits: ["SPD"] },
+            { name: "Paul O'Neill", ovr: 88, base: [0.300, 22, 98, 6], traits: ["CNT"] },
+            { name: "Teoscar Hernandez", ovr: 87, base: [0.265, 30, 95, 8], traits: ["PWR"] },
+            { name: "Bobby Abreu", ovr: 87, base: [0.295, 22, 92, 30], traits: ["CNT"] },
+            { name: "Anthony Santander", ovr: 86, base: [0.250, 36, 98, 2], traits: ["PWR"] },
+            { name: "Adolis Garcia", ovr: 86, base: [0.245, 33, 96, 14], traits: ["PWR"] },
+            { name: "Seiya Suzuki", ovr: 85, base: [0.275, 23, 78, 12], traits: ["CNT"] },
+            { name: "Nick Castellanos", ovr: 84, base: [0.265, 24, 88, 3], traits: ["PWR"] },
+            { name: "Lane Thomas", ovr: 83, base: [0.255, 20, 68, 28], traits: ["SPD"] },
+            { name: "Josh Lowe", ovr: 83, base: [0.265, 20, 72, 26], traits: ["SPD"] },
+            { name: "Max Kepler", ovr: 82, base: [0.245, 22, 68, 3], traits: ["PWR"] },
+            { name: "Wilyer Abreu", ovr: 82, base: [0.260, 18, 65, 8], traits: ["CNT"] }
+        ],
+        DH: [
+            { name: "David Ortiz", ovr: 97, base: [0.285, 42, 130, 1], traits: ["PWR"] },
+            { name: "Edgar Martinez", ovr: 96, base: [0.320, 28, 115, 4], traits: ["CNT"] },
+            { name: "Shohei Ohtani", ovr: 98, base: [0.300, 48, 115, 35], traits: ["PWR"] },
+            { name: "Giancarlo Stanton", ovr: 93, base: [0.260, 40, 105, 2], traits: ["PWR"] },
+            { name: "Nelson Cruz", ovr: 92, base: [0.275, 38, 108, 2], traits: ["PWR"] },
+            { name: "Harold Baines", ovr: 91, base: [0.290, 24, 98, 2], traits: ["CNT"] },
+            { name: "Don Baylor", ovr: 90, base: [0.265, 30, 105, 18], traits: ["PWR"] },
+            { name: "Travis Hafner", ovr: 90, base: [0.285, 33, 110, 1], traits: ["PWR"] },
+            { name: "Marcell Ozuna", ovr: 91, base: [0.290, 36, 105, 0], traits: ["PWR"] },
+            { name: "J.D. Martinez", ovr: 90, base: [0.285, 32, 100, 1], traits: ["PWR"] },
+            { name: "Kyle Schwarber", ovr: 89, base: [0.240, 42, 100, 6], traits: ["PWR"] },
+            { name: "Chili Davis", ovr: 88, base: [0.275, 25, 92, 3], traits: ["PWR"] },
+            { name: "Hal McRae", ovr: 88, base: [0.290, 18, 92, 10], traits: ["CNT"] },
+            { name: "Khris Davis", ovr: 87, base: [0.247, 43, 112, 1], traits: ["PWR"] },
+            { name: "Jorge Soler", ovr: 86, base: [0.245, 34, 88, 1], traits: ["PWR"] },
+            { name: "Brent Rooker", ovr: 87, base: [0.280, 36, 102, 3], traits: ["PWR"] },
+            { name: "Eloy Jimenez", ovr: 85, base: [0.275, 26, 85, 1], traits: ["PWR"] },
+            { name: "Justin Smoak", ovr: 84, base: [0.250, 28, 85, 0], traits: ["PWR"] },
+            { name: "Kendrys Morales", ovr: 85, base: [0.270, 26, 90, 0], traits: ["PWR"] },
+            { name: "Mitch Garver", ovr: 84, base: [0.240, 24, 75, 0], traits: ["PWR"] },
+            { name: "Christopher Morel", ovr: 84, base: [0.235, 26, 78, 14], traits: ["PWR"] },
+            { name: "Adam Dunn", ovr: 87, base: [0.240, 38, 96, 8], traits: ["PWR"] },
+            { name: "Brian Downing", ovr: 86, base: [0.270, 22, 78, 6], traits: ["CNT"] },
+            { name: "Carlos Santana", ovr: 85, base: [0.245, 24, 82, 3], traits: ["PWR"] },
+            { name: "Dan Vogelbach", ovr: 82, base: [0.230, 20, 65, 0], traits: ["PWR"] },
+            { name: "Willie Horton", ovr: 86, base: [0.270, 25, 88, 2], traits: ["PWR"] },
+            { name: "Cliff Johnson", ovr: 84, base: [0.255, 22, 74, 1], traits: ["PWR"] },
+            { name: "Ramon Laureano", ovr: 83, base: [0.250, 18, 62, 12], traits: ["SPD"] },
+            { name: "Harold Ramirez", ovr: 82, base: [0.285, 12, 60, 6], traits: ["CNT"] },
+            { name: "Frankie Montas", ovr: 81, base: [0.230, 16, 52, 0], traits: ["PWR"] }
+        ],
+        SP: [
+            { name: "Pedro Martinez", ovr: 99, base: [21, 5, 2.05], traits: [] },
+            { name: "Randy Johnson", ovr: 98, base: [21, 6, 2.45], traits: [] },
+            { name: "Sandy Koufax", ovr: 98, base: [23, 6, 2.10], traits: [] },
+            { name: "Bob Gibson", ovr: 98, base: [22, 7, 2.15], traits: [] },
+            { name: "Greg Maddux", ovr: 97, base: [20, 6, 2.30], traits: [] },
+            { name: "Roger Clemens", ovr: 97, base: [21, 6, 2.50], traits: [] },
+            { name: "Tom Seaver", ovr: 97, base: [21, 7, 2.40], traits: [] },
+            { name: "Nolan Ryan", ovr: 96, base: [19, 11, 2.80], traits: [] },
+            { name: "Steve Carlton", ovr: 96, base: [22, 9, 2.70], traits: [] },
+            { name: "Tarik Skubal", ovr: 96, base: [18, 5, 2.40], traits: [] },
+            { name: "Clayton Kershaw", ovr: 96, base: [19, 5, 2.30], traits: [] },
+            { name: "Zack Wheeler", ovr: 95, base: [16, 6, 2.65], traits: [] },
+            { name: "Justin Verlander", ovr: 95, base: [19, 6, 2.60], traits: [] },
+            { name: "Max Scherzer", ovr: 95, base: [18, 6, 2.75], traits: [] },
+            { name: "Corbin Burnes", ovr: 94, base: [16, 7, 2.85], traits: [] },
+            { name: "Roy Halladay", ovr: 94, base: [19, 7, 2.70], traits: [] },
+            { name: "Paul Skenes", ovr: 93, base: [15, 5, 2.35], traits: [] },
+            { name: "Jacob deGrom", ovr: 93, base: [14, 5, 2.15], traits: [] },
+            { name: "Gerrit Cole", ovr: 92, base: [16, 6, 2.85], traits: [] },
+            { name: "Logan Gilbert", ovr: 91, base: [14, 7, 3.15], traits: [] },
+            { name: "Cole Ragans", ovr: 90, base: [13, 8, 3.20], traits: [] },
+            { name: "Tyler Glasnow", ovr: 90, base: [13, 5, 3.10], traits: [] },
+            { name: "George Kirby", ovr: 89, base: [13, 8, 3.30], traits: [] },
+            { name: "Logan Webb", ovr: 89, base: [14, 9, 3.25], traits: [] },
+            { name: "Shota Imanaga", ovr: 88, base: [14, 5, 3.15], traits: [] },
+            { name: "Dylan Cease", ovr: 88, base: [14, 9, 3.35], traits: [] },
+            { name: "Freddy Peralta", ovr: 86, base: [12, 8, 3.60], traits: [] },
+            { name: "Hunter Greene", ovr: 85, base: [11, 7, 3.30], traits: [] },
+            { name: "Bailey Ober", ovr: 84, base: [12, 8, 3.80], traits: [] },
+            { name: "Nestor Cortes", ovr: 83, base: [11, 8, 3.75], traits: [] }
+        ],
+        RP: [
+            { name: "Mariano Rivera", ovr: 99, base: [5, 2, 1.70, 44], traits: [] },
+            { name: "Trevor Hoffman", ovr: 97, base: [4, 3, 2.30, 42], traits: [] },
+            { name: "Dennis Eckersley", ovr: 96, base: [5, 2, 2.15, 45], traits: [] },
+            { name: "Billy Wagner", ovr: 96, base: [4, 2, 2.10, 40], traits: [] },
+            { name: "Craig Kimbrel", ovr: 94, base: [3, 3, 2.20, 43], traits: [] },
+            { name: "Aroldis Chapman", ovr: 93, base: [4, 2, 2.35, 38], traits: [] },
+            { name: "Emmanuel Clase", ovr: 96, base: [5, 2, 1.45, 46], traits: [] },
+            { name: "Mason Miller", ovr: 94, base: [4, 2, 1.85, 36], traits: [] },
+            { name: "Josh Hader", ovr: 93, base: [4, 3, 2.40, 37], traits: [] },
+            { name: "Edwin Díaz", ovr: 93, base: [3, 2, 2.25, 39], traits: [] },
+            { name: "Kenley Jansen", ovr: 92, base: [4, 3, 2.50, 38], traits: [] },
+            { name: "Rollie Fingers", ovr: 93, base: [7, 5, 2.65, 32], traits: [] },
+            { name: "Rich Gossage", ovr: 93, base: [8, 6, 2.45, 30], traits: [] },
+            { name: "Bruce Sutter", ovr: 92, base: [6, 5, 2.55, 34], traits: [] },
+            { name: "Jonathan Papelbon", ovr: 90, base: [4, 3, 2.45, 38], traits: [] },
+            { name: "Robb Nen", ovr: 90, base: [5, 4, 2.70, 40], traits: [] },
+            { name: "Troy Percival", ovr: 89, base: [4, 3, 2.80, 37], traits: [] },
+            { name: "Bryan Abreu", ovr: 89, base: [5, 3, 2.15, 12], traits: [] },
+            { name: "Ryan Helsley", ovr: 92, base: [4, 2, 1.95, 42], traits: [] },
+            { name: "Devin Williams", ovr: 91, base: [3, 2, 1.80, 34], traits: [] },
+            { name: "Andres Muñoz", ovr: 90, base: [4, 3, 2.10, 32], traits: [] },
+            { name: "David Bednar", ovr: 88, base: [3, 3, 2.75, 33], traits: [] },
+            { name: "Robert Suarez", ovr: 89, base: [4, 3, 2.35, 36], traits: [] },
+            { name: "Raisel Iglesias", ovr: 89, base: [3, 2, 2.40, 35], traits: [] },
+            { name: "Pete Fairbanks", ovr: 87, base: [3, 3, 2.65, 28], traits: [] },
+            { name: "Camilo Doval", ovr: 87, base: [4, 4, 2.90, 32], traits: [] },
+            { name: "Jeff Hoffman", ovr: 87, base: [5, 3, 2.20, 16], traits: [] },
+            { name: "Jason Foley", ovr: 85, base: [4, 4, 2.95, 25], traits: [] },
+            { name: "Carlos Estevez", ovr: 85, base: [3, 4, 3.10, 30], traits: [] },
+            { name: "Kyle Finnegan", ovr: 84, base: [3, 4, 3.35, 32], traits: [] }
+        ]
     };
 
-    Object.keys(playersDB).forEach(pos => playersDB[pos].forEach(p => p.cost = getPlayerCost(p.ovr)));
+    Object.keys(playersDB).forEach(pos => {
+        playersDB[pos].forEach(p => p.cost = getPlayerCost(p.ovr));
+    });
 
     const positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "SP", "RP"];
-    let activeDraftPos = "C", userTeam = {}, opponentTeam = {}, catalogChoices = {};
+    const TOTAL_BUDGET = 34.0;
+    let activeDraftPos = "C"; 
+    
+    let userTeam = {};
+    let opponentTeam = {};
+    let catalogChoices = {};
 
     function generateScoutingReport() {
-        if (currentGameMode !== "daily") return;
+        if (currentGameMode !== "daily") {
+            document.getElementById('scout-report-box').style.display = 'none';
+            return;
+        }
+
         document.getElementById('scout-report-box').style.display = 'flex';
-        let pools = [
-            { text: "Rival club features a powerhouse rotation. <strong>Focus on Power</strong> in your 9-man batting order.", pwrReq: 4, cntReq: 3, spdReq: 2 },
-            { text: "Rival defense is vulnerable to gap hitting. <strong>Focus on Contact</strong> to string together hits.", pwrReq: 3, cntReq: 4, spdReq: 2 },
-            { text: "Rival infield plays deep. <strong>Focus on Speed</strong> at the top of the order.", pwrReq: 3, cntReq: 2, spdReq: 4 }
+        
+        let agendaPools = [
+            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Focus on Power</strong> in your 9-man batting order to crack their pitching.", pwrReq: 4, cntReq: 3, spdReq: 2 },
+            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Focus on Contact</strong> to string together hits and create pressure.", pwrReq: 3, cntReq: 4, spdReq: 2 },
+            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Focus on Speed</strong> at the top of the order to stretch singles into extra bases.", pwrReq: 3, cntReq: 2, spdReq: 4 }
         ];
-        activeAgenda = pools[getEastern5AMDayNumber() % pools.length];
+
+        let daySeed = getEastern5AMDayNumber();
+        activeAgenda = agendaPools[daySeed % agendaPools.length];
+
         document.getElementById('scout-report-text').innerHTML = activeAgenda.text;
     }
 
     function checkAgendaProgress() {
-        if (currentGameMode !== 'daily') return { pwrMet: 4, cntMet: 3, spdMet: 2, allHit: true };
-        let p = 0, c = 0, s = 0;
-        ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"].forEach(pos => {
-            let pl = userTeam[pos];
-            if (pl && pl.traits) {
-                if (pl.traits.includes('PWR')) p++;
-                if (pl.traits.includes('CNT')) c++;
-                if (pl.traits.includes('SPD')) s++;
+        if (currentGameMode !== 'daily') return { pwrHit: true, cntHit: true, spdHit: true, allHit: true };
+
+        let pwrCount = 0, cntCount = 0, spdCount = 0;
+        let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
+        
+        hitPositions.forEach(pos => {
+            let p = userTeam[pos];
+            if (p && p.traits) {
+                if (p.traits.includes('PWR')) pwrCount++;
+                if (p.traits.includes('CNT')) cntCount++;
+                if (p.traits.includes('SPD')) spdCount++;
             }
         });
-        return { pwrMet: Math.min(p, activeAgenda.pwrReq), cntMet: Math.min(c, activeAgenda.cntReq), spdMet: Math.min(s, activeAgenda.spdReq), allHit: (p >= activeAgenda.pwrReq && c >= activeAgenda.cntReq && s >= activeAgenda.spdReq) };
+
+        let pwrHit = pwrCount >= activeAgenda.pwrReq;
+        let cntHit = cntCount >= activeAgenda.cntReq;
+        let spdHit = spdCount >= activeAgenda.spdReq;
+
+        return { 
+            pwrCount, cntCount, spdCount,
+            pwrMet: Math.min(pwrCount, activeAgenda.pwrReq),
+            cntMet: Math.min(cntCount, activeAgenda.cntReq),
+            spdMet: Math.min(spdCount, activeAgenda.spdReq),
+            allHit: (pwrHit && cntHit && spdHit) 
+        };
     }
 
     function renderAgendaGrid() {
         const gridEl = document.getElementById('agenda-grid-3x3');
         if (!gridEl) return;
-        let prog = checkAgendaProgress();
-        let totalMet = prog.pwrMet + prog.cntMet + prog.spdMet;
+
+        let progress = checkAgendaProgress();
+        let totalMet = progress.pwrMet + progress.cntMet + progress.spdMet; // Out of 9
+
         let html = '';
-        for (let i = 0; i < 9; i++) html += `<div class="grid-box ${i < totalMet ? 'filled' : ''}"></div>`;
+        for (let i = 0; i < 9; i++) {
+            let isFilled = i < totalMet ? 'filled' : '';
+            html += `<div class="grid-box ${isFilled}"></div>`;
+        }
         gridEl.innerHTML = html;
     }
 
+    function calculateTrueTeamWins(team, isUser) {
+        let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
+        
+        let runsCreated = 0;
+        hitPositions.forEach(pos => {
+            let p = team[pos];
+            if (p && p.base) {
+                let [avg, hr, rbi, sb] = p.base;
+                let playerRuns = (avg * 105) + (hr * 0.90) + (rbi * 0.25) + (sb * 0.18);
+                if (p.traits && p.traits.includes('PWR')) playerRuns += 5.0;
+                if (p.traits && p.traits.includes('CNT')) playerRuns += 4.0;
+                if (p.traits && p.traits.includes('SPD')) playerRuns += 3.0;
+                runsCreated += playerRuns;
+            } else {
+                runsCreated += 48;
+            }
+        });
+
+        let sp = team["SP"];
+        let rp = team["RP"];
+        let spEra = sp && sp.base ? sp.base[2] : 4.45;
+        let rpEra = rp && rp.base ? rp.base[2] : 4.15;
+        let staffEra = (spEra * 0.65) + (rpEra * 0.35);
+        let runsAllowed = (staffEra / 4.00) * 735;
+
+        let exp = 1.83;
+        let rsPow = Math.pow(Math.max(400, runsCreated), exp);
+        let raPow = Math.pow(Math.max(400, runsAllowed), exp);
+        let pythWins = (rsPow / (rsPow + raPow)) * 162;
+
+        if (isUser && currentGameMode === 'daily') {
+            let agendaStatus = checkAgendaProgress();
+            
+            if (agendaStatus.allHit) {
+                return 162; // 100% Sweep!
+            }
+
+            let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
+            let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
+            let agendaMissedPenalty = 14; 
+            
+            let baseAnchor = 84.0;
+            let rosterDiff = (pythWins - 81) * 0.40;
+            let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty - agendaMissedPenalty;
+            
+            let variance = (Math.random() * 5) - 2.5;
+            return Math.max(65, Math.min(100, Math.round(expectedUserWins + variance)));
+        }
+
+        let variance = (Math.random() * 5) - 2.5; 
+        return Math.max(55, Math.min(105, Math.round(pythWins + variance)));
+    }
+
     function initGame() {
-        if (currentGameMode === "daily") pseudoRandomSeed = (getEastern5AMDayNumber() * 1234567) % 2147483647;
+        if (currentGameMode === "daily") {
+            const dayNum = getEastern5AMDayNumber();
+            pseudoRandomSeed = (dayNum * 1234567) % 2147483647;
+        }
+
         positions.forEach(pos => {
             userTeam[pos] = null;
             let options = [...playersDB[pos]].sort(() => 0.5 - getRandom());
-            opponentTeam[pos] = currentGameMode === "daily" ? (options.find(p => p.cost >= 4.2) || options[0]) : options[options.length - 1];
-            catalogChoices[pos] = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - getRandom()).slice(0, 4);
+            
+            if (currentGameMode === "daily") {
+                opponentTeam[pos] = options.find(p => p.cost >= 4.2) || options[0];
+            } else {
+                opponentTeam[pos] = options.find(p => p.cost <= 3.2) || options[options.length - 1];
+            }
+            
+            let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - getRandom());
+            catalogChoices[pos] = pool.slice(0, 4);
         });
+
         activeDraftPos = "C";
+
+        let totalOpponentCost = positions.reduce((sum, pos) => sum + opponentTeam[pos].cost, 0);
+        const prefix = currentGameMode === "daily" ? "🔥 Daily Challenge Opponent" : "Opponent Lineup";
+        document.getElementById('opponent-section').querySelector('h2').innerText = `${prefix} (Payroll: $${totalOpponentCost.toFixed(1)}M)`;
+        
         generateScoutingReport();
         renderOpponentLineup();
         updateHudAndCatalog();
+        
         document.getElementById('sim-section').style.display = 'none';
         document.getElementById('draft-section').style.display = 'block';
     }
 
+    function changeActivePosition(pos) {
+        activeDraftPos = pos;
+        updateHudAndCatalog();
+    }
+
+    function calculateRemainingBudget() {
+        let spent = 0;
+        positions.forEach(pos => {
+            if (userTeam[pos]) spent += userTeam[pos].cost;
+        });
+        return TOTAL_BUDGET - spent;
+    }
+
     function updateHudAndCatalog() {
-        let spent = positions.reduce((sum, pos) => sum + (userTeam[pos] ? userTeam[pos].cost : 0), 0);
-        let rem = 34.0 - spent;
-        document.getElementById('hud-bank').innerText = `$${rem.toFixed(1)}M`;
+        let currentRemaining = calculateRemainingBudget();
+        
+        const bankEl = document.getElementById('hud-bank');
+        bankEl.innerText = `$${currentRemaining.toFixed(1)}M`;
+        bankEl.className = currentRemaining < 0 ? 'bankrupt' : '';
+
         document.getElementById('hud-pos').innerText = activeDraftPos;
+
         renderUserLineup();
-        renderDraftCatalog(rem);
-        if (hasSubmittedOnce && currentGameMode === 'daily') renderAgendaGrid();
-        document.getElementById('sim-section').style.display = positions.every(pos => userTeam[pos]) && rem >= 0 ? 'block' : 'none';
+        renderDraftCatalog(currentRemaining);
+        
+        if (hasSubmittedOnce && currentGameMode === 'daily') {
+            renderAgendaGrid();
+        }
+
+        checkSimulationReady();
     }
 
     function renderOpponentLineup() {
-        document.getElementById('opponent-lineup').innerHTML = positions.map(pos => `
-            <div class="card"><div class="pos-label">${pos}</div>${render8BitFaceHTML(opponentTeam[pos].name)}<strong class="player-name">${opponentTeam[pos].name}</strong>${renderArchetestBadgesHTML(opponentTeam[pos].traits)}<div class="badge-row"><span class="badge price">-$${opponentTeam[pos].cost.toFixed(1)}M</span><span class="badge ovr-badge">${opponentTeam[pos].ovr}</span></div></div>
-        `).join('');
+        const oppDiv = document.getElementById('opponent-lineup');
+        oppDiv.innerHTML = positions.map(pos => {
+            const p = opponentTeam[pos];
+            let traitsHTML = p.traits && p.traits.length > 0 ? `<div class="badge-row">${renderArchetypeBadgesHTML(p.traits)}</div>` : '';
+            return `
+                <div class="card">
+                    <div class="pos-label">${pos}</div>
+                    ${render8BitFaceHTML(p.name)}
+                    <strong class="player-name">${p.name}</strong>
+                    ${traitsHTML}
+                    <div class="badge-row">
+                        <span class="badge price">-$${p.cost.toFixed(1)}M</span>
+                        <span class="badge ovr-badge">${p.ovr}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     function renderUserLineup() {
-        document.getElementById('user-lineup').innerHTML = positions.map(pos => {
-            let p = userTeam[pos];
-            return `<div class="card active ${pos === activeDraftPos ? 'selected-pos' : ''}" onclick="activeDraftPos='${pos}';updateHudAndCatalog();"><div class="pos-label">${pos}</div>${p ? render8BitFaceHTML(p.name) + '<strong class="player-name">' + p.name + '</strong>' + renderArchetypeBadgesHTML(p.traits) + '<div class="badge-row"><span class="badge price">-$' + p.cost.toFixed(1) + 'M</span><span class="badge ovr-badge">' + p.ovr + '</span></div>' : '<div style="margin:auto;color:#777">Empty</div>'}</div>`;
+        const userDiv = document.getElementById('user-lineup');
+        userDiv.innerHTML = positions.map(pos => {
+            const p = userTeam[pos];
+            const isCurrent = pos === activeDraftPos ? 'selected-pos' : '';
+            
+            let cardPortrait = '<div style="height:40px; margin:4px 0; display:flex; align-items:center; color:#555; font-size:1.4em;">?</div>';
+            let cardName = '<span style="color:#777; font-size:0.8em;">Empty Slot</span>';
+            let cardBadges = '<span style="color:#555; font-size:0.75em;">Select</span>';
+            let cardTraits = '';
+            
+            if (p) {
+                cardPortrait = render8BitFaceHTML(p.name);
+                cardName = `<strong class="player-name">${p.name}</strong>`;
+                if (p.traits && p.traits.length > 0) {
+                    cardTraits = `<div class="badge-row">${renderArchetypeBadgesHTML(p.traits)}</div>`;
+                }
+                cardBadges = `
+                    <div class="badge-row">
+                        <span class="badge price">-$${p.cost.toFixed(1)}M</span>
+                        <span class="badge ovr-badge">${p.ovr}</span>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="card active ${isCurrent}" onclick="changeActivePosition('${pos}')">
+                    <div class="pos-label">${pos}</div>
+                    ${cardPortrait}
+                    ${cardName}
+                    ${cardTraits}
+                    ${cardBadges}
+                </div>
+            `;
         }).join('');
     }
 
-    function renderDraftCatalog(rem) {
-        document.getElementById('draft-catalog').innerHTML = catalogChoices[activeDraftPos].map((p, idx) => {
-            let curCost = userTeam[activeDraftPos] ? userTeam[activeDraftPos].cost : 0;
-            let locked = p.cost > (rem + curCost);
-            return `<div class="card active ${locked ? 'disabled' : ''}" ${!locked ? 'onclick="userTeam[activeDraftPos]=playersDB[activeDraftPos][' + playersDB[activeDraftPos].findIndex(x=>x.name===p.name) + '];advanceDraft();"' : ''}><div class="pos-label">${activeDraftPos}</div>${render8BitFaceHTML(p.name)}<strong class="player-name">${p.name}</strong>${renderArchetypeBadgesHTML(p.traits)}<div class="badge-row"><span class="badge price">$${p.cost.toFixed(1)}M</span><span class="badge ovr-badge">${p.ovr} OVR</span></div></div>`;
-        }).join('');
+    function renderDraftCatalog(currentRemaining) {
+        const catalogDiv = document.getElementById('draft-catalog');
+        let choices = catalogChoices[activeDraftPos] || [];
+        
+        catalogDiv.innerHTML = ''; 
+        choices.forEach((p, index) => {
+            let currentPickCost = userTeam[activeDraftPos] ? userTeam[activeDraftPos].cost : 0;
+            let netBudgetChange = currentRemaining + currentPickCost;
+            const dynamicLocked = p.cost > netBudgetChange;
+            const isCurrentlyPicked = userTeam[activeDraftPos] && userTeam[activeDraftPos].name === p.name;
+
+            const card = document.createElement('div');
+            card.className = `card active ${dynamicLocked ? 'disabled' : ''}`;
+            if (isCurrentlyPicked) {
+                card.style.cssText = 'border-color: #2ea043; background: #162c1d;';
+            }
+            
+            let traitsHTML = p.traits && p.traits.length > 0 ? `<div class="badge-row">${renderArchetypeBadgesHTML(p.traits)}</div>` : '';
+
+            card.innerHTML = `
+                <div class="pos-label">${activeDraftPos}</div>
+                ${render8BitFaceHTML(p.name)}
+                <strong style="margin: 4px 0;">${p.name}</strong>
+                ${traitsHTML}
+                <div class="badge-row" style="margin-top: 6px;">
+                    <span class="badge price">$${p.cost.toFixed(1)}M</span>
+                    <span class="badge ovr-badge">${p.ovr} OVR</span>
+                </div>
+            `;
+
+            if (!dynamicLocked) {
+                card.onclick = function() {
+                    executePlayerSelection(index);
+                };
+            }
+            catalogDiv.appendChild(card);
+        });
     }
 
-    function advanceDraft() {
-        let nextIdx = positions.indexOf(activeDraftPos) + 1;
-        for (let i = nextIdx; i < positions.length; i++) { if (!userTeam[positions[i]]) { activeDraftPos = positions[i]; break; } }
+    function executePlayerSelection(index) {
+        let player = catalogChoices[activeDraftPos][index];
+        pickPlayer(activeDraftPos, player.name, player.ovr, player.cost, player.base, player.traits);
+    }
+
+    function pickPlayer(pos, name, ovr, cost, base, traits) {
+        userTeam[pos] = { name, ovr, cost, base, traits };
+        
+        let nextIndex = positions.indexOf(pos) + 1;
+        let foundEmpty = false;
+        
+        for (let i = nextIndex; i < positions.length; i++) {
+            if (!userTeam[positions[i]]) {
+                activeDraftPos = positions[i];
+                foundEmpty = true;
+                break;
+            }
+        }
+        if (!foundEmpty) {
+            for (let i = 0; i < positions.length; i++) {
+                if (!userTeam[positions[i]]) {
+                    activeDraftPos = positions[i];
+                    break;
+                }
+            }
+        }
+        
         updateHudAndCatalog();
+    }
+
+    function checkSimulationReady() {
+        let complete = positions.every(pos => userTeam[pos] !== null && userTeam[pos] !== undefined);
+        let budgetValid = calculateRemainingBudget() >= 0;
+        
+        const simSection = document.getElementById('sim-section');
+        const simBtn = document.getElementById('sim-btn');
+        const simResults = document.getElementById('sim-results');
+        
+        if (complete && budgetValid) {
+            simSection.style.display = 'block';
+            simBtn.style.display = 'block';
+            simResults.style.display = 'none';
+        } else {
+            simSection.style.display = 'none';
+        }
+    }
+
+    function generateMvpCard(team, wins) {
+        let candidates = [];
+        positions.forEach(pos => {
+            if (team && team[pos]) {
+                let p = team[pos];
+                let variance = (Math.random() * 8) - 4;
+                candidates.push({
+                    pos: pos,
+                    name: p.name,
+                    ovr: p.ovr || 85,
+                    base: p.base,
+                    traits: p.traits,
+                    score: (p.ovr || 85) + variance
+                });
+            }
+        });
+
+        if (candidates.length === 0) return '';
+
+        candidates.sort((a, b) => b.score - a.score);
+        let mvp = candidates[0];
+        
+        let base = mvp.base;
+        if (!base) {
+            let matched = playersDB[mvp.pos].find(x => x.name === mvp.name);
+            base = matched ? matched.base : (mvp.pos === 'SP' ? [16, 6, 2.75] : (mvp.pos === 'RP' ? [4, 2, 2.10, 38] : [0.280, 25, 85, 10]));
+        }
+
+        let teamWinRatio = wins / 162; 
+
+        if (mvp.pos === 'SP') {
+            let [baseW, baseL, baseERA] = base;
+            let winMultiplier = teamWinRatio / 0.55; 
+            let w = Math.round(baseW * winMultiplier + (Math.random() * 2 - 1));
+            w = Math.max(10, Math.min(wins, w));
+            let l = Math.max(2, Math.round(baseL / (winMultiplier * 0.9) + (Math.random() * 2 - 1)));
+            let eraMod = (0.55 - teamWinRatio) * 0.5 + (Math.random() * 0.25 - 0.12);
+            let era = Math.max(1.45, (baseERA + eraMod)).toFixed(2);
+
+            return `
+                <div class="mvp-container">
+                    <div class="mvp-heading">⭐ Winning Team MVP</div>
+                    ${render8BitFaceHTML(mvp.name)}
+                    <div class="mvp-name">${mvp.name}</div>
+                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Ace Starting Pitcher</div>
+                    <div class="mvp-stat-grid pitcher">
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${w}-${l}</div>
+                            <div class="mvp-stat-lbl">W-L</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${era}</div>
+                            <div class="mvp-stat-lbl">ERA</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (mvp.pos === 'RP') {
+            let [baseW, baseL, baseERA, baseSV] = base;
+            let winMultiplier = teamWinRatio / 0.55;
+            let w = Math.max(1, Math.round(baseW + (Math.random() * 2 - 1)));
+            let l = Math.max(0, Math.round(baseL + (Math.random() * 2 - 1)));
+            let eraMod = (0.55 - teamWinRatio) * 0.4 + (Math.random() * 0.20 - 0.10);
+            let era = Math.max(1.05, (baseERA + eraMod)).toFixed(2);
+            let sv = Math.max(15, Math.round(baseSV * winMultiplier + (Math.random() * 4 - 2)));
+
+            return `
+                <div class="mvp-container">
+                    <div class="mvp-heading">⭐ Winning Team MVP</div>
+                    ${render8BitFaceHTML(mvp.name)}
+                    <div class="mvp-name">${mvp.name}</div>
+                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Lockdown Bullpen Ace</div>
+                    <div class="mvp-stat-grid reliever">
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${era}</div>
+                            <div class="mvp-stat-lbl">ERA</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${sv}</div>
+                            <div class="mvp-stat-lbl">SV</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${w}-${l}</div>
+                            <div class="mvp-stat-lbl">W-L</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            let [baseAVG, baseHR, baseRBI, baseSB] = base;
+            let avgDelta = (Math.random() * 0.024) - 0.012;
+            let finalAvg = Math.max(0.210, Math.min(0.395, baseAVG + avgDelta));
+            let avgStr = finalAvg.toFixed(3).replace(/^0/, '');
+            
+            let hrDelta = Math.round((Math.random() * 6) - 3);
+            let finalHR = Math.max(1, baseHR + hrDelta);
+            
+            let rbiScale = 0.85 + (teamWinRatio * 0.3);
+            let rbiDelta = Math.round((Math.random() * 8) - 4);
+            let finalRBI = Math.max(25, Math.round(baseRBI * rbiScale + rbiDelta));
+            
+            let sbDelta = Math.round((Math.random() * 6) - 3);
+            let finalSB = Math.max(0, baseSB + sbDelta);
+
+            return `
+                <div class="mvp-container">
+                    <div class="mvp-heading">⭐ Winning Team MVP</div>
+                    ${render8BitFaceHTML(mvp.name)}
+                    <div class="mvp-name">${mvp.name}</div>
+                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Offensive Leader</div>
+                    <div class="mvp-stat-grid">
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${avgStr}</div>
+                            <div class="mvp-stat-lbl">AVG</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${finalHR}</div>
+                            <div class="mvp-stat-lbl">HR</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${finalRBI}</div>
+                            <div class="mvp-stat-lbl">RBI</div>
+                        </div>
+                        <div class="mvp-stat-box">
+                            <div class="mvp-stat-val">${finalSB}</div>
+                            <div class="mvp-stat-lbl">SB</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    function runTiebreakerGame(userWins, oppWins) {
+        const resultsDiv = document.getElementById('sim-results');
+        
+        let tbTics = 0;
+        let tbInterval = setInterval(() => {
+            tbTics++;
+            let inningText = tbTics === 1 ? 'Top 9th: Bases Loaded...' : (tbTics === 2 ? 'Bottom 9th: 2 Outs Full Count...' : 'Bottom 10th: Walk-Off Opportunity!');
+            
+            resultsDiv.innerHTML = `
+                <div class="tiebreaker-banner">⚡ GAME 163 TIEBREAKER IN PROGRESS ⚡</div>
+                <h3 style="text-align: center; color: var(--accent-gold);">${inningText}</h3>
+                <div class="live-counter" style="text-align: center;">
+                    YOUR CLUB: <span style="color:var(--accent-green);">${userWins} W</span><br>
+                    RIVAL CLUB: <span style="color:#1f6feb;">${oppWins} W</span>
+                </div>
+                <div style="color:var(--text-muted); font-size: 0.9em; text-align: center;">Winner Takes The Pennant!</div>
+            `;
+
+            if (tbTics >= 3) {
+                clearInterval(tbInterval);
+                
+                let userTeamQuality = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].ovr : 0), 0) / positions.length;
+                let oppTeamQuality = positions.reduce((sum, p) => sum + (opponentTeam[p] ? opponentTeam[p].ovr : 0), 0) / positions.length;
+                let agendaStatus = checkAgendaProgress();
+                let stratBonus = agendaStatus.allHit ? 0.20 : 0.0;
+                let userTbChance = 0.50 + ((userTeamQuality - oppTeamQuality) * 0.02) + stratBonus;
+                userTbChance = Math.max(0.35, Math.min(0.95, userTbChance));
+                
+                let userWonTiebreaker = Math.random() < userTbChance;
+                let finalUserWins = userWonTiebreaker ? userWins + 1 : userWins;
+                let finalOppWins = userWonTiebreaker ? oppWins : oppWins + 1;
+                
+                displayFinalGraphicResults(finalUserWins, finalOppWins, true, userWonTiebreaker);
+            }
+        }, 600);
     }
 
     function startLiveSimulation() {
         hasSubmittedOnce = true;
-        if (currentGameMode === 'daily') document.getElementById('agenda-tracker-container').style.display = 'block';
-        document.getElementById('sim-btn').style.display = 'none';
-        let resultsDiv = document.getElementById('sim-results');
+        const agendaPanel = document.getElementById('agenda-tracker-container');
+        if (agendaPanel && currentGameMode === 'daily') {
+            agendaPanel.style.display = 'block';
+            renderAgendaGrid();
+        }
+
+        const simBtn = document.getElementById('sim-btn');
+        simBtn.style.display = 'none';
+        
+        const resultsDiv = document.getElementById('sim-results');
         resultsDiv.style.display = 'block';
 
-        let wins = checkAgendaProgress().allHit ? 162 : Math.floor(Math.random() * 8) + 72;
-        let isWin = wins > 93;
+        if (currentGameMode === "daily") {
+            recordDailyAttemptStart();
+        }
+        
+        let currentGame = 0;
+        let userWins = 0;
+        let oppWins = 0;
+        const totalGames = 162;
 
-        resultsDiv.innerHTML = `<div class="result-graphic ${isWin ? 'win' : 'loss'}"><div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div><div class="graphic-banner">${isWin ? 'Clean sweep! You mastered the daily agenda.' : `Finished ${wins}-70. Check your 3x3 grid and retry!` }</div>${!isWin ? '<button class="btn" onclick="retrySameMatch()">Retry & Adjust Roster</button>' : ''}</div>`;
+        const finalTargetUserWins = calculateTrueTeamWins(userTeam, true);
+        
+        let finalTargetOppWins;
+        if (currentGameMode === "daily") {
+            let daySeed = getEastern5AMDayNumber();
+            let tightVariance = ((daySeed % 3) - 1); // exactly -1, 0, or +1
+            finalTargetOppWins = 93 + tightVariance; // locked strictly between 92 and 94 wins
+        } else {
+            finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
+        }
+
+        let agendaStatus = checkAgendaProgress();
+        let strategyTag = '';
+        if (currentGameMode === 'daily') {
+            if (agendaStatus.allHit) {
+                strategyTag = '<div class="strategy-pill">🌟 TRIPLE AGENDA MASTERED (100% Sweep Unlocked)</div>';
+            } else {
+                strategyTag = '<div class="strategy-pill failed">⚠️ STANDARD ROSTER BUILD</div>';
+            }
+        }
+        
+        const simInterval = setInterval(() => {
+            currentGame++;
+            
+            let userTargetPace = (finalTargetUserWins / totalGames) * currentGame;
+            let userPaceChance = (userTargetPace - userWins) > 0 ? 0.68 : 0.32;
+            if (Math.random() < userPaceChance) userWins++;
+
+            let oppTargetPace = (finalTargetOppWins / totalGames) * currentGame;
+            let oppPaceChance = (oppTargetPace - oppWins) > 0 ? 0.68 : 0.32;
+            if (Math.random() < oppPaceChance) oppWins++;
+            
+            resultsDiv.innerHTML = `
+                <h3 style="text-align: center;">⚾ Simulating 162-Game Regular Season...</h3>
+                ${strategyTag ? `<div style="text-align: center; margin-bottom: 8px;">${strategyTag}</div>` : ''}
+                <div class="live-counter" style="text-align: center;">
+                    YOUR CLUB: <span style="color:var(--accent-green);">${userWins} W</span> - <span style="color:var(--accent-red);">${currentGame - userWins} L</span><br>
+                    RIVAL CLUB: <span style="color:#388bfd;">${oppWins} W</span> - <span style="color:var(--accent-gold);">${currentGame - oppWins} L</span>
+                </div>
+                <div style="color:var(--text-muted); font-size: 0.9em; text-align: center;">Processing Game ${currentGame} of ${totalGames}</div>
+            `;
+            
+            if (currentGame >= totalGames) {
+                clearInterval(simInterval);
+                
+                if (userWins === oppWins) {
+                    runTiebreakerGame(userWins, oppWins);
+                } else {
+                    displayFinalGraphicResults(userWins, oppWins, false, false);
+                }
+            }
+        }, 18); 
     }
 
+    function displayFinalGraphicResults(userWins, oppWins, hadTiebreaker, userWonTiebreaker) {
+        const resultsDiv = document.getElementById('sim-results');
+        const isWin = userWins > oppWins;
+        const winningTeam = isWin ? userTeam : opponentTeam;
+        const winningWins = isWin ? userWins : oppWins;
+        
+        if (currentGameMode === "daily" && isWin) {
+            recordDailyAttemptWin();
+        }
+
+        const mvpCardHTML = generateMvpCard(winningTeam, winningWins);
+
+        // SINGLE RETRY BUTTON ON LOSS (PRESERVES SELECTED PLAYERS)
+        let actionButtons = `
+            <div class="btn-container">
+                ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: var(--accent-teal); color: #000; margin: 0;">Retry & Adjust Roster</button>` : ''}
+            </div>
+        `;
+        
+        let subBanner = '';
+        if (hadTiebreaker) {
+            subBanner = userWonTiebreaker 
+                ? 'CLUTCH! You tied after 162 games and walked it off in Game 163 to capture the pennant!' 
+                : 'Heartbreaker! You forced Game 163 after a 162-game tie, but the rival club took extra innings.';
+        } else if (currentGameMode === 'daily') {
+            let data = getDailyHistory();
+            if (isWin) {
+                subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
+            } else {
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x3 progress grid above and adjust your lineup!`;
+            }
+        } else {
+            subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
+        }
+
+        let totalSeasonGames = hadTiebreaker ? 163 : 162;
+
+        let graphicHTML = `
+            <div class="result-graphic ${isWin ? 'win' : 'loss'}">
+                ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
+                <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
+                <div class="graphic-banner">${subBanner}</div>
+                <div class="graphic-stats">
+                    <div>
+                        <span class="doc-label">Your Club</span>
+                        ${userWins}-${totalSeasonGames - userWins}
+                    </div>
+                    <div style="color: rgba(255,255,255,0.3); align-self: flex-end; padding-bottom: 5px;">vs</div>
+                    <div>
+                        <span class="doc-label">${currentGameMode === 'daily' ? 'Daily Rival' : 'Rival Club'}</span>
+                        ${oppWins}-${totalSeasonGames - oppWins}
+                    </div>
+                </div>
+                ${mvpCardHTML}
+                <div style="margin-bottom: 25px;"></div>
+                ${actionButtons}
+            </div>
+        `;
+        resultsDiv.innerHTML = graphicHTML;
+    }
+    
     function retrySameMatch() {
-        document.getElementById('sim-results').style.display = 'none';
+        // Hides simulation view and returns to draft screen while keeping userTeam roster completely intact!
+        document.getElementById('sim-section').style.display = 'none';
+        document.getElementById('draft-section').style.display = 'block';
         updateHudAndCatalog();
     }
-
-    window.onload = () => { document.getElementById('mode-dropdown').onchange = function() { switchGameMode(this.value); }; initGame(); };
+    
+    window.onload = function() {
+        const dropdown = document.getElementById('mode-dropdown');
+        if (dropdown) {
+            dropdown.addEventListener('change', function() {
+                switchGameMode(this.value);
+            });
+        }
+        initGame();
+    };
 </script>
 </body>
 </html>
