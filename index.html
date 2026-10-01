@@ -201,6 +201,23 @@
             font-size: 0.95em;
             line-height: 1.45;
         }
+        .agenda-reveal {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px dashed var(--accent-gold);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 20px auto;
+            font-size: 0.95em;
+            text-align: left;
+            color: #fef08a;
+            max-width: 500px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .agenda-reveal ul {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
         /* 3x3 Agenda Tracker Grid */
         .agenda-tracker-panel {
             background: rgba(15, 23, 42, 0.85);
@@ -1604,13 +1621,26 @@
 
         const mvpCardHTML = generateMvpCard(winningTeam, winningWins);
 
-        // SINGLE RETRY BUTTON ON LOSS (PRESERVES SELECTED PLAYERS)
         let actionButtons = `
             <div class="btn-container">
-                ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: var(--accent-teal); color: #000; margin: 0;">Retry & Adjust Roster</button>` : ''}
+                ${!isWin ? `<button class="btn" onclick="retrySameMatch()" style="background: var(--accent-teal); color: #000; margin: 0;">Retry & Adjust Roster</button>` : `<button class="btn" onclick="retrySameMatch()" style="background: var(--accent-green); color: #000; margin: 0;">Play Again</button>`}
             </div>
         `;
         
+        let revealBox = '';
+        if (currentGameMode === 'daily') {
+            revealBox = `
+                <div class="agenda-reveal">
+                    <strong>🔍 Today's Hidden Agenda Solution:</strong>
+                    <ul>
+                        <li>Power (PWR) required: <strong>${activeAgenda.pwrReq}</strong> bats</li>
+                        <li>Contact (CNT) required: <strong>${activeAgenda.cntReq}</strong> bats</li>
+                        <li>Speed (SPD) required: <strong>${activeAgenda.spdReq}</strong> bats</li>
+                    </ul>
+                </div>
+            `;
+        }
+
         let subBanner = '';
         if (hadTiebreaker) {
             subBanner = userWonTiebreaker 
@@ -1621,7 +1651,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x3 progress grid above and adjust your lineup!`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check the solution breakdown below!`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
@@ -1634,6 +1664,7 @@
                 ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">${subBanner}</div>
+                ${currentGameMode === 'daily' ? revealBox : ''}
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
@@ -1654,7 +1685,6 @@
     }
     
     function retrySameMatch() {
-        // Hides simulation view and returns to draft screen while keeping userTeam roster completely intact!
         document.getElementById('sim-section').style.display = 'none';
         document.getElementById('draft-section').style.display = 'block';
         updateHudAndCatalog();
