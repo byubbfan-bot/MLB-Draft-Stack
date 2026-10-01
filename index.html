@@ -58,27 +58,62 @@
             text-align: center;
             color: var(--text-muted);
             margin-top: 0;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             font-size: 1em;
         }
-        .rules-banner {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.9));
-            border: 1px solid var(--accent-teal);
-            border-radius: 10px;
-            padding: 14px 20px;
-            margin-bottom: 20px;
+        
+        /* BIG, CAN'T-MISS INSTRUCTIONS BANNER */
+        .instructions-hero {
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
+            border: 2px solid var(--accent-gold);
+            border-left: 8px solid var(--accent-gold);
+            border-radius: 12px;
+            padding: 22px 26px;
+            margin-bottom: 30px;
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.15);
+        }
+        .hero-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--accent-gold);
+            font-size: 1.2em;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .hero-text {
+            color: #e2e8f0;
+            font-size: 1.02em;
+            line-height: 1.5;
+            margin: 0;
+        }
+        .hero-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        @media(max-width: 850px) {
+            .hero-steps { grid-template-columns: 1fr; }
+        }
+        .hero-step-item {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             font-size: 0.9em;
             color: var(--text-muted);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
         }
-        .rules-banner strong {
+        .hero-step-item strong {
             color: var(--accent-teal);
+            display: block;
+            margin-bottom: 2px;
         }
-        .rules-banner ul {
-            margin: 6px 0 0 18px;
-            padding: 0;
-            color: #cbd5e1;
-        }
+
         .mode-container {
             display: flex;
             justify-content: space-between;
@@ -592,14 +627,28 @@
     <h1>MLB Roster & Luxury Tax Cap Simulation</h1>
     <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
     
-    <!-- RULES BANNER -->
-    <div class="rules-banner">
-        <strong>📋 Daily Challenge Rules & Agenda Tracker:</strong>
-        <ul>
-            <li>Manage your $34.0M payroll to build a competitive 11-man roster.</li>
-            <li>Each current star features <strong>one unique attribute</strong>. Read the <strong>Dugout Scouting Report</strong> to decode the 9 hidden requirements.</li>
-            <li>The 3x3 grid below fills up with green units <strong>after you submit your simulation</strong>, remaining visible above your draft catalog so you can swap players on retry!</li>
-        </ul>
+    <!-- BIG, CAN'T-MISS INSTRUCTIONS HERO -->
+    <div class="instructions-hero">
+        <div class="hero-title">
+            <span>🔥</span> How to Play Daily Challenge Mode
+        </div>
+        <p class="hero-text">
+            Assemble your 9 hitters and pitching staff under the <strong>$34.0M payroll cap</strong>. Each star hitter possesses <strong>one exact attribute</strong> (Power, Contact, or Speed). Read the Scouting Report carefully, submit your simulation, and use the <strong>3x3 green scorecard</strong> to deduce the exact hidden combination!
+        </p>
+        <div class="hero-steps">
+            <div class="hero-step-item">
+                <strong>1. Draft Roster</strong>
+                Pick your 11 players while monitoring your remaining budget.
+            </div>
+            <div class="hero-step-item">
+                <strong>2. Simulate & Check</strong>
+                Run the 162-game season to unlock your 3x3 progress scorecard.
+            </div>
+            <div class="hero-step-item">
+                <strong>3. Retry & Deduce</strong>
+                Keep your roster intact, swap specific players, and hit 9/9 green units for a 162-0 sweep!
+            </div>
+        </div>
     </div>
 
     <div class="mode-container" id="mode-bar">
@@ -981,9 +1030,9 @@
         document.getElementById('scout-report-box').style.display = 'flex';
         
         let agendaPools = [
-            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Focus on Power</strong> in your 9-man batting order to crack their pitching.", pwrReq: 6, cntReq: 2, spdReq: 1 },
-            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Focus on Contact</strong> to string together hits and create pressure.", pwrReq: 2, cntReq: 6, spdReq: 1 },
-            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Focus on Speed</strong> at the top of the order to stretch singles into extra bases.", pwrReq: 2, cntReq: 1, spdReq: 6 }
+            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Heavy Power Required</strong> in your 9-man batting order to crack their pitching.", pwrReq: 6, cntReq: 2, spdReq: 1 },
+            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Heavy Contact Required</strong> to string together multi-hit innings and create pressure.", pwrReq: 2, cntReq: 6, spdReq: 1 },
+            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Heavy Speed Required</strong> at the top of the order to stretch singles into extra bases.", pwrReq: 1, cntReq: 2, spdReq: 6 }
         ];
 
         let daySeed = getEastern5AMDayNumber();
@@ -1074,14 +1123,14 @@
 
             let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
             let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
-            let agendaMissedPenalty = 16; 
+            let agendaMissedPenalty = 18; 
             
-            let baseAnchor = 83.5;
-            let rosterDiff = (pythWins - 81) * 0.40;
+            let baseAnchor = 83.0;
+            let rosterDiff = (pythWins - 81) * 0.35;
             let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty - agendaMissedPenalty;
             
             let variance = (Math.random() * 5) - 2.5;
-            return Math.max(62, Math.min(98, Math.round(expectedUserWins + variance)));
+            return Math.max(60, Math.min(95, Math.round(expectedUserWins + variance)));
         }
 
         let variance = (Math.random() * 5) - 2.5; 
