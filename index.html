@@ -658,7 +658,7 @@
             <span>🔥</span> How to Play Daily Challenge Mode
         </div>
         <p class="hero-text">
-            Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Hitters have unique batting traits (Power, Contact, Speed) and pitchers have pitching roles (Strikeout, Groundball, Workhorse). Read the Scouting Report, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!
+            Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Hitters have unique batting traits (Power, Contact, Speed) and pitchers have pitching roles (Strikeout, Groundball, Workhorse). Read the Scouting Report for batter tips, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!
         </p>
         <div class="hero-steps">
             <div class="hero-step-item">
@@ -1065,9 +1065,9 @@
         document.getElementById('scout-report-box').style.display = 'flex';
         
         let agendaPools = [
-            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Heavy Power Required</strong> in your lineup, backed by a dominant <strong>Strikeout (K)</strong> starting pitcher.", pwrReq: 6, cntReq: 2, spdReq: 1, pitch1Req: 'K', pitch2Req: 'GB' },
-            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Heavy Contact Required</strong> in your lineup, anchored by a reliable <strong>Groundball (GB)</strong> arm.", pwrReq: 2, cntReq: 6, spdReq: 1, pitch1Req: 'GB', pitch2Req: 'WH' },
-            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Heavy Speed Required</strong> on the bases, supported by an innings-eating <strong>Workhorse (WH)</strong> pitcher.", pwrReq: 1, cntReq: 2, spdReq: 6, pitch1Req: 'WH', pitch2Req: 'K' }
+            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Heavy Power Required</strong> in your lineup.", pwrReq: 6, cntReq: 2, spdReq: 1, pitch1Req: 'K', pitch2Req: 'GB' },
+            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Heavy Contact Required</strong> to string together multi-hit innings.", pwrReq: 2, cntReq: 6, spdReq: 1, pitch1Req: 'GB', pitch2Req: 'WH' },
+            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Heavy Speed Required</strong> on the bases to stretch singles.", pwrReq: 1, cntReq: 2, spdReq: 6, pitch1Req: 'WH', pitch2Req: 'K' }
         ];
 
         let daySeed = getEastern5AMDayNumber();
@@ -1673,7 +1673,6 @@
             </div>
         `;
         
-        // Removed solution reveal on loss so players must keep trying and tracking via their daily attempts average.
         let subBanner = '';
         if (hadTiebreaker) {
             subBanner = userWonTiebreaker 
@@ -1684,7 +1683,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x3 and 2x1 progress grids above and adjust your lineup on retry!`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x3 and 2x1 progress grids above and adjust your lineup!`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
