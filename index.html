@@ -248,10 +248,10 @@
             gap: 8px;
             width: 140px;
         }
-        .grid-3x1 {
+        .grid-2x1 {
             display: grid;
             grid-template-columns: 1fr;
-            grid-template-rows: repeat(3, 1fr);
+            grid-template-rows: repeat(2, 1fr);
             gap: 8px;
             width: 44px;
         }
@@ -564,23 +564,6 @@
             box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
             animation: pulse 1s infinite alternate;
         }
-        .agenda-reveal {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px dashed var(--accent-gold);
-            border-radius: 8px;
-            padding: 14px 18px;
-            margin: 20px auto;
-            font-size: 0.95em;
-            text-align: left;
-            color: #fef08a;
-            max-width: 500px;
-            box-sizing: border-box;
-            width: 100%;
-        }
-        .agenda-reveal ul {
-            margin: 8px 0 0 20px;
-            padding: 0;
-        }
         .mvp-container {
             margin: 25px auto 15px auto;
             max-width: 500px;
@@ -729,8 +712,8 @@
                 <div id="agenda-grid-3x3" class="grid-3x3"></div>
             </div>
             <div class="grid-section" style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 35px;">
-                <div class="grid-section-title" style="color: #60a5fa;">Pitchers (3 Units)</div>
-                <div id="agenda-grid-3x1" class="grid-3x1"></div>
+                <div class="grid-section-title" style="color: #60a5fa;">Pitchers (2 Units)</div>
+                <div id="agenda-grid-2x1" class="grid-2x1"></div>
             </div>
         </div>
     </div>
@@ -770,7 +753,7 @@
 <script>
     let currentGameMode = "freeplay";
     let pseudoRandomSeed = 123456789;
-    let activeAgenda = { pwrReq: 6, cntReq: 2, spdReq: 1, kReq: 1, gbReq: 1, whReq: 1 };
+    let activeAgenda = { pwrReq: 6, cntReq: 2, spdReq: 1, pitch1Req: 'K', pitch2Req: 'GB' };
     let hasSubmittedOnce = false;
 
     function seededRandom() {
@@ -1082,9 +1065,9 @@
         document.getElementById('scout-report-box').style.display = 'flex';
         
         let agendaPools = [
-            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Heavy Power Required</strong> in your lineup, backed by a dominant <strong>Strikeout (K)</strong> starting pitcher.", pwrReq: 6, cntReq: 2, spdReq: 1, kReq: 1, gbReq: 1, whReq: 0 },
-            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Heavy Contact Required</strong> in your lineup, anchored by a reliable <strong>Groundball (GB)</strong> arm.", pwrReq: 2, cntReq: 6, spdReq: 1, kReq: 0, gbReq: 1, whReq: 1 },
-            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Heavy Speed Required</strong> on the bases, supported by an innings-eating <strong>Workhorse (WH)</strong> pitcher.", pwrReq: 1, cntReq: 2, spdReq: 6, kReq: 1, gbReq: 0, whReq: 1 }
+            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Heavy Power Required</strong> in your lineup, backed by a dominant <strong>Strikeout (K)</strong> starting pitcher.", pwrReq: 6, cntReq: 2, spdReq: 1, pitch1Req: 'K', pitch2Req: 'GB' },
+            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Heavy Contact Required</strong> in your lineup, anchored by a reliable <strong>Groundball (GB)</strong> arm.", pwrReq: 2, cntReq: 6, spdReq: 1, pitch1Req: 'GB', pitch2Req: 'WH' },
+            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Heavy Speed Required</strong> on the bases, supported by an innings-eating <strong>Workhorse (WH)</strong> pitcher.", pwrReq: 1, cntReq: 2, spdReq: 6, pitch1Req: 'WH', pitch2Req: 'K' }
         ];
 
         let daySeed = getEastern5AMDayNumber();
@@ -1094,9 +1077,10 @@
     }
 
     function checkAgendaProgress() {
-        if (currentGameMode !== 'daily') return { pwrHit: true, cntHit: true, spdHit: true, kHit: true, gbHit: true, whHit: true, allHit: true };
+        if (currentGameMode !== 'daily') return { pwrHit: true, cntHit: true, spdHit: true, pitch1Hit: true, pitch2Hit: true, allHit: true };
 
-        let pwrCount = 0, cntCount = 0, spdCount = 0, kCount = 0, gbCount = 0, whCount = 0;
+        let pwrCount = 0, cntCount = 0, spdCount = 0;
+        let pitch1Count = 0, pitch2Count = 0;
         
         let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         hitPositions.forEach(pos => {
@@ -1112,34 +1096,31 @@
         pitchPositions.forEach(pos => {
             let p = userTeam[pos];
             if (p && p.traits) {
-                if (p.traits.includes('K')) kCount++;
-                if (p.traits.includes('GB')) gbCount++;
-                if (p.traits.includes('WH')) whCount++;
+                if (p.traits.includes(activeAgenda.pitch1Req)) pitch1Count++;
+                if (p.traits.includes(activeAgenda.pitch2Req)) pitch2Count++;
             }
         });
 
         let pwrHit = pwrCount >= activeAgenda.pwrReq;
         let cntHit = cntCount >= activeAgenda.cntReq;
         let spdHit = spdCount >= activeAgenda.spdReq;
-        let kHit = kCount >= activeAgenda.kReq;
-        let gbHit = gbCount >= activeAgenda.gbReq;
-        let whHit = whCount >= activeAgenda.whReq;
+        let pitch1Hit = pitch1Count >= 1;
+        let pitch2Hit = pitch2Count >= 1;
 
         return { 
             pwrMet: Math.min(pwrCount, activeAgenda.pwrReq),
             cntMet: Math.min(cntCount, activeAgenda.cntReq),
             spdMet: Math.min(spdCount, activeAgenda.spdReq),
-            kMet: Math.min(kCount, activeAgenda.kReq),
-            gbMet: Math.min(gbCount, activeAgenda.gbReq),
-            whMet: Math.min(whCount, activeAgenda.whReq),
-            allHit: (pwrHit && cntHit && spdHit && kHit && gbHit && whHit) 
+            pitch1Met: Math.min(pitch1Count, 1),
+            pitch2Met: Math.min(pitch2Count, 1),
+            allHit: (pwrHit && cntHit && spdHit && pitch1Hit && pitch2Hit) 
         };
     }
 
     function renderAgendaGrid() {
         const grid3x3 = document.getElementById('agenda-grid-3x3');
-        const grid3x1 = document.getElementById('agenda-grid-3x1');
-        if (!grid3x3 || !grid3x1) return;
+        const grid2x1 = document.getElementById('agenda-grid-2x1');
+        if (!grid3x3 || !grid2x1) return;
 
         let progress = checkAgendaProgress();
         
@@ -1152,14 +1133,14 @@
         }
         grid3x3.innerHTML = batterHtml;
 
-        // Pitchers grid (3 squares vertical)
-        let totalPitchersMet = progress.kMet + progress.gbMet + progress.whMet;
+        // Pitchers grid (2 squares vertical)
+        let totalPitchersMet = progress.pitch1Met + progress.pitch2Met;
         let pitcherHtml = '';
-        for (let i = 0; i < 3; i++) {
+        for (let i = 0; i < 2; i++) {
             let isFilled = i < totalPitchersMet ? 'blue-filled' : '';
             pitcherHtml += `<div class="grid-box ${isFilled}"></div>`;
         }
-        grid3x1.innerHTML = pitcherHtml;
+        grid2x1.innerHTML = pitcherHtml;
     }
 
     function calculateTrueTeamWins(team, isUser) {
@@ -1692,23 +1673,7 @@
             </div>
         `;
         
-        let revealBox = '';
-        if (currentGameMode === 'daily') {
-            revealBox = `
-                <div class="agenda-reveal">
-                    <strong>🔍 Today's Hidden Agenda Solution:</strong>
-                    <ul>
-                        <li>Power (PWR) required: <strong>${activeAgenda.pwrReq}</strong> bats</li>
-                        <li>Contact (CNT) required: <strong>${activeAgenda.cntReq}</strong> bats</li>
-                        <li>Speed (SPD) required: <strong>${activeAgenda.spdReq}</strong> bats</li>
-                        <li>Strikeout (K) required: <strong>${activeAgenda.kReq}</strong> pitcher</li>
-                        <li>Groundball (GB) required: <strong>${activeAgenda.gbReq}</strong> pitcher</li>
-                        <li>Workhorse (WH) required: <strong>${activeAgenda.whReq}</strong> pitcher</li>
-                    </ul>
-                </div>
-            `;
-        }
-
+        // Removed solution reveal on loss so players must keep trying and tracking via their daily attempts average.
         let subBanner = '';
         if (hadTiebreaker) {
             subBanner = userWonTiebreaker 
@@ -1719,7 +1684,7 @@
             if (isWin) {
                 subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
             } else {
-                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check the solution breakdown below!`;
+                subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x3 and 2x1 progress grids above and adjust your lineup on retry!`;
             }
         } else {
             subBanner = isWin ? 'Your roster captured the division pennant and booked a trip to October!' : 'The rival squad edged you out in the standings. Better luck next year.';
@@ -1732,7 +1697,6 @@
                 ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">${subBanner}</div>
-                ${currentGameMode === 'daily' ? revealBox : ''}
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
