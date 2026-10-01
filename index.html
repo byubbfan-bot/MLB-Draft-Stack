@@ -13,6 +13,7 @@
             --accent-teal: #00f2fe;
             --accent-gold: #fbbf24;
             --accent-green: #34d399;
+            --accent-blue: #3b82f6;
             --accent-red: #f87171;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
@@ -201,29 +202,13 @@
             font-size: 0.95em;
             line-height: 1.45;
         }
-        .agenda-reveal {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px dashed var(--accent-gold);
-            border-radius: 8px;
-            padding: 14px 18px;
-            margin: 20px auto;
-            font-size: 0.95em;
-            text-align: left;
-            color: #fef08a;
-            max-width: 500px;
-            box-sizing: border-box;
-            width: 100%;
-        }
-        .agenda-reveal ul {
-            margin: 8px 0 0 20px;
-            padding: 0;
-        }
-        /* 3x3 Agenda Tracker Grid */
+        
+        /* DUAL AGENDA TRACKER PANELS (BATTERS & PITCHERS) */
         .agenda-tracker-panel {
             background: rgba(15, 23, 42, 0.85);
             border: 1px solid rgba(251, 191, 36, 0.3);
             border-radius: 10px;
-            padding: 14px 20px;
+            padding: 16px 20px;
             margin: 25px 0 20px 0;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -233,30 +218,61 @@
             color: var(--accent-gold);
             text-transform: uppercase;
             font-weight: 800;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             letter-spacing: 0.5px;
+        }
+        .agenda-grids-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .grid-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .grid-section-title {
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         .grid-3x3 {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(3, 1fr);
             gap: 8px;
-            max-width: 150px;
-            margin: 0 auto;
+            width: 140px;
+        }
+        .grid-3x1 {
+            display: grid;
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 8px;
+            width: 44px;
         }
         .grid-box {
-            width: 40px;
             height: 32px;
             background: #1e293b;
             border: 1px solid var(--border-color);
             border-radius: 4px;
             transition: 0.3s;
         }
-        .grid-box.filled {
+        .grid-box.green-filled {
             background: var(--accent-green);
             box-shadow: 0 0 10px rgba(52, 211, 153, 0.5);
             border-color: #6ee7b7;
         }
+        .grid-box.blue-filled {
+            background: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+            border-color: #93c5fd;
+        }
+
         .legend-bar {
             display: flex;
             justify-content: center;
@@ -409,21 +425,13 @@
             background: #2563eb;
             color: #fff;
         }
-        .badge.pwr {
-            background: rgba(248, 113, 113, 0.2);
-            color: var(--accent-red);
-            border: 1px solid rgba(248, 113, 113, 0.4);
-        }
-        .badge.cnt {
-            background: rgba(251, 191, 36, 0.2);
-            color: var(--accent-gold);
-            border: 1px solid rgba(251, 191, 36, 0.4);
-        }
-        .badge.spd {
-            background: rgba(163, 113, 247, 0.2);
-            color: #c084fc;
-            border: 1px solid rgba(163, 113, 247, 0.4);
-        }
+        .badge.pwr { background: rgba(248, 113, 113, 0.2); color: var(--accent-red); border: 1px solid rgba(248, 113, 113, 0.4); }
+        .badge.cnt { background: rgba(251, 191, 36, 0.2); color: var(--accent-gold); border: 1px solid rgba(251, 191, 36, 0.4); }
+        .badge.spd { background: rgba(163, 113, 247, 0.2); color: #c084fc; border: 1px solid rgba(163, 113, 247, 0.4); }
+        .badge.k { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); }
+        .badge.gb { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+        .badge.wh { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+
         .pos-label {
             font-size: 0.75em;
             color: var(--text-muted);
@@ -556,6 +564,23 @@
             box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
             animation: pulse 1s infinite alternate;
         }
+        .agenda-reveal {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px dashed var(--accent-gold);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 20px auto;
+            font-size: 0.95em;
+            text-align: left;
+            color: #fef08a;
+            max-width: 500px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        .agenda-reveal ul {
+            margin: 8px 0 0 20px;
+            padding: 0;
+        }
         .mvp-container {
             margin: 25px auto 15px auto;
             max-width: 500px;
@@ -650,7 +675,7 @@
             <span>🔥</span> How to Play Daily Challenge Mode
         </div>
         <p class="hero-text">
-            Assemble your 9 hitters and pitching staff under the <strong>$34.0M payroll cap</strong>. Each star hitter possesses <strong>one exact attribute</strong> (Power, Contact, or Speed). Read the Scouting Report carefully, submit your simulation, and use the <strong>3x3 green scorecard</strong> to deduce the exact hidden combination!
+            Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Hitters have unique batting traits (Power, Contact, Speed) and pitchers have pitching roles (Strikeout, Groundball, Workhorse). Read the Scouting Report, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!
         </p>
         <div class="hero-steps">
             <div class="hero-step-item">
@@ -659,11 +684,11 @@
             </div>
             <div class="hero-step-item">
                 <strong>2. Simulate & Check</strong>
-                Run the 162-game season to unlock your 3x3 progress scorecard.
+                Run the 162-game season to unlock your progress scorecards.
             </div>
             <div class="hero-step-item">
                 <strong>3. Retry & Deduce</strong>
-                Keep your roster intact, swap specific players, and hit 9/9 green units to secure the pennant!
+                Keep your roster intact, swap specific players, and hit all green/blue units to secure the pennant!
             </div>
         </div>
     </div>
@@ -695,21 +720,29 @@
         <div id="opponent-lineup" class="lineup-grid"></div>
     </div>
 
-    <!-- 3x3 AGENDA TRACKER PANEL (ABOVE DRAFTING, VISIBLE AFTER 1ST SUBMISSION) -->
+    <!-- DUAL SCORECARD PANEL (BATTERS & PITCHERS) -->
     <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
-        <div class="agenda-grid-title">🎯 Secret Agenda Scorecard (9 Required Attribute Units)</div>
-        <div id="agenda-grid-3x3" class="grid-3x3">
-            <!-- 9 boxes populated by JS -->
+        <div class="agenda-grid-title">🎯 Secret Agenda Scorecards</div>
+        <div class="agenda-grids-wrapper">
+            <div class="grid-section">
+                <div class="grid-section-title">Batters (9 Units)</div>
+                <div id="agenda-grid-3x3" class="grid-3x3"></div>
+            </div>
+            <div class="grid-section" style="border-left: 1px solid rgba(255,255,255,0.15); padding-left: 35px;">
+                <div class="grid-section-title" style="color: #60a5fa;">Pitchers (3 Units)</div>
+                <div id="agenda-grid-3x1" class="grid-3x1"></div>
+            </div>
         </div>
     </div>
 
     <div class="legend-bar">
         <span class="legend-title">Player Profile Legend:</span>
-        <div class="legend-item"><span class="badge pwr">PWR</span> Power Threat</div>
-        <div class="legend-item"><span class="badge cnt">CNT</span> High Contact</div>
-        <div class="legend-item"><span class="badge spd">SPD</span> Speed Threat</div>
-        <div class="legend-item"><span class="badge ovr-badge">OVR</span> Overall Rating</div>
-        <div class="legend-item"><span class="badge price">$$$</span> Payroll Cost</div>
+        <div class="legend-item"><span class="badge pwr">PWR</span> Power</div>
+        <div class="legend-item"><span class="badge cnt">CNT</span> Contact</div>
+        <div class="legend-item"><span class="badge spd">SPD</span> Speed</div>
+        <div class="legend-item"><span class="badge k">K</span> Strikeout</div>
+        <div class="legend-item"><span class="badge gb">GB</span> Groundball</div>
+        <div class="legend-item"><span class="badge wh">WH</span> Workhorse</div>
     </div>
 
     <div class="hud-bar">
@@ -737,7 +770,7 @@
 <script>
     let currentGameMode = "freeplay";
     let pseudoRandomSeed = 123456789;
-    let activeAgenda = { pwrReq: 6, cntReq: 2, spdReq: 1, text: '' };
+    let activeAgenda = { pwrReq: 6, cntReq: 2, spdReq: 1, kReq: 1, gbReq: 1, whReq: 1 };
     let hasSubmittedOnce = false;
 
     function seededRandom() {
@@ -898,6 +931,9 @@
             if (t === 'PWR') cls += ' pwr';
             else if (t === 'CNT') cls += ' cnt';
             else if (t === 'SPD') cls += ' spd';
+            else if (t === 'K') cls += ' k';
+            else if (t === 'GB') cls += ' gb';
+            else if (t === 'WH') cls += ' wh';
             return `<span class="${cls}">${t}</span>`;
         }).join('');
     }
@@ -1004,24 +1040,24 @@
             { name: "Nelson Cruz", ovr: 92, base: [0.275, 38, 108, 2], traits: ["PWR"] }
         ],
         SP: [
-            { name: "Tarik Skubal", ovr: 96, base: [18, 5, 2.40], traits: [] },
-            { name: "Paul Skenes", ovr: 93, base: [15, 5, 2.35], traits: [] },
-            { name: "Zack Wheeler", ovr: 95, base: [16, 6, 2.65], traits: [] },
-            { name: "Logan Gilbert", ovr: 91, base: [14, 7, 3.15], traits: [] },
-            { name: "Cole Ragans", ovr: 90, base: [13, 8, 3.20], traits: [] },
-            { name: "Pedro Martinez", ovr: 99, base: [21, 5, 2.05], traits: [] },
-            { name: "Randy Johnson", ovr: 98, base: [21, 6, 2.45], traits: [] },
-            { name: "Greg Maddux", ovr: 97, base: [20, 6, 2.30], traits: [] }
+            { name: "Tarik Skubal", ovr: 96, base: [18, 5, 2.40], traits: ["K"] },
+            { name: "Paul Skenes", ovr: 93, base: [15, 5, 2.35], traits: ["K"] },
+            { name: "Zack Wheeler", ovr: 95, base: [16, 6, 2.65], traits: ["GB"] },
+            { name: "Logan Gilbert", ovr: 91, base: [14, 7, 3.15], traits: ["GB"] },
+            { name: "Cole Ragans", ovr: 90, base: [13, 8, 3.20], traits: ["WH"] },
+            { name: "Pedro Martinez", ovr: 99, base: [21, 5, 2.05], traits: ["K"] },
+            { name: "Randy Johnson", ovr: 98, base: [21, 6, 2.45], traits: ["K"] },
+            { name: "Greg Maddux", ovr: 97, base: [20, 6, 2.30], traits: ["GB"] }
         ],
         RP: [
-            { name: "Emmanuel Clase", ovr: 96, base: [5, 2, 1.45, 46], traits: [] },
-            { name: "Mason Miller", ovr: 94, base: [4, 2, 1.85, 36], traits: [] },
-            { name: "Josh Hader", ovr: 93, base: [4, 3, 2.40, 37], traits: [] },
-            { name: "Edwin Díaz", ovr: 93, base: [3, 2, 2.25, 39], traits: [] },
-            { name: "Ryan Helsley", ovr: 92, base: [4, 2, 1.95, 42], traits: [] },
-            { name: "Mariano Rivera", ovr: 99, base: [5, 2, 1.70, 44], traits: [] },
-            { name: "Trevor Hoffman", ovr: 97, base: [4, 3, 2.30, 42], traits: [] },
-            { name: "Billy Wagner", ovr: 96, base: [4, 2, 2.10, 40], traits: [] }
+            { name: "Emmanuel Clase", ovr: 96, base: [5, 2, 1.45, 46], traits: ["GB"] },
+            { name: "Mason Miller", ovr: 94, base: [4, 2, 1.85, 36], traits: ["K"] },
+            { name: "Josh Hader", ovr: 93, base: [4, 3, 2.40, 37], traits: ["K"] },
+            { name: "Edwin Díaz", ovr: 93, base: [3, 2, 2.25, 39], traits: ["K"] },
+            { name: "Ryan Helsley", ovr: 92, base: [4, 2, 1.95, 42], traits: ["WH"] },
+            { name: "Mariano Rivera", ovr: 99, base: [5, 2, 1.70, 44], traits: ["GB"] },
+            { name: "Trevor Hoffman", ovr: 97, base: [4, 3, 2.30, 42], traits: ["K"] },
+            { name: "Billy Wagner", ovr: 96, base: [4, 2, 2.10, 40], traits: ["K"] }
         ]
     };
 
@@ -1046,9 +1082,9 @@
         document.getElementById('scout-report-box').style.display = 'flex';
         
         let agendaPools = [
-            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Heavy Power Required</strong> in your 9-man batting order to crack their pitching.", pwrReq: 6, cntReq: 2, spdReq: 1 },
-            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Heavy Contact Required</strong> to string together multi-hit innings and create pressure.", pwrReq: 2, cntReq: 6, spdReq: 1 },
-            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Heavy Speed Required</strong> at the top of the order to stretch singles into extra bases.", pwrReq: 1, cntReq: 2, spdReq: 6 }
+            { text: "Rival club features a powerhouse rotation. <strong>Scouting Report: Heavy Power Required</strong> in your lineup, backed by a dominant <strong>Strikeout (K)</strong> starting pitcher.", pwrReq: 6, cntReq: 2, spdReq: 1, kReq: 1, gbReq: 1, whReq: 0 },
+            { text: "Rival defense is vulnerable to gap hitting. <strong>Scouting Report: Heavy Contact Required</strong> in your lineup, anchored by a reliable <strong>Groundball (GB)</strong> arm.", pwrReq: 2, cntReq: 6, spdReq: 1, kReq: 0, gbReq: 1, whReq: 1 },
+            { text: "Rival infield positioning plays deep. <strong>Scouting Report: Heavy Speed Required</strong> on the bases, supported by an innings-eating <strong>Workhorse (WH)</strong> pitcher.", pwrReq: 1, cntReq: 2, spdReq: 6, kReq: 1, gbReq: 0, whReq: 1 }
         ];
 
         let daySeed = getEastern5AMDayNumber();
@@ -1058,11 +1094,11 @@
     }
 
     function checkAgendaProgress() {
-        if (currentGameMode !== 'daily') return { pwrHit: true, cntHit: true, spdHit: true, allHit: true };
+        if (currentGameMode !== 'daily') return { pwrHit: true, cntHit: true, spdHit: true, kHit: true, gbHit: true, whHit: true, allHit: true };
 
-        let pwrCount = 0, cntCount = 0, spdCount = 0;
-        let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
+        let pwrCount = 0, cntCount = 0, spdCount = 0, kCount = 0, gbCount = 0, whCount = 0;
         
+        let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         hitPositions.forEach(pos => {
             let p = userTeam[pos];
             if (p && p.traits) {
@@ -1072,32 +1108,58 @@
             }
         });
 
+        let pitchPositions = ["SP", "RP"];
+        pitchPositions.forEach(pos => {
+            let p = userTeam[pos];
+            if (p && p.traits) {
+                if (p.traits.includes('K')) kCount++;
+                if (p.traits.includes('GB')) gbCount++;
+                if (p.traits.includes('WH')) whCount++;
+            }
+        });
+
         let pwrHit = pwrCount >= activeAgenda.pwrReq;
         let cntHit = cntCount >= activeAgenda.cntReq;
         let spdHit = spdCount >= activeAgenda.spdReq;
+        let kHit = kCount >= activeAgenda.kReq;
+        let gbHit = gbCount >= activeAgenda.gbReq;
+        let whHit = whCount >= activeAgenda.whReq;
 
         return { 
-            pwrCount, cntCount, spdCount,
             pwrMet: Math.min(pwrCount, activeAgenda.pwrReq),
             cntMet: Math.min(cntCount, activeAgenda.cntReq),
             spdMet: Math.min(spdCount, activeAgenda.spdReq),
-            allHit: (pwrHit && cntHit && spdHit) 
+            kMet: Math.min(kCount, activeAgenda.kReq),
+            gbMet: Math.min(gbCount, activeAgenda.gbReq),
+            whMet: Math.min(whCount, activeAgenda.whReq),
+            allHit: (pwrHit && cntHit && spdHit && kHit && gbHit && whHit) 
         };
     }
 
     function renderAgendaGrid() {
-        const gridEl = document.getElementById('agenda-grid-3x3');
-        if (!gridEl) return;
+        const grid3x3 = document.getElementById('agenda-grid-3x3');
+        const grid3x1 = document.getElementById('agenda-grid-3x1');
+        if (!grid3x3 || !grid3x1) return;
 
         let progress = checkAgendaProgress();
-        let totalMet = progress.pwrMet + progress.cntMet + progress.spdMet; // Out of 9
-
-        let html = '';
+        
+        // Batters grid (9 squares)
+        let totalBattersMet = progress.pwrMet + progress.cntMet + progress.spdMet;
+        let batterHtml = '';
         for (let i = 0; i < 9; i++) {
-            let isFilled = i < totalMet ? 'filled' : '';
-            html += `<div class="grid-box ${isFilled}"></div>`;
+            let isFilled = i < totalBattersMet ? 'green-filled' : '';
+            batterHtml += `<div class="grid-box ${isFilled}"></div>`;
         }
-        gridEl.innerHTML = html;
+        grid3x3.innerHTML = batterHtml;
+
+        // Pitchers grid (3 squares vertical)
+        let totalPitchersMet = progress.kMet + progress.gbMet + progress.whMet;
+        let pitcherHtml = '';
+        for (let i = 0; i < 3; i++) {
+            let isFilled = i < totalPitchersMet ? 'blue-filled' : '';
+            pitcherHtml += `<div class="grid-box ${isFilled}"></div>`;
+        }
+        grid3x1.innerHTML = pitcherHtml;
     }
 
     function calculateTrueTeamWins(team, isUser) {
@@ -1123,6 +1185,9 @@
         let spEra = sp && sp.base ? sp.base[2] : 4.45;
         let rpEra = rp && rp.base ? rp.base[2] : 4.15;
         let staffEra = (spEra * 0.65) + (rpEra * 0.35);
+        if (sp && sp.traits && sp.traits.includes('K')) staffEra -= 0.15;
+        if (rp && rp.traits && rp.traits.includes('GB')) staffEra -= 0.15;
+
         let runsAllowed = (staffEra / 4.00) * 735;
 
         let exp = 1.83;
@@ -1636,6 +1701,9 @@
                         <li>Power (PWR) required: <strong>${activeAgenda.pwrReq}</strong> bats</li>
                         <li>Contact (CNT) required: <strong>${activeAgenda.cntReq}</strong> bats</li>
                         <li>Speed (SPD) required: <strong>${activeAgenda.spdReq}</strong> bats</li>
+                        <li>Strikeout (K) required: <strong>${activeAgenda.kReq}</strong> pitcher</li>
+                        <li>Groundball (GB) required: <strong>${activeAgenda.gbReq}</strong> pitcher</li>
+                        <li>Workhorse (WH) required: <strong>${activeAgenda.whReq}</strong> pitcher</li>
                     </ul>
                 </div>
             `;
