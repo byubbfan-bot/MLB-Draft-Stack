@@ -600,30 +600,16 @@
 <body>
 <div class="container">
     <h1>MLB Draft Swap</h1>
-    <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
+    <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the luxury tax threshold.</p>
     
     <!-- EDITORIAL INSTRUCTIONS HERO -->
-    <div class="instructions-hero" id="instructions-box">
-        <div class="hero-title" id="hero-title-text">
-            <span>⚾</span> Daily Challenge Mode Instructions
+    <div class="instructions-hero">
+        <div class="hero-title">
+            <span>⚾</span> Game Mode Instructions
         </div>
-        <p class="hero-text" id="hero-desc-text">
-            Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Hitters feature batting traits (Power, Contact, Speed) and pitchers have pitching roles (Strikeout, Groundball, Workhorse). Read the Scouting Report for tips, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!
+        <p class="hero-text" id="hero-instructions-text">
+            Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Read the Scouting Report, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!
         </p>
-        <div class="hero-steps" id="hero-steps-container">
-            <div class="hero-step-item">
-                <strong>1. Draft Roster</strong>
-                Pick your 11 players while monitoring your remaining budget.
-            </div>
-            <div class="hero-step-item">
-                <strong>2. Simulate & Check</strong>
-                Run the 162-game season to unlock your progress scorecards.
-            </div>
-            <div class="hero-step-item">
-                <strong>3. Retry & Deduce</strong>
-                Keep your roster intact, swap specific players, and hit all green/blue units to secure the pennant!
-            </div>
-        </div>
     </div>
 
     <div class="mode-container" id="mode-bar">
@@ -644,8 +630,15 @@
         </div>
     </div>
 
+    <!-- FREE PLAY START OVERLAY -->
+    <div id="freeplay-start-container" style="display: none; text-align: center; padding: 40px; background: #142232; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+        <h3 style="color: var(--accent-gold); font-size: 1.6em; margin-bottom: 10px;">⚡ 30-Second Speed Rush</h3>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 20px auto;">No budget caps! Match the hidden trait/role requirements as fast as you can. The clock starts when you hit the button below.</p>
+        <button class="btn" onclick="launchFreePlayRush()" style="background: var(--accent-blue); color: #fff; margin: 0 auto;">Start 30s Speed Rush</button>
+    </div>
+
     <div id="opponent-section">
-        <h2>Opponent Lineup</h2>
+        <h2 id="opponent-section-title">Opponent Lineup</h2>
         <div id="scout-report-box" class="scout-box" style="display: none;">
             <div class="scout-icon">📋</div>
             <div>
@@ -653,7 +646,7 @@
                 <div class="scout-text" id="scout-report-text">Analyzing rival tendencies...</div>
             </div>
         </div>
-        <div id="opponent-lineup" class="lineup-grid"></div>
+        <div id="opponent-lineup" class="lineup-grid" style="display:grid;"></div>
     </div>
 
     <!-- DUAL SCORECARD PANEL -->
@@ -681,25 +674,27 @@
         <div class="legend-item"><span class="badge wh">WH</span> Workhorse</div>
     </div>
 
-    <div class="hud-bar">
-        <div class="hud-item">Remaining Payroll <span id="hud-bank">$34.0M</span></div>
+    <div class="hud-bar" id="hud-bar-container">
+        <div class="hud-item" id="hud-bank-wrapper">Remaining Payroll <span id="hud-bank">$34.0M</span></div>
         <div class="hud-item">Active Position <span id="hud-pos">C</span></div>
     </div>
     
-    <div id="draft-section">
-        <h2>Available Free Agent Catalog</h2>
-        <p style="text-align:center; color:var(--text-muted); font-size:0.9em; margin-bottom: 15px;">Click any position card above to switch targets. Click a candidate below to sign them.</p>
-        <div id="draft-catalog" class="draft-pool"></div>
-    </div>
-    
-    <div id="user-section" style="margin-top:35px;">
-        <h2>Your Active 11-Man Roster</h2>
-        <div id="user-lineup" class="lineup-grid"></div>
-    </div>
-    
-    <div id="sim-section" style="display:none; text-align: center; margin-top: 25px;">
-        <button class="btn" id="sim-btn" onclick="startLiveSimulation()">Play 162-Game Season</button>
-        <div id="sim-results" style="display:none; text-align: left;"></div>
+    <div id="gameplay-workspace">
+        <div id="draft-section">
+            <h2>Available Free Agent Catalog</h2>
+            <p style="text-align:center; color:var(--text-muted); font-size:0.9em; margin-bottom: 15px;">Click any position card above to switch targets. Click a candidate below to sign them.</p>
+            <div id="draft-catalog" class="draft-pool"></div>
+        </div>
+        
+        <div id="user-section" style="margin-top:35px;">
+            <h2>Your Active 11-Man Roster</h2>
+            <div id="user-lineup" class="lineup-grid"></div>
+        </div>
+        
+        <div id="sim-section" style="display:none; text-align: center; margin-top: 25px;">
+            <button class="btn" id="sim-btn" onclick="startLiveSimulation()">Play 162-Game Season</button>
+            <div id="sim-results" style="display:none; text-align: left;"></div>
+        </div>
     </div>
 </div>
 
@@ -813,7 +808,7 @@
     }
 
     function updateDailyTallyDisplay() {
-        let data = syncDailyHistory();
+        let data = getDailyHistory();
         const avgEl = document.getElementById('daily-average');
         if (data.history.length === 0) {
             avgEl.innerText = "--";
@@ -840,32 +835,42 @@
         const dailyPanel = document.getElementById('daily-panel');
         const freeplayPanel = document.getElementById('freeplay-panel');
         const agendaPanel = document.getElementById('agenda-tracker-container');
+        const startOverlay = document.getElementById('freeplay-start-container');
+        const gameplayWorkspace = document.getElementById('gameplay-workspace');
+        const instructionsText = document.getElementById('hero-instructions-text');
         
-        // Clear active timer if switching modes
         if (freePlayInterval) clearInterval(freePlayInterval);
+        freePlayActive = false;
         
         if (mode === "daily") {
             dailyPanel.style.display = "flex";
             freeplayPanel.style.display = "none";
             agendaPanel.style.display = "none";
+            startOverlay.style.display = "none";
+            gameplayWorkspace.style.display = "block";
+            instructionsText.innerHTML = 'Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Read the Scouting Report, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!';
+            
             updateDailyTallyDisplay();
             updateDailyCountdown();
             initGame();
         } else {
             dailyPanel.style.display = "none";
             freeplayPanel.style.display = "flex";
-            agendaPanel.style.display = "block"; // Always show real-time scorecards in Free Play
+            agendaPanel.style.display = "block";
+            startOverlay.style.display = "block";
+            gameplayWorkspace.style.display = "none"; // Hide until start button clicked
+            
             document.getElementById('agenda-title-text').innerText = "⚡ Real-Time Puzzle Scorecards";
-            initFreePlayMode();
+            instructionsText.innerHTML = '<strong>⚡ Free Play Speed Rush:</strong> No budget limits! Hit start when you are ready, and solve the trait requirements before the 30-second timer hits zero.';
+            
+            initFreePlaySetup();
         }
     }
 
-    function initFreePlayMode() {
-        freePlayActive = true;
+    function initFreePlaySetup() {
         timeLeft = 30;
         document.getElementById('freeplay-timer').innerText = `${timeLeft}s`;
         
-        // Generate random Free Play requirements
         let pwrOptions = [4, 5, 6];
         let cntOptions = [2, 3, 4];
         let spdOptions = [1, 2, 3];
@@ -888,14 +893,25 @@
         });
         
         activeDraftPos = "C";
-        document.getElementById('opponent-section').querySelector('h2').innerText = "⚡ Free Play Speed Puzzle";
+        document.getElementById('opponent-section-title').innerText = "⚡ Free Play Speed Puzzle";
         document.getElementById('scout-report-box').style.display = 'none';
         
-        renderOpponentLineup();
-        updateHudAndCatalog();
-        renderAgendaGrid(); // Render immediately in real-time mode
+        // Hide payroll bank item for Free Play mode since there's no budget
+        document.getElementById('hud-bank-wrapper').style.display = 'none';
         
-        // Start 30s Countdown Timer
+        renderOpponentLineup();
+        renderAgendaGrid();
+    }
+
+    function launchFreePlayRush() {
+        document.getElementById('freeplay-start-container').style.display = 'none';
+        document.getElementById('gameplay-workspace').style.display = 'block';
+        
+        freePlayActive = true;
+        timeLeft = 30;
+        
+        updateHudAndCatalog();
+        
         freePlayInterval = setInterval(() => {
             timeLeft--;
             const timerDisplay = document.getElementById('freeplay-timer');
@@ -912,8 +928,7 @@
     function triggerFreePlayLoss() {
         const resultsDiv = document.getElementById('sim-results');
         resultsDiv.style.display = 'block';
-        document.getElementById('draft-section').style.display = 'none';
-        document.getElementById('sim-section').style.display = 'none';
+        document.getElementById('gameplay-workspace').style.display = 'none';
         
         resultsDiv.innerHTML = `
             <div class="result-graphic loss">
@@ -933,8 +948,7 @@
         
         const resultsDiv = document.getElementById('sim-results');
         resultsDiv.style.display = 'block';
-        document.getElementById('draft-section').style.display = 'none';
-        document.getElementById('sim-section').style.display = 'none';
+        document.getElementById('gameplay-workspace').style.display = 'none';
         
         resultsDiv.innerHTML = `
             <div class="result-graphic win">
@@ -1213,11 +1227,9 @@
         }
         grid2x1.innerHTML = pitcherHtml;
 
-        // If in Free Play mode and all requirements met in real time, trigger win!
         if (currentGameMode === "freeplay" && freePlayActive) {
             let complete = positions.every(pos => userTeam[pos] !== null && userTeam[pos] !== undefined);
-            let budgetValid = calculateRemainingBudget() >= 0;
-            if (complete && budgetValid && progress.allHit) {
+            if (complete && progress.allHit) {
                 triggerFreePlayWin();
             }
         }
@@ -1311,6 +1323,7 @@
     }
 
     function calculateRemainingBudget() {
+        if (currentGameMode === "freeplay") return 99.0; // Unlimited budget for Free Play
         let spent = 0;
         positions.forEach(pos => {
             if (userTeam[pos]) spent += userTeam[pos].cost;
@@ -1321,9 +1334,11 @@
     function updateHudAndCatalog() {
         let currentRemaining = calculateRemainingBudget();
         
-        const bankEl = document.getElementById('hud-bank');
-        bankEl.innerText = `$${currentRemaining.toFixed(1)}M`;
-        bankEl.className = currentRemaining < 0 ? 'bankrupt' : '';
+        if (currentGameMode === "daily") {
+            const bankEl = document.getElementById('hud-bank');
+            bankEl.innerText = `$${currentRemaining.toFixed(1)}M`;
+            bankEl.className = currentRemaining < 0 ? 'bankrupt' : '';
+        }
 
         document.getElementById('hud-pos').innerText = activeDraftPos;
 
@@ -1331,7 +1346,7 @@
         renderDraftCatalog(currentRemaining);
         
         if (currentGameMode === "freeplay") {
-            renderAgendaGrid(); // Real-time check
+            renderAgendaGrid();
         } else {
             checkSimulationReady();
         }
@@ -1402,7 +1417,7 @@
         choices.forEach((p, index) => {
             let currentPickCost = userTeam[activeDraftPos] ? userTeam[activeDraftPos].cost : 0;
             let netBudgetChange = currentRemaining + currentPickCost;
-            const dynamicLocked = p.cost > netBudgetChange;
+            const dynamicLocked = currentGameMode === "daily" && p.cost > netBudgetChange;
             const isCurrentlyPicked = userTeam[activeDraftPos] && userTeam[activeDraftPos].name === p.name;
 
             const card = document.createElement('div');
