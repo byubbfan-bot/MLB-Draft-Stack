@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MLB Strategy & Luxury Tax Cap Simulation</title>
+    <title>MLB Draft Swap</title>
     <style>
         :root {
             --bg-base: #0a1118;
@@ -586,7 +586,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>MLB Roster & Luxury Tax Cap Simulation</h1>
+    <h1>MLB Draft Swap</h1>
     <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
     
     <!-- EDITORIAL INSTRUCTIONS HERO -->
@@ -617,11 +617,11 @@
         <div class="mode-control">
             <span class="mode-label">Game Mode:</span>
             <select id="mode-dropdown" class="mode-select">
-                <option value="freeplay" selected>🎮 Free Play</option>
-                <option value="daily">🔥 Daily Challenge</option>
+                <option value="daily" selected>🔥 Daily Challenge</option>
+                <option value="freeplay">🎮 Free Play</option>
             </select>
         </div>
-        <div id="daily-panel" class="daily-tracker" style="display:none;">
+        <div id="daily-panel" class="daily-tracker" style="display:flex;">
             <div>All-Time Avg: <strong id="daily-average">--</strong></div>
             <div>Today: <strong id="daily-today-status">Attempt #1</strong></div>
             <div style="font-size: 0.85em; color: var(--text-muted);">Resets In: <span id="daily-timer" style="color: var(--accent-gold); font-weight: bold;">--:--:--</span></div>
@@ -688,7 +688,7 @@
 </div>
 
 <script>
-    let currentGameMode = "freeplay";
+    let currentGameMode = "daily"; // Default loaded mode
     let pseudoRandomSeed = 123456789;
     let activeAgenda = { pwrReq: 6, cntReq: 2, spdReq: 1, pitch1Req: 'K', pitch2Req: 'GB' };
     let hasSubmittedOnce = false;
@@ -1653,7 +1653,6 @@
         updateHudAndCatalog();
     }
     
-    // Safely execute once DOM is fully parsed
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', bootApp);
     } else {
@@ -1663,10 +1662,16 @@
     function bootApp() {
         const dropdown = document.getElementById('mode-dropdown');
         if (dropdown) {
+            dropdown.value = "daily"; // Ensure selector reflects default state
             dropdown.addEventListener('change', function() {
                 switchGameMode(this.value);
             });
         }
+        
+        // Initialize Daily Challenge UI elements explicitly on boot
+        const dailyPanel = document.getElementById('daily-panel');
+        if (dailyPanel) dailyPanel.style.display = "flex";
+        
         initGame();
     }
 </script>
