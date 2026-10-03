@@ -1200,7 +1200,7 @@
         const oppDiv = document.getElementById('opponent-lineup');
         oppDiv.innerHTML = positions.map(pos => {
             const p = opponentTeam[pos];
-            let traitsHTML = p.traits && p.traits.length > 0 ? `<div class="badge-row">${renderArchetestBadgesHTML(p.traits)}</div>` : '';
+            let traitsHTML = p.traits && p.traits.length > 0 ? `<div class="badge-row">${renderArchetypeBadgesHTML(p.traits)}</div>` : '';
             return `
                 <div class="card">
                     <div class="pos-label">${pos}</div>
@@ -1512,7 +1512,6 @@
     function startLiveSimulation() {
         hasSubmittedOnce = true;
         
-        // REVEAL SCORECARDS UPON SUBMISSION
         const agendaPanel = document.getElementById('agenda-tracker-container');
         if (agendaPanel && currentGameMode === 'daily') {
             agendaPanel.style.display = 'block';
@@ -1654,7 +1653,14 @@
         updateHudAndCatalog();
     }
     
-    window.onload = function() {
+    // Safely execute once DOM is fully parsed
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootApp);
+    } else {
+        bootApp();
+    }
+
+    function bootApp() {
         const dropdown = document.getElementById('mode-dropdown');
         if (dropdown) {
             dropdown.addEventListener('change', function() {
@@ -1662,7 +1668,7 @@
             });
         }
         initGame();
-    };
+    }
 </script>
 </body>
 </html>
