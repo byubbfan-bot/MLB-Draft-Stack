@@ -525,6 +525,22 @@
             max-width: 360px;
             box-sizing: border-box;
         }
+        .percentile-box {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 6px;
+            padding: 12px;
+            margin: 15px auto;
+            max-width: 420px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            box-sizing: border-box;
+        }
+        .perc-item { text-align: center; }
+        .perc-val { font-size: 1.2em; font-weight: 900; color: var(--accent-gold); }
+        .perc-lbl { font-size: 0.65em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
+
         .tiebreaker-banner {
             background: var(--accent-gold);
             color: #0a1118;
@@ -688,7 +704,7 @@
 </div>
 
 <script>
-    let currentGameMode = "daily"; // Default loaded mode
+    let currentGameMode = "daily";
     let pseudoRandomSeed = 123456789;
     let activeAgenda = { pwrReq: 6, cntReq: 2, spdReq: 1, pitch1Req: 'K', pitch2Req: 'GB' };
     let hasSubmittedOnce = false;
@@ -790,6 +806,29 @@
             let attemptNum = Math.max(1, data.triesToday);
             todayEl.innerText = `Attempt #${attemptNum}`;
         }
+    }
+
+    function calculatePercentiles(triesToday) {
+        let data = getDailyHistory();
+        let careerAvg = 3.0;
+        if (data.history.length > 0) {
+            let sum = data.history.reduce((acc, entry) => acc + entry.tries, 0);
+            careerAvg = sum / data.history.length;
+        }
+
+        // Daily percentile calculation model based on tries taken
+        let dailyPerc = 95;
+        if (triesToday === 1) dailyPerc = 99;
+        else if (triesToday === 2) dailyPerc = 88;
+        else if (triesToday === 3) dailyPerc = 65;
+        else if (triesToday === 4) dailyPerc = 40;
+        else dailyPerc = 20;
+
+        // All-time percentile calculation model based on career average
+        let allTimePerc = Math.max(5, Math.min(99, Math.round(100 - ((careerAvg - 1.2) * 35))));
+        if (isNaN(allTimePerc)) allTimePerc = 50;
+
+        return { dailyPerc, allTimePerc };
     }
 
     function switchGameMode(mode) {
@@ -1593,8 +1632,23 @@
         const winningTeam = isWin ? userTeam : opponentTeam;
         const winningWins = isWin ? userWins : oppWins;
         
+        let percentileHTML = '';
         if (currentGameMode === "daily" && isWin) {
             recordDailyAttemptWin();
+            let data = getDailyHistory();
+            let percs = calculatePercentiles(data.triesToday);
+            percentileHTML = `
+                <div class="percentile-box">
+                    <div class="perc-item">
+                        <div class="perc-val">Top ${100 - percs.dailyPerc}%</div>
+                        <div class="perc-lbl">Today's Percentile</div>
+                    </div>
+                    <div class="perc-item">
+                        <div class="perc-val">Top ${100 - percs.allTimePerc}%</div>
+                        <div class="perc-lbl">All-Time Percentile</div>
+                    </div>
+                </div>
+            `;
         }
 
         const mvpCardHTML = generateMvpCard(winningTeam, winningWins);
@@ -1628,6 +1682,7 @@
                 ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">${subBanner}</div>
+                ${percentileHTML}
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
@@ -1662,13 +1717,12 @@
     function bootApp() {
         const dropdown = document.getElementById('mode-dropdown');
         if (dropdown) {
-            dropdown.value = "daily"; // Ensure selector reflects default state
+            dropdown.value = "daily";
             dropdown.addEventListener('change', function() {
                 switchGameMode(this.value);
             });
         }
         
-        // Initialize Daily Challenge UI elements explicitly on boot
         const dailyPanel = document.getElementById('daily-panel');
         if (dailyPanel) dailyPanel.style.display = "flex";
         
