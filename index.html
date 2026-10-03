@@ -157,7 +157,7 @@
         .daily-tracker {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 22px;
             font-size: 0.9em;
             background: rgba(212, 175, 55, 0.08);
             padding: 8px 16px;
@@ -525,22 +525,6 @@
             max-width: 360px;
             box-sizing: border-box;
         }
-        .percentile-box {
-            background: rgba(212, 175, 55, 0.1);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 6px;
-            padding: 12px;
-            margin: 15px auto;
-            max-width: 420px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            box-sizing: border-box;
-        }
-        .perc-item { text-align: center; }
-        .perc-val { font-size: 1.2em; font-weight: 900; color: var(--accent-gold); }
-        .perc-lbl { font-size: 0.65em; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-top: 2px; }
-
         .tiebreaker-banner {
             background: var(--accent-gold);
             color: #0a1118;
@@ -552,6 +536,19 @@
             max-width: 380px;
             letter-spacing: 1px;
             text-transform: uppercase;
+        }
+        .percentile-badge {
+            background: rgba(212, 175, 55, 0.15);
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 0.9em;
+            font-weight: 700;
+            margin: 10px auto;
+            max-width: 360px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .mvp-container {
             margin: 20px auto 10px auto;
@@ -638,7 +635,7 @@
             </select>
         </div>
         <div id="daily-panel" class="daily-tracker" style="display:flex;">
-            <div>All-Time Avg: <strong id="daily-average">--</strong></div>
+            <div>Career Avg: <strong id="daily-average">--</strong></div>
             <div>Today: <strong id="daily-today-status">Attempt #1</strong></div>
             <div style="font-size: 0.85em; color: var(--text-muted);">Resets In: <span id="daily-timer" style="color: var(--accent-gold); font-weight: bold;">--:--:--</span></div>
         </div>
@@ -788,47 +785,44 @@
         updateDailyTallyDisplay();
     }
 
+    function calculateDailyPercentile(tries) {
+        if (tries === 1) return 99;
+        if (tries === 2) return 92;
+        if (tries === 3) return 81;
+        if (tries === 4) return 67;
+        if (tries === 5) return 52;
+        return Math.max(15, 85 - (tries * 8));
+    }
+
+    function calculateAllTimePercentile(avgTries) {
+        if (!avgTries || isNaN(avgTries)) return "Top --";
+        if (avgTries <= 1.2) return "Top 1%";
+        if (avgTries <= 1.5) return "Top 5%";
+        if (avgTries <= 2.0) return "Top 15%";
+        if (avgTries <= 2.5) return "Top 30%";
+        if (avgTries <= 3.0) return "Top 50%";
+        return "Top 75%";
+    }
+
     function updateDailyTallyDisplay() {
         let data = syncDailyHistory();
         const avgEl = document.getElementById('daily-average');
         if (data.history.length === 0) {
-            avgEl.innerText = "No Wins Yet";
+            avgEl.innerText = "--";
         } else {
             let sum = data.history.reduce((acc, entry) => acc + entry.tries, 0);
-            let avg = (sum / data.history.length).toFixed(1);
-            avgEl.innerText = `${avg} Tries / Win (${data.history.length} Solved)`;
+            let avgNum = sum / data.history.length;
+            let percentile = calculateAllTimePercentile(avgNum);
+            avgEl.innerText = `${avgNum.toFixed(1)} Tries (${percentile})`;
         }
 
         const todayEl = document.getElementById('daily-today-status');
         if (data.todayWon) {
-            todayEl.innerHTML = `<span style="color:var(--accent-green);">Solved in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'} ✓</span>`;
+            todayEl.innerHTML = `<span style="color:var(--accent-green);">${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'} ✓</span>`;
         } else {
             let attemptNum = Math.max(1, data.triesToday);
             todayEl.innerText = `Attempt #${attemptNum}`;
         }
-    }
-
-    function calculatePercentiles(triesToday) {
-        let data = getDailyHistory();
-        let careerAvg = 3.0;
-        if (data.history.length > 0) {
-            let sum = data.history.reduce((acc, entry) => acc + entry.tries, 0);
-            careerAvg = sum / data.history.length;
-        }
-
-        // Daily percentile calculation model based on tries taken
-        let dailyPerc = 95;
-        if (triesToday === 1) dailyPerc = 99;
-        else if (triesToday === 2) dailyPerc = 88;
-        else if (triesToday === 3) dailyPerc = 65;
-        else if (triesToday === 4) dailyPerc = 40;
-        else dailyPerc = 20;
-
-        // All-time percentile calculation model based on career average
-        let allTimePerc = Math.max(5, Math.min(99, Math.round(100 - ((careerAvg - 1.2) * 35))));
-        if (isNaN(allTimePerc)) allTimePerc = 50;
-
-        return { dailyPerc, allTimePerc };
     }
 
     function switchGameMode(mode) {
@@ -1582,16 +1576,6 @@
         } else {
             finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
         }
-
-        let agendaStatus = checkAgendaProgress();
-        let strategyTag = '';
-        if (currentGameMode === 'daily') {
-            if (agendaStatus.allHit) {
-                strategyTag = '<div style="color:var(--accent-green); font-weight:bold; margin-bottom:6px;">🌟 ALL AGENDA TARGETS MET (100% Sweep Unlocked)</div>';
-            } else {
-                strategyTag = '<div style="color:var(--text-muted); font-weight:bold; margin-bottom:6px;">⚠️ AGENDA TARGETS UNMET</div>';
-            }
-        }
         
         const simInterval = setInterval(() => {
             currentGame++;
@@ -1606,7 +1590,7 @@
             
             resultsDiv.innerHTML = `
                 <h3 style="text-align: center;">⚾ Simulating 162-Game Regular Season...</h3>
-                ${strategyTag ? `<div style="text-align: center;">${strategyTag}</div>` : ''}
+                <div style="color:var(--text-muted); font-size:0.9em; text-align:center; margin-bottom:6px;">Evaluating roster mechanics & tactical matchups...</div>
                 <div class="live-counter" style="text-align: center;">
                     YOUR CLUB: <span style="color:var(--accent-green);">${userWins} W</span> - <span style="color:var(--accent-red);">${currentGame - userWins} L</span><br>
                     RIVAL CLUB: <span style="color:#3b82f6;">${oppWins} W</span> - <span style="color:var(--text-muted);">${currentGame - oppWins} L</span>
@@ -1632,21 +1616,22 @@
         const winningTeam = isWin ? userTeam : opponentTeam;
         const winningWins = isWin ? userWins : oppWins;
         
-        let percentileHTML = '';
-        if (currentGameMode === "daily" && isWin) {
-            recordDailyAttemptWin();
+        let percentileBadgeHTML = '';
+        if (currentGameMode === "daily") {
             let data = getDailyHistory();
-            let percs = calculatePercentiles(data.triesToday);
-            percentileHTML = `
-                <div class="percentile-box">
-                    <div class="perc-item">
-                        <div class="perc-val">Top ${100 - percs.dailyPerc}%</div>
-                        <div class="perc-lbl">Today's Percentile</div>
-                    </div>
-                    <div class="perc-item">
-                        <div class="perc-val">Top ${100 - percs.allTimePerc}%</div>
-                        <div class="perc-lbl">All-Time Percentile</div>
-                    </div>
+            if (isWin) {
+                recordDailyAttemptWin();
+            }
+            let dailyPct = calculateDailyPercentile(data.triesToday);
+            
+            let sum = data.history.length > 0 ? data.history.reduce((acc, entry) => acc + entry.tries, 0) : data.triesToday;
+            let avgNum = data.history.length > 0 ? sum / data.history.length : data.triesToday;
+            let allTimeRank = calculateAllTimePercentile(avgNum);
+
+            percentileBadgeHTML = `
+                <div class="percentile-badge">
+                    📊 Today's Rank: Better than <strong>${dailyPct}%</strong> of players (${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'})<br>
+                    🏆 Career Rank: <strong>${allTimeRank}</strong>
                 </div>
             `;
         }
@@ -1667,7 +1652,7 @@
         } else if (currentGameMode === 'daily') {
             let data = getDailyHistory();
             if (isWin) {
-                subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your career average has updated.`;
+                subBanner = `🎉 Daily Challenge Cleared in ${data.triesToday} ${data.triesToday === 1 ? 'try' : 'tries'}! Your stats have updated.`;
             } else {
                 subBanner = `Attempt #${data.triesToday} fell short (${userWins} wins to ${oppWins}). Check your 3x3 and 2x1 progress grids above and adjust your lineup!`;
             }
@@ -1682,7 +1667,7 @@
                 ${hadTiebreaker ? `<div class="tiebreaker-banner">⚡ GAME 163 DECIDED ⚡</div>` : ''}
                 <div class="graphic-title">${isWin ? '🏆 Pennant Winner' : '❌ Season Over'}</div>
                 <div class="graphic-banner">${subBanner}</div>
-                ${percentileHTML}
+                ${percentileBadgeHTML}
                 <div class="graphic-stats">
                     <div>
                         <span class="doc-label">Your Club</span>
