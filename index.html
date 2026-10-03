@@ -603,14 +603,14 @@
     <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the $34.0M luxury tax threshold.</p>
     
     <!-- EDITORIAL INSTRUCTIONS HERO -->
-    <div class="instructions-hero">
-        <div class="hero-title">
+    <div class="instructions-hero" id="instructions-box">
+        <div class="hero-title" id="hero-title-text">
             <span>⚾</span> Daily Challenge Mode Instructions
         </div>
-        <p class="hero-text">
+        <p class="hero-text" id="hero-desc-text">
             Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Hitters feature batting traits (Power, Contact, Speed) and pitchers have pitching roles (Strikeout, Groundball, Workhorse). Read the Scouting Report for tips, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!
         </p>
-        <div class="hero-steps">
+        <div class="hero-steps" id="hero-steps-container">
             <div class="hero-step-item">
                 <strong>1. Draft Roster</strong>
                 Pick your 11 players while monitoring your remaining budget.
@@ -631,13 +631,16 @@
             <span class="mode-label">Game Mode:</span>
             <select id="mode-dropdown" class="mode-select">
                 <option value="daily" selected>🔥 Daily Challenge</option>
-                <option value="freeplay">🎮 Free Play</option>
+                <option value="freeplay">⚡ Free Play (30s Rush)</option>
             </select>
         </div>
         <div id="daily-panel" class="daily-tracker" style="display:flex;">
             <div>Career Avg: <strong id="daily-average">--</strong></div>
             <div>Today: <strong id="daily-today-status">Attempt #1</strong></div>
             <div style="font-size: 0.85em; color: var(--text-muted);">Resets In: <span id="daily-timer" style="color: var(--accent-gold); font-weight: bold;">--:--:--</span></div>
+        </div>
+        <div id="freeplay-panel" class="daily-tracker" style="display:none; background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.3);">
+            <div>Free Play Timer: <strong id="freeplay-timer" style="color: #60a5fa; font-size: 1.2em;">30s</strong></div>
         </div>
     </div>
 
@@ -655,7 +658,7 @@
 
     <!-- DUAL SCORECARD PANEL -->
     <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
-        <div class="agenda-grid-title">🎯 Secret Agenda Scorecards (Evaluated on Simulation)</div>
+        <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards (Evaluated on Simulation)</div>
         <div class="agenda-grids-wrapper">
             <div class="grid-section">
                 <div class="grid-section-title">Batters (9 Units)</div>
@@ -705,6 +708,11 @@
     let pseudoRandomSeed = 123456789;
     let activeAgenda = { pwrReq: 6, cntReq: 2, spdReq: 1, pitch1Req: 'K', pitch2Req: 'GB' };
     let hasSubmittedOnce = false;
+    
+    // Free Play Timer variables
+    let freePlayInterval = null;
+    let timeLeft = 30;
+    let freePlayActive = false;
 
     function seededRandom() {
         pseudoRandomSeed = (pseudoRandomSeed * 9301 + 49297) % 233280;
@@ -828,18 +836,115 @@
     function switchGameMode(mode) {
         currentGameMode = mode;
         hasSubmittedOnce = false;
+        
         const dailyPanel = document.getElementById('daily-panel');
+        const freeplayPanel = document.getElementById('freeplay-panel');
         const agendaPanel = document.getElementById('agenda-tracker-container');
+        
+        // Clear active timer if switching modes
+        if (freePlayInterval) clearInterval(freePlayInterval);
+        
         if (mode === "daily") {
             dailyPanel.style.display = "flex";
+            freeplayPanel.style.display = "none";
             agendaPanel.style.display = "none";
             updateDailyTallyDisplay();
             updateDailyCountdown();
+            initGame();
         } else {
             dailyPanel.style.display = "none";
-            agendaPanel.style.display = "none";
+            freeplayPanel.style.display = "flex";
+            agendaPanel.style.display = "block"; // Always show real-time scorecards in Free Play
+            document.getElementById('agenda-title-text').innerText = "⚡ Real-Time Puzzle Scorecards";
+            initFreePlayMode();
         }
-        initGame();
+    }
+
+    function initFreePlayMode() {
+        freePlayActive = true;
+        timeLeft = 30;
+        document.getElementById('freeplay-timer').innerText = `${timeLeft}s`;
+        
+        // Generate random Free Play requirements
+        let pwrOptions = [4, 5, 6];
+        let cntOptions = [2, 3, 4];
+        let spdOptions = [1, 2, 3];
+        let pitchRoles = ['K', 'GB', 'WH'];
+        
+        activeAgenda = {
+            pwrReq: pwrOptions[Math.floor(Math.random() * pwrOptions.length)],
+            cntReq: cntOptions[Math.floor(Math.random() * cntOptions.length)],
+            spdReq: spdOptions[Math.floor(Math.random() * spdOptions.length)],
+            pitch1Req: pitchRoles[Math.floor(Math.random() * pitchRoles.length)],
+            pitch2Req: pitchRoles[Math.floor(Math.random() * pitchRoles.length)]
+        };
+        
+        positions.forEach(pos => {
+            userTeam[pos] = null;
+            let options = [...playersDB[pos]].sort(() => 0.5 - Math.random());
+            opponentTeam[pos] = options[0];
+            let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - Math.random());
+            catalogChoices[pos] = pool.slice(0, 4);
+        });
+        
+        activeDraftPos = "C";
+        document.getElementById('opponent-section').querySelector('h2').innerText = "⚡ Free Play Speed Puzzle";
+        document.getElementById('scout-report-box').style.display = 'none';
+        
+        renderOpponentLineup();
+        updateHudAndCatalog();
+        renderAgendaGrid(); // Render immediately in real-time mode
+        
+        // Start 30s Countdown Timer
+        freePlayInterval = setInterval(() => {
+            timeLeft--;
+            const timerDisplay = document.getElementById('freeplay-timer');
+            if (timerDisplay) timerDisplay.innerText = `${timeLeft}s`;
+            
+            if (timeLeft <= 0) {
+                clearInterval(freePlayInterval);
+                freePlayActive = false;
+                triggerFreePlayLoss();
+            }
+        }, 1000);
+    }
+
+    function triggerFreePlayLoss() {
+        const resultsDiv = document.getElementById('sim-results');
+        resultsDiv.style.display = 'block';
+        document.getElementById('draft-section').style.display = 'none';
+        document.getElementById('sim-section').style.display = 'none';
+        
+        resultsDiv.innerHTML = `
+            <div class="result-graphic loss">
+                <div class="graphic-title">⏰ Time Expired!</div>
+                <div class="graphic-banner">You ran out of time before completing the real-time roster puzzle.</div>
+                <div class="btn-container">
+                    <button class="btn" onclick="switchGameMode('freeplay')" style="background: var(--accent-gold); color: #0a1118; margin: 0;">Try Again</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function triggerFreePlayWin() {
+        if (!freePlayActive) return;
+        freePlayActive = false;
+        clearInterval(freePlayInterval);
+        
+        const resultsDiv = document.getElementById('sim-results');
+        resultsDiv.style.display = 'block';
+        document.getElementById('draft-section').style.display = 'none';
+        document.getElementById('sim-section').style.display = 'none';
+        
+        resultsDiv.innerHTML = `
+            <div class="result-graphic win">
+                <div class="graphic-title">🏆 Puzzle Solved!</div>
+                <div class="graphic-banner">Lightning fast! You solved the real-time puzzle with <strong>${timeLeft} seconds</strong> remaining!</div>
+                <div class="btn-container">
+                    <button class="btn" onclick="switchGameMode('freeplay')" style="background: var(--accent-green); color: #fff; margin: 0;">Play Again</button>
+                </div>
+            </div>
+        `;
     }
 
     function getPlayerCost(ovr) {
@@ -1047,8 +1152,6 @@
     }
 
     function checkAgendaProgress() {
-        if (currentGameMode !== 'daily') return { pwrHit: true, cntHit: true, spdHit: true, pitch1Hit: true, pitch2Hit: true, allHit: true };
-
         let pwrCount = 0, cntCount = 0, spdCount = 0;
         let pitch1Count = 0, pitch2Count = 0;
         
@@ -1109,6 +1212,15 @@
             pitcherHtml += `<div class="grid-box ${isFilled}"></div>`;
         }
         grid2x1.innerHTML = pitcherHtml;
+
+        // If in Free Play mode and all requirements met in real time, trigger win!
+        if (currentGameMode === "freeplay" && freePlayActive) {
+            let complete = positions.every(pos => userTeam[pos] !== null && userTeam[pos] !== undefined);
+            let budgetValid = calculateRemainingBudget() >= 0;
+            if (complete && budgetValid && progress.allHit) {
+                triggerFreePlayWin();
+            }
+        }
     }
 
     function calculateTrueTeamWins(team, isUser) {
@@ -1171,34 +1283,26 @@
         if (currentGameMode === "daily") {
             const dayNum = getEastern5AMDayNumber();
             pseudoRandomSeed = (dayNum * 1234567) % 2147483647;
-        }
-
-        positions.forEach(pos => {
-            userTeam[pos] = null;
-            let options = [...playersDB[pos]].sort(() => 0.5 - getRandom());
             
-            if (currentGameMode === "daily") {
+            positions.forEach(pos => {
+                userTeam[pos] = null;
+                let options = [...playersDB[pos]].sort(() => 0.5 - getRandom());
                 opponentTeam[pos] = options.find(p => p.cost >= 4.2) || options[0];
-            } else {
-                opponentTeam[pos] = options.find(p => p.cost <= 3.2) || options[options.length - 1];
-            }
+                let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - getRandom());
+                catalogChoices[pos] = pool.slice(0, 4);
+            });
+
+            activeDraftPos = "C";
+            let totalOpponentCost = positions.reduce((sum, pos) => sum + opponentTeam[pos].cost, 0);
+            document.getElementById('opponent-section').querySelector('h2').innerText = `🔥 Daily Challenge Opponent (Payroll: $${totalOpponentCost.toFixed(1)}M)`;
             
-            let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - getRandom());
-            catalogChoices[pos] = pool.slice(0, 4);
-        });
-
-        activeDraftPos = "C";
-
-        let totalOpponentCost = positions.reduce((sum, pos) => sum + opponentTeam[pos].cost, 0);
-        const prefix = currentGameMode === "daily" ? "🔥 Daily Challenge Opponent" : "Opponent Lineup";
-        document.getElementById('opponent-section').querySelector('h2').innerText = `${prefix} (Payroll: $${totalOpponentCost.toFixed(1)}M)`;
-        
-        generateScoutingReport();
-        renderOpponentLineup();
-        updateHudAndCatalog();
-        
-        document.getElementById('sim-section').style.display = 'none';
-        document.getElementById('draft-section').style.display = 'block';
+            generateScoutingReport();
+            renderOpponentLineup();
+            updateHudAndCatalog();
+            
+            document.getElementById('sim-section').style.display = 'none';
+            document.getElementById('draft-section').style.display = 'block';
+        }
     }
 
     function changeActivePosition(pos) {
@@ -1226,7 +1330,11 @@
         renderUserLineup();
         renderDraftCatalog(currentRemaining);
         
-        checkSimulationReady();
+        if (currentGameMode === "freeplay") {
+            renderAgendaGrid(); // Real-time check
+        } else {
+            checkSimulationReady();
+        }
     }
 
     function renderOpponentLineup() {
