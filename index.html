@@ -1127,28 +1127,39 @@
             }
         });
 
-        let pitchPositions = ["SP", "RP"];
-        pitchPositions.forEach(pos => {
-            let p = userTeam[pos];
-            if (p && p.traits) {
-                if (p.traits.includes(activeAgenda.pitch1Req)) pitch1Count++;
-                if (p.traits.includes(activeAgenda.pitch2Req)) pitch2Count++;
-            }
-        });
+        // Fixed individual pitcher slot evaluation
+        let sp = userTeam["SP"];
+        let rp = userTeam["RP"];
+        
+        if (sp && sp.traits && sp.traits.includes(activeAgenda.pitch1Req)) pitch1Count = 1;
+        // If pitch1Req is met by SP, check if pitch2Req can be met by RP, or vice-versa
+        let pitcher1Matches = sp && sp.traits && (sp.traits.includes(activeAgenda.pitch1Req) || sp.traits.includes(activeAgenda.pitch2Req));
+        let pitcher2Matches = rp && rp.traits && (rp.traits.includes(activeAgenda.pitch1Req) || rp.traits.includes(activeAgenda.pitch2Req));
+        
+        // Exact 2x1 grid slot counting
+        let slot1Met = 0, slot2Met = 0;
+        if (sp && sp.traits && sp.traits.includes(activeAgenda.pitch1Req)) slot1Met = 1;
+        if (rp && rp.traits && rp.traits.includes(activeAgenda.pitch2Req)) slot2Met = 1;
+        
+        // Fallback check if roles are swapped between SP and RP
+        if (slot1Met === 0 && slot2Met === 0) {
+            if (sp && sp.traits && sp.traits.includes(activeAgenda.pitch2Req)) slot2Met = 1;
+            if (rp && rp.traits && rp.traits.includes(activeAgenda.pitch1Req)) slot1Met = 1;
+        }
 
         let pwrHit = pwrCount >= activeAgenda.pwrReq;
         let cntHit = cntCount >= activeAgenda.cntReq;
         let spdHit = spdCount >= activeAgenda.spdReq;
-        let pitch1Hit = pitch1Count >= 1;
-        let pitch2Hit = pitch2Count >= 1;
+        let pitch1Hit = (sp && sp.traits && (sp.traits.includes(activeAgenda.pitch1Req) || sp.traits.includes(activeAgenda.pitch2Req)));
+        let pitch2Hit = (rp && rp.traits && (rp.traits.includes(activeAgenda.pitch1Req) || rp.traits.includes(activeAgenda.pitch2Req)) && rp !== sp);
 
         return { 
             pwrMet: Math.min(pwrCount, activeAgenda.pwrReq),
             cntMet: Math.min(cntCount, activeAgenda.cntReq),
             spdMet: Math.min(spdCount, activeAgenda.spdReq),
-            pitch1Met: Math.min(pitch1Count, 1),
-            pitch2Met: Math.min(pitch2Count, 1),
-            allHit: (pwrHit && cntHit && spdHit && pitch1Hit && pitch2Hit) 
+            pitch1Met: slot1Met,
+            pitch2Met: slot2Met,
+            allHit: (pwrHit && cntHit && spdHit && slot1Met > 0 && slot2Met > 0) 
         };
     }
 
