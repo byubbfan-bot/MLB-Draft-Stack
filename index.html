@@ -620,18 +620,6 @@
         <button class="btn" onclick="launchFreePlayRush()" style="background: var(--accent-blue); color: #fff; margin: 0 auto;">Start 30s Speed Rush</button>
     </div>
 
-    <div id="opponent-section">
-        <h2 id="opponent-section-title">Opponent Lineup</h2>
-        <div id="scout-report-box" class="scout-box" style="display: none;">
-            <div class="scout-icon">📋</div>
-            <div>
-                <div class="scout-title">Dugout Scouting Report</div>
-                <div class="scout-text" id="scout-report-text">Analyzing rival tendencies...</div>
-            </div>
-        </div>
-        <div id="opponent-lineup" class="lineup-grid" style="display:grid;"></div>
-    </div>
-
     <div class="legend-bar">
         <span class="legend-title">Player Profile Legend:</span>
         <div class="legend-item"><span class="badge pwr">PWR</span> Power</div>
@@ -819,9 +807,12 @@
         const startOverlay = document.getElementById('freeplay-start-container');
         const gameplayWorkspace = document.getElementById('gameplay-workspace');
         const instructionsText = document.getElementById('hero-instructions-text');
+        const simResults = document.getElementById('sim-results');
         
         if (freePlayInterval) clearInterval(freePlayInterval);
         freePlayActive = false;
+        simResults.style.display = 'none';
+        simResults.innerHTML = '';
         
         if (mode === "daily") {
             dailyPanel.style.display = "flex";
@@ -867,17 +858,11 @@
         
         positions.forEach(pos => {
             userTeam[pos] = null;
-            let options = [...playersDB[pos]].sort(() => 0.5 - Math.random());
-            opponentTeam[pos] = options[0];
-            let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - Math.random());
+            let pool = playersDB[pos].sort(() => 0.5 - Math.random());
             catalogChoices[pos] = pool.slice(0, 4);
         });
         
         activeDraftPos = "C";
-        document.getElementById('opponent-section-title').innerText = "⚡ Free Play Speed Puzzle";
-        document.getElementById('scout-report-box').style.display = 'none';
-        
-        renderOpponentLineup();
         renderAgendaGrid();
     }
 
@@ -906,7 +891,6 @@
     function triggerFreePlayLoss() {
         const resultsDiv = document.getElementById('sim-results');
         resultsDiv.style.display = 'block';
-        document.getElementById('gameplay-workspace').style.display = 'none';
         
         resultsDiv.innerHTML = `
             <div class="result-graphic loss">
@@ -926,7 +910,6 @@
         
         const resultsDiv = document.getElementById('sim-results');
         resultsDiv.style.display = 'block';
-        document.getElementById('gameplay-workspace').style.display = 'none';
         
         resultsDiv.innerHTML = `
             <div class="result-graphic win">
@@ -1023,7 +1006,7 @@
             { name: "Rafael Devers", base: [0.285, 33, 102, 4], traits: ["PWR"] },
             { name: "Nolan Arenado", base: [0.285, 33, 105, 3], traits: ["PWR"] },
             { name: "Matt Chapman", base: [0.250, 28, 82, 8], traits: ["PWR"] },
-            { name: "Alejandro Bohm", base: [0.280, 18, 92, 4], traits: ["CNT"] },
+            { name: "Alec Bohm", base: [0.280, 18, 92, 4], traits: ["CNT"] },
             { name: "Mike Schmidt", base: [0.270, 42, 118, 14], traits: ["PWR"] }
         ],
         SS: [
@@ -1260,17 +1243,12 @@
             
             positions.forEach(pos => {
                 userTeam[pos] = null;
-                let options = [...playersDB[pos]].sort(() => 0.5 - getRandom());
-                opponentTeam[pos] = options[0];
-                let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - getRandom());
+                let pool = playersDB[pos].sort(() => 0.5 - getRandom());
                 catalogChoices[pos] = pool.slice(0, 4);
             });
 
             activeDraftPos = "C";
-            document.getElementById('opponent-section').querySelector('h2').innerText = `🔥 Daily Challenge Opponent`;
-            
             generateScoutingReport();
-            renderOpponentLineup();
             updateHudAndCatalog();
             
             document.getElementById('sim-section').style.display = 'none';
@@ -1294,22 +1272,6 @@
         } else {
             checkSimulationReady();
         }
-    }
-
-    function renderOpponentLineup() {
-        const oppDiv = document.getElementById('opponent-lineup');
-        oppDiv.innerHTML = positions.map(pos => {
-            const p = opponentTeam[pos];
-            let traitsHTML = p.traits && p.traits.length > 0 ? `<div class="badge-row">${renderArchetypeBadgesHTML(p.traits)}</div>` : '';
-            return `
-                <div class="card">
-                    <div class="pos-label">${pos}</div>
-                    ${render8BitFaceHTML(p.name)}
-                    <strong class="player-name">${p.name}</strong>
-                    ${traitsHTML}
-                </div>
-            `;
-        }).join('');
     }
 
     function renderUserLineup() {
@@ -1614,7 +1576,7 @@
             let tightVariance = ((daySeed % 3) - 1); 
             finalTargetOppWins = 93 + tightVariance; 
         } else {
-            finalTargetOppWins = calculateTrueTeamWins(opponentTeam, false);
+            finalTargetOppWins = 90;
         }
         
         const simInterval = setInterval(() => {
@@ -1653,7 +1615,7 @@
     function displayFinalGraphicResults(userWins, oppWins, hadTiebreaker, userWonTiebreaker) {
         const resultsDiv = document.getElementById('sim-results');
         const isWin = userWins > oppWins;
-        const winningTeam = isWin ? userTeam : opponentTeam;
+        const winningTeam = isWin ? userTeam : {};
         const winningWins = isWin ? userWins : oppWins;
         
         let percentileBadgeHTML = '';
@@ -1715,7 +1677,7 @@
                     </div>
                     <div style="color: rgba(255,255,255,0.3); align-self: flex-end; padding-bottom: 5px;">vs</div>
                     <div>
-                        <span class="doc-label">${currentGameMode === 'daily' ? 'Daily Rival' : 'Rival Club'}</span>
+                        <span class="doc-label">Rival Club</span>
                         ${oppWins}-${totalSeasonGames - oppWins}
                     </div>
                 </div>
