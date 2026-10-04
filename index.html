@@ -641,7 +641,7 @@
             <div id="draft-catalog" class="draft-pool"></div>
         </div>
         
-        <!-- DUAL AGENDA TRACKER PANEL (POSITIONED DIRECTLY ABOVE YOUR TEAM) -->
+        <!-- DUAL AGENDA TRACKER PANEL -->
         <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
             <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards</div>
             <div class="agenda-grids-wrapper">
@@ -660,11 +660,12 @@
             <h2>Your Active 11-Man Roster</h2>
             <div id="user-lineup" class="lineup-grid"></div>
         </div>
-        
-        <div id="sim-section" style="display:none; text-align: center; margin-top: 25px;">
-            <button class="btn" id="sim-btn" onclick="startLiveSimulation()">Play 162-Game Season</button>
-            <div id="sim-results" style="display:none; text-align: left;"></div>
-        </div>
+    </div>
+
+    <!-- SEPARATE DEDICATED NOTIFICATION / RESULTS CONTAINER -->
+    <div id="sim-section" style="display:none; text-align: center; margin-top: 25px;">
+        <button class="btn" id="sim-btn" onclick="startLiveSimulation()">Play 162-Game Season</button>
+        <div id="sim-results" style="display:block; text-align: left;"></div>
     </div>
 </div>
 
@@ -806,12 +807,13 @@
         const agendaPanel = document.getElementById('agenda-tracker-container');
         const startOverlay = document.getElementById('freeplay-start-container');
         const gameplayWorkspace = document.getElementById('gameplay-workspace');
+        const simSection = document.getElementById('sim-section');
         const instructionsText = document.getElementById('hero-instructions-text');
         const simResults = document.getElementById('sim-results');
         
         if (freePlayInterval) clearInterval(freePlayInterval);
         freePlayActive = false;
-        simResults.style.display = 'none';
+        simSection.style.display = 'none';
         simResults.innerHTML = '';
         
         if (mode === "daily") {
@@ -889,8 +891,9 @@
     }
 
     function triggerFreePlayLoss() {
+        const simSection = document.getElementById('sim-section');
         const resultsDiv = document.getElementById('sim-results');
-        resultsDiv.style.display = 'block';
+        simSection.style.display = 'block';
         
         resultsDiv.innerHTML = `
             <div class="result-graphic loss">
@@ -908,8 +911,9 @@
         freePlayActive = false;
         clearInterval(freePlayInterval);
         
+        const simSection = document.getElementById('sim-section');
         const resultsDiv = document.getElementById('sim-results');
-        resultsDiv.style.display = 'block';
+        simSection.style.display = 'block';
         
         resultsDiv.innerHTML = `
             <div class="result-graphic win">
@@ -1510,7 +1514,9 @@
     }
 
     function runTiebreakerGame(userWins, oppWins) {
+        const simSection = document.getElementById('sim-section');
         const resultsDiv = document.getElementById('sim-results');
+        simSection.style.display = 'block';
         
         let tbTics = 0;
         let tbInterval = setInterval(() => {
@@ -1555,8 +1561,9 @@
         const simBtn = document.getElementById('sim-btn');
         simBtn.style.display = 'none';
         
+        const simSection = document.getElementById('sim-section');
         const resultsDiv = document.getElementById('sim-results');
-        resultsDiv.style.display = 'block';
+        simSection.style.display = 'block';
 
         if (currentGameMode === "daily") {
             recordDailyAttemptStart();
@@ -1612,7 +1619,10 @@
     }
 
     function displayFinalGraphicResults(userWins, oppWins, hadTiebreaker, userWonTiebreaker) {
+        const simSection = document.getElementById('sim-section');
         const resultsDiv = document.getElementById('sim-results');
+        simSection.style.display = 'block';
+        
         const isWin = userWins > oppWins;
         const winningTeam = isWin ? userTeam : {};
         const winningWins = isWin ? userWins : oppWins;
