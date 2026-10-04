@@ -289,7 +289,7 @@
         }
         .hud-bar {
             display: flex;
-            justify-content: space-around;
+            justify-content: center;
             background: #142232;
             padding: 16px;
             border-radius: 6px;
@@ -310,9 +310,6 @@
             font-size: 1.3em;
             color: #fff;
             margin-top: 2px;
-        }
-        .hud-item span.bankrupt {
-            color: var(--accent-red);
         }
         .lineup-grid {
             display: grid;
@@ -354,10 +351,6 @@
         .card.selected-pos {
             border-color: var(--accent-green) !important;
             background: rgba(16, 185, 129, 0.08);
-        }
-        .card.disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
         }
         .pixel-portrait {
             display: grid;
@@ -600,7 +593,7 @@
 <body>
 <div class="container">
     <h1>MLB Draft Swap</h1>
-    <p class="subtitle">Draft an 11-man squad (C, 1B, 2B, 3B, SS, LF, CF, RF, DH, SP, RP) under the luxury tax threshold.</p>
+    <p class="subtitle">Draft your 11-man squad and match the secret roster combination.</p>
     
     <!-- EDITORIAL INSTRUCTIONS HERO -->
     <div class="instructions-hero">
@@ -608,7 +601,7 @@
             <span>⚾</span> Game Mode Instructions
         </div>
         <p class="hero-text" id="hero-instructions-text">
-            Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Read the Scouting Report, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!
+            Assemble your 9 hitters and 2 pitchers. Read the Scouting Report, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!
         </p>
     </div>
 
@@ -633,13 +626,13 @@
     <!-- FREE PLAY START OVERLAY -->
     <div id="freeplay-start-container" style="display: none; text-align: center; padding: 40px; background: #142232; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
         <h3 style="color: var(--accent-gold); font-size: 1.6em; margin-bottom: 10px;">⚡ 30-Second Speed Rush</h3>
-        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 20px auto;">No budget caps! Match the hidden trait/role requirements as fast as you can. The clock starts when you hit the button below.</p>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 20px auto;">No budget limits! Match the hidden trait/role requirements as fast as you can. The clock starts when you hit the button below.</p>
         <button class="btn" onclick="launchFreePlayRush()" style="background: var(--accent-blue); color: #fff; margin: 0 auto;">Start 30s Speed Rush</button>
     </div>
 
-    <!-- DUAL AGENDA TRACKER PANEL (MOVED CLOSER TO DRAFT WORKSPACE) -->
+    <!-- DUAL AGENDA TRACKER PANEL (CLOSE TO DRAFT WORKSPACE) -->
     <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
-        <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards (Evaluated on Simulation)</div>
+        <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards</div>
         <div class="agenda-grids-wrapper">
             <div class="grid-section">
                 <div class="grid-section-title">Batters (9 Units)</div>
@@ -674,8 +667,7 @@
         <div class="legend-item"><span class="badge wh">WH</span> Workhorse</div>
     </div>
 
-    <div class="hud-bar" id="hud-bar-container">
-        <div class="hud-item" id="hud-bank-wrapper">Remaining Payroll <span id="hud-bank">$34.0M</span></div>
+    <div class="hud-bar">
         <div class="hud-item">Active Position <span id="hud-pos">C</span></div>
     </div>
     
@@ -704,7 +696,6 @@
     let activeAgenda = { pwrReq: 6, cntReq: 2, spdReq: 1, pitch1Req: 'K', pitch2Req: 'GB' };
     let hasSubmittedOnce = false;
     
-    // Free Play Timer variables
     let freePlayInterval = null;
     let timeLeft = 30;
     let freePlayActive = false;
@@ -848,7 +839,7 @@
             agendaPanel.style.display = "none";
             startOverlay.style.display = "none";
             gameplayWorkspace.style.display = "block";
-            instructionsText.innerHTML = 'Assemble your 9 hitters and 2 pitchers under the <strong>$34.0M payroll cap</strong>. Read the Scouting Report, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!';
+            instructionsText.innerHTML = 'Assemble your 9 hitters and 2 pitchers. Read the Scouting Report, submit your season, and use the <strong>Batters (Green)</strong> & <strong>Pitchers (Blue)</strong> scorecards to deduce the correct combination!';
             
             updateDailyTallyDisplay();
             updateDailyCountdown();
@@ -895,7 +886,6 @@
         activeDraftPos = "C";
         document.getElementById('opponent-section-title').innerText = "⚡ Free Play Speed Puzzle";
         document.getElementById('scout-report-box').style.display = 'none';
-        document.getElementById('hud-bank-wrapper').style.display = 'none';
         
         renderOpponentLineup();
         renderAgendaGrid();
@@ -960,11 +950,7 @@
     }
 
     function getPlayerCost(ovr) {
-        if (ovr >= 97) return 5.0; 
-        if (ovr >= 95) return 4.2; 
-        if (ovr >= 92) return 3.2; 
-        if (ovr >= 88) return 2.2; 
-        return 1.2;                
+        return 2.5; // Uniform nominal value since payroll is removed
     }
 
     function render8BitFaceHTML(name) {
@@ -1131,12 +1117,7 @@
         ]
     };
 
-    Object.keys(playersDB).forEach(pos => {
-        playersDB[pos].forEach(p => p.cost = getPlayerCost(p.ovr));
-    });
-
     const positions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH", "SP", "RP"];
-    const TOTAL_BUDGET = 34.0;
     let activeDraftPos = "C"; 
     
     let userTeam = {};
@@ -1273,13 +1254,10 @@
                 return 162; 
             }
 
-            let userSpent = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].cost : 0), 0);
-            let unspentPenalty = Math.max(0, (33.0 - userSpent) * 1.5);
             let agendaMissedPenalty = 18; 
-            
             let baseAnchor = 83.0;
             let rosterDiff = (pythWins - 81) * 0.35;
-            let expectedUserWins = baseAnchor + rosterDiff - unspentPenalty - agendaMissedPenalty;
+            let expectedUserWins = baseAnchor + rosterDiff - agendaMissedPenalty;
             
             let variance = (Math.random() * 5) - 2.5;
             return Math.max(60, Math.min(95, Math.round(expectedUserWins + variance)));
@@ -1297,14 +1275,13 @@
             positions.forEach(pos => {
                 userTeam[pos] = null;
                 let options = [...playersDB[pos]].sort(() => 0.5 - getRandom());
-                opponentTeam[pos] = options.find(p => p.cost >= 4.2) || options[0];
+                opponentTeam[pos] = options[0];
                 let pool = playersDB[pos].filter(p => p.name !== opponentTeam[pos].name).sort(() => 0.5 - getRandom());
                 catalogChoices[pos] = pool.slice(0, 4);
             });
 
             activeDraftPos = "C";
-            let totalOpponentCost = positions.reduce((sum, pos) => sum + opponentTeam[pos].cost, 0);
-            document.getElementById('opponent-section').querySelector('h2').innerText = `🔥 Daily Challenge Opponent (Payroll: $${totalOpponentCost.toFixed(1)}M)`;
+            document.getElementById('opponent-section').querySelector('h2').innerText = `🔥 Daily Challenge Opponent`;
             
             generateScoutingReport();
             renderOpponentLineup();
@@ -1320,28 +1297,11 @@
         updateHudAndCatalog();
     }
 
-    function calculateRemainingBudget() {
-        if (currentGameMode === "freeplay") return 99.0;
-        let spent = 0;
-        positions.forEach(pos => {
-            if (userTeam[pos]) spent += userTeam[pos].cost;
-        });
-        return TOTAL_BUDGET - spent;
-    }
-
     function updateHudAndCatalog() {
-        let currentRemaining = calculateRemainingBudget();
-        
-        if (currentGameMode === "daily") {
-            const bankEl = document.getElementById('hud-bank');
-            bankEl.innerText = `$${currentRemaining.toFixed(1)}M`;
-            bankEl.className = currentRemaining < 0 ? 'bankrupt' : '';
-        }
-
         document.getElementById('hud-pos').innerText = activeDraftPos;
 
         renderUserLineup();
-        renderDraftCatalog(currentRemaining);
+        renderDraftCatalog();
         
         if (currentGameMode === "freeplay") {
             renderAgendaGrid();
@@ -1362,7 +1322,6 @@
                     <strong class="player-name">${p.name}</strong>
                     ${traitsHTML}
                     <div class="badge-row">
-                        <span class="badge price">-$${p.cost.toFixed(1)}M</span>
                         <span class="badge ovr-badge">${p.ovr}</span>
                     </div>
                 </div>
@@ -1389,7 +1348,6 @@
                 }
                 cardBadges = `
                     <div class="badge-row">
-                        <span class="badge price">-$${p.cost.toFixed(1)}M</span>
                         <span class="badge ovr-badge">${p.ovr}</span>
                     </div>
                 `;
@@ -1407,19 +1365,16 @@
         }).join('');
     }
 
-    function renderDraftCatalog(currentRemaining) {
+    function renderDraftCatalog() {
         const catalogDiv = document.getElementById('draft-catalog');
         let choices = catalogChoices[activeDraftPos] || [];
         
         catalogDiv.innerHTML = ''; 
         choices.forEach((p, index) => {
-            let currentPickCost = userTeam[activeDraftPos] ? userTeam[activeDraftPos].cost : 0;
-            let netBudgetChange = currentRemaining + currentPickCost;
-            const dynamicLocked = currentGameMode === "daily" && p.cost > netBudgetChange;
             const isCurrentlyPicked = userTeam[activeDraftPos] && userTeam[activeDraftPos].name === p.name;
 
             const card = document.createElement('div');
-            card.className = `card active ${dynamicLocked ? 'disabled' : ''}`;
+            card.className = 'card active';
             if (isCurrentlyPicked) {
                 card.style.cssText = 'border-color: #059669; background: #06281e;';
             }
@@ -1432,27 +1387,24 @@
                 <strong class="player-name" style="margin: 4px 0;">${p.name}</strong>
                 ${traitsHTML}
                 <div class="badge-row" style="margin-top: 6px;">
-                    <span class="badge price">$${p.cost.toFixed(1)}M</span>
                     <span class="badge ovr-badge">${p.ovr} OVR</span>
                 </div>
             `;
 
-            if (!dynamicLocked) {
-                card.onclick = function() {
-                    executePlayerSelection(index);
-                };
-            }
+            card.onclick = function() {
+                executePlayerSelection(index);
+            };
             catalogDiv.appendChild(card);
         });
     }
 
     function executePlayerSelection(index) {
         let player = catalogChoices[activeDraftPos][index];
-        pickPlayer(activeDraftPos, player.name, player.ovr, player.cost, player.base, player.traits);
+        pickPlayer(activeDraftPos, player.name, player.ovr, player.base, player.traits);
     }
 
-    function pickPlayer(pos, name, ovr, cost, base, traits) {
-        userTeam[pos] = { name, ovr, cost, base, traits };
+    function pickPlayer(pos, name, ovr, base, traits) {
+        userTeam[pos] = { name, ovr, base, traits };
         
         let nextIndex = positions.indexOf(pos) + 1;
         let foundEmpty = false;
@@ -1478,13 +1430,11 @@
 
     function checkSimulationReady() {
         let complete = positions.every(pos => userTeam[pos] !== null && userTeam[pos] !== undefined);
-        let budgetValid = calculateRemainingBudget() >= 0;
-        
         const simSection = document.getElementById('sim-section');
         const simBtn = document.getElementById('sim-btn');
         const simResults = document.getElementById('sim-results');
         
-        if (complete && budgetValid) {
+        if (complete) {
             simSection.style.display = 'block';
             simBtn.style.display = 'block';
             simResults.style.display = 'none';
