@@ -335,7 +335,7 @@
             text-align: center;
             transition: 0.15s ease;
             position: relative;
-            min-height: 170px;
+            min-height: 160px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -387,16 +387,11 @@
             background: #23374d;
             color: #fff;
             font-weight: 700;
-            padding: 1px 4px;
+            padding: 1px 6px;
             border-radius: 3px;
-            font-size: 0.6em;
+            font-size: 0.65em;
             letter-spacing: 0.2px;
             border: 1px solid rgba(255,255,255,0.08);
-        }
-        .badge.ovr-badge {
-            background: #1e3a8a;
-            color: #93c5fd;
-            border-color: #2563eb;
         }
         .badge.pwr { background: #7f1d1d; color: #fca5a5; border-color: #b91c1c; }
         .badge.cnt { background: #78350f; color: #fde68a; border-color: #d97706; }
@@ -621,11 +616,11 @@
     <!-- FREE PLAY START OVERLAY -->
     <div id="freeplay-start-container" style="display: none; text-align: center; padding: 40px; background: #142232; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
         <h3 style="color: var(--accent-gold); font-size: 1.6em; margin-bottom: 10px;">⚡ 30-Second Speed Rush</h3>
-        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 20px auto;">No budget limits! Match the hidden trait/role requirements as fast as you can. The clock starts when you hit the button below.</p>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 20px auto;">Match the hidden trait/role requirements as fast as you can. The clock starts when you hit the button below.</p>
         <button class="btn" onclick="launchFreePlayRush()" style="background: var(--accent-blue); color: #fff; margin: 0 auto;">Start 30s Speed Rush</button>
     </div>
 
-    <!-- DUAL AGENDA TRACKER PANEL (POSITIONED RIGHT ABOVE THE DRAFT WORKSPACE) -->
+    <!-- DUAL AGENDA TRACKER PANEL -->
     <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
         <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards</div>
         <div class="agenda-grids-wrapper">
@@ -847,7 +842,7 @@
             gameplayWorkspace.style.display = "none"; 
             
             document.getElementById('agenda-title-text').innerText = "⚡ Real-Time Puzzle Scorecards";
-            instructionsText.innerHTML = '<strong>⚡ Free Play Speed Rush:</strong> No budget limits! Hit start when you are ready, and solve the trait requirements before the 30-second timer hits zero.';
+            instructionsText.innerHTML = '<strong>⚡ Free Play Speed Rush:</strong> Match the trait requirements as fast as you can before the 30-second timer hits zero.';
             
             initFreePlaySetup();
         }
@@ -944,10 +939,6 @@
         `;
     }
 
-    function getPlayerCost(ovr) {
-        return 2.5; 
-    }
-
     function render8BitFaceHTML(name) {
         if (!name) name = "MLB Player";
         let seed = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -991,124 +982,124 @@
 
     const playersDB = {
         C: [
-            { name: "Adley Rutschman", ovr: 92, base: [0.280, 21, 85, 3], traits: ["CNT"] },
-            { name: "Will Smith", ovr: 89, base: [0.265, 22, 82, 2], traits: ["PWR"] },
-            { name: "J.T. Realmuto", ovr: 88, base: [0.270, 20, 78, 16], traits: ["SPD"] },
-            { name: "Cal Raleigh", ovr: 87, base: [0.230, 32, 88, 3], traits: ["PWR"] },
-            { name: "Salvador Perez", ovr: 86, base: [0.260, 28, 92, 0], traits: ["PWR"] },
-            { name: "Yainer Diaz", ovr: 85, base: [0.288, 22, 80, 1], traits: ["CNT"] },
-            { name: "Sean Murphy", ovr: 84, base: [0.250, 21, 74, 1], traits: ["PWR"] },
-            { name: "Alejandro Kirk", ovr: 84, base: [0.275, 14, 62, 0], traits: ["CNT"] },
-            { name: "Johnny Bench", ovr: 98, base: [0.275, 40, 125, 4], traits: ["PWR"] },
-            { name: "Buster Posey", ovr: 94, base: [0.318, 22, 92, 3], traits: ["CNT"] }
+            { name: "Adley Rutschman", base: [0.280, 21, 85, 3], traits: ["CNT"] },
+            { name: "Will Smith", base: [0.265, 22, 82, 2], traits: ["PWR"] },
+            { name: "J.T. Realmuto", base: [0.270, 20, 78, 16], traits: ["SPD"] },
+            { name: "Cal Raleigh", base: [0.230, 32, 88, 3], traits: ["PWR"] },
+            { name: "Salvador Perez", base: [0.260, 28, 92, 0], traits: ["PWR"] },
+            { name: "Yainer Diaz", base: [0.288, 22, 80, 1], traits: ["CNT"] },
+            { name: "Sean Murphy", base: [0.250, 21, 74, 1], traits: ["PWR"] },
+            { name: "Alejandro Kirk", base: [0.275, 14, 62, 0], traits: ["CNT"] },
+            { name: "Johnny Bench", base: [0.275, 40, 125, 4], traits: ["PWR"] },
+            { name: "Buster Posey", base: [0.318, 22, 92, 3], traits: ["CNT"] }
         ],
         "1B": [
-            { name: "Bryce Harper", ovr: 94, base: [0.295, 33, 100, 11], traits: ["PWR"] },
-            { name: "Matt Olson", ovr: 91, base: [0.260, 43, 118, 1], traits: ["PWR"] },
-            { name: "Vladimir Guerrero Jr.", ovr: 90, base: [0.295, 32, 102, 4], traits: ["CNT"] },
-            { name: "Paul Goldschmidt", ovr: 89, base: [0.290, 31, 98, 10], traits: ["PWR"] },
-            { name: "Pete Alonso", ovr: 88, base: [0.250, 41, 112, 3], traits: ["PWR"] },
-            { name: "Christian Walker", ovr: 86, base: [0.260, 31, 92, 5], traits: ["PWR"] },
-            { name: "Josh Naylor", ovr: 85, base: [0.275, 26, 95, 8], traits: ["PWR"] },
-            { name: "Lou Gehrig", ovr: 99, base: [0.345, 41, 155, 6], traits: ["PWR"] },
-            { name: "Freddie Freeman", ovr: 95, base: [0.315, 28, 100, 14], traits: ["CNT"] }
+            { name: "Bryce Harper", base: [0.295, 33, 100, 11], traits: ["PWR"] },
+            { name: "Matt Olson", base: [0.260, 43, 118, 1], traits: ["PWR"] },
+            { name: "Vladimir Guerrero Jr.", base: [0.295, 32, 102, 4], traits: ["CNT"] },
+            { name: "Paul Goldschmidt", base: [0.290, 31, 98, 10], traits: ["PWR"] },
+            { name: "Pete Alonso", base: [0.250, 41, 112, 3], traits: ["PWR"] },
+            { name: "Christian Walker", base: [0.260, 31, 92, 5], traits: ["PWR"] },
+            { name: "Josh Naylor", base: [0.275, 26, 95, 8], traits: ["PWR"] },
+            { name: "Lou Gehrig", base: [0.345, 41, 155, 6], traits: ["PWR"] },
+            { name: "Freddie Freeman", base: [0.315, 28, 100, 14], traits: ["CNT"] }
         ],
         "2B": [
-            { name: "Jose Altuve", ovr: 92, base: [0.310, 24, 78, 25], traits: ["SPD"] },
-            { name: "Ketel Marte", ovr: 91, base: [0.295, 26, 85, 7], traits: ["CNT"] },
-            { name: "Marcus Semien", ovr: 90, base: [0.265, 32, 92, 15], traits: ["PWR"] },
-            { name: "Ozzie Albies", ovr: 88, base: [0.275, 28, 92, 14], traits: ["PWR"] },
-            { name: "Andres Gimenez", ovr: 87, base: [0.265, 15, 68, 30], traits: ["SPD"] },
-            { name: "Nico Hoerner", ovr: 86, base: [0.280, 8, 65, 36], traits: ["SPD"] },
-            { name: "Bryson Stott", ovr: 85, base: [0.270, 14, 62, 28], traits: ["SPD"] },
-            { name: "Luis Arraez", ovr: 82, base: [0.335, 5, 55, 4], traits: ["CNT"] },
-            { name: "Jackie Robinson", ovr: 97, base: [0.325, 18, 90, 28], traits: ["SPD"] }
+            { name: "Jose Altuve", base: [0.310, 24, 78, 25], traits: ["SPD"] },
+            { name: "Ketel Marte", base: [0.295, 26, 85, 7], traits: ["CNT"] },
+            { name: "Marcus Semien", base: [0.265, 32, 92, 15], traits: ["PWR"] },
+            { name: "Ozzie Albies", base: [0.275, 28, 92, 14], traits: ["PWR"] },
+            { name: "Andres Gimenez", base: [0.265, 15, 68, 30], traits: ["SPD"] },
+            { name: "Nico Hoerner", base: [0.280, 8, 65, 36], traits: ["SPD"] },
+            { name: "Bryson Stott", base: [0.270, 14, 62, 28], traits: ["SPD"] },
+            { name: "Luis Arraez", base: [0.335, 5, 55, 4], traits: ["CNT"] },
+            { name: "Jackie Robinson", base: [0.325, 18, 90, 28], traits: ["SPD"] }
         ],
         "3B": [
-            { name: "Jose Ramirez", ovr: 95, base: [0.285, 34, 110, 36], traits: ["SPD"] },
-            { name: "Gunnar Henderson", ovr: 94, base: [0.280, 35, 95, 20], traits: ["PWR"] },
-            { name: "Manny Machado", ovr: 93, base: [0.285, 32, 98, 8], traits: ["PWR"] },
-            { name: "Austin Riley", ovr: 92, base: [0.275, 36, 100, 2], traits: ["PWR"] },
-            { name: "Rafael Devers", ovr: 91, base: [0.285, 33, 102, 4], traits: ["PWR"] },
-            { name: "Nolan Arenado", ovr: 90, base: [0.285, 33, 105, 3], traits: ["PWR"] },
-            { name: "Matt Chapman", ovr: 88, base: [0.250, 28, 82, 8], traits: ["PWR"] },
-            { name: "Alec Bohm", ovr: 83, base: [0.280, 18, 92, 4], traits: ["CNT"] },
-            { name: "Mike Schmidt", ovr: 98, base: [0.270, 42, 118, 14], traits: ["PWR"] }
+            { name: "Jose Ramirez", base: [0.285, 34, 110, 36], traits: ["SPD"] },
+            { name: "Gunnar Henderson", base: [0.280, 35, 95, 20], traits: ["PWR"] },
+            { name: "Manny Machado", base: [0.285, 32, 98, 8], traits: ["PWR"] },
+            { name: "Austin Riley", base: [0.275, 36, 100, 2], traits: ["PWR"] },
+            { name: "Rafael Devers", base: [0.285, 33, 102, 4], traits: ["PWR"] },
+            { name: "Nolan Arenado", base: [0.285, 33, 105, 3], traits: ["PWR"] },
+            { name: "Matt Chapman", base: [0.250, 28, 82, 8], traits: ["PWR"] },
+            { name: "Alec Bohm", base: [0.280, 18, 92, 4], traits: ["CNT"] },
+            { name: "Mike Schmidt", base: [0.270, 42, 118, 14], traits: ["PWR"] }
         ],
         SS: [
-            { name: "Bobby Witt Jr.", ovr: 96, base: [0.315, 32, 105, 35], traits: ["SPD"] },
-            { name: "Francisco Lindor", ovr: 94, base: [0.275, 31, 94, 26], traits: ["PWR"] },
-            { name: "Trea Turner", ovr: 91, base: [0.300, 22, 76, 32], traits: ["SPD"] },
-            { name: "Elly De La Cruz", ovr: 90, base: [0.260, 26, 78, 65], traits: ["SPD"] },
-            { name: "Bo Bichette", ovr: 88, base: [0.295, 22, 84, 10], traits: ["CNT"] },
-            { name: "Anthony Volpe", ovr: 85, base: [0.250, 18, 68, 28], traits: ["SPD"] },
-            { name: "C.J. Abrams", ovr: 85, base: [0.255, 19, 68, 36], traits: ["SPD"] },
-            { name: "Honus Wagner", ovr: 98, base: [0.340, 14, 98, 52], traits: ["SPD"] },
-            { name: "Derek Jeter", ovr: 95, base: [0.315, 18, 82, 24], traits: ["CNT"] }
+            { name: "Bobby Witt Jr.", base: [0.315, 32, 105, 35], traits: ["SPD"] },
+            { name: "Francisco Lindor", base: [0.275, 31, 94, 26], traits: ["PWR"] },
+            { name: "Trea Turner", base: [0.300, 22, 76, 32], traits: ["SPD"] },
+            { name: "Elly De La Cruz", base: [0.260, 26, 78, 65], traits: ["SPD"] },
+            { name: "Bo Bichette", base: [0.295, 22, 84, 10], traits: ["CNT"] },
+            { name: "Anthony Volpe", base: [0.250, 18, 68, 28], traits: ["SPD"] },
+            { name: "C.J. Abrams", base: [0.255, 19, 68, 36], traits: ["SPD"] },
+            { name: "Honus Wagner", base: [0.340, 14, 98, 52], traits: ["SPD"] },
+            { name: "Derek Jeter", base: [0.315, 18, 82, 24], traits: ["CNT"] }
         ],
         LF: [
-            { name: "Yordan Alvarez", ovr: 96, base: [0.300, 38, 110, 2], traits: ["PWR"] },
-            { name: "Juan Soto", ovr: 96, base: [0.295, 38, 112, 10], traits: ["CNT"] },
-            { name: "Christian Yelich", ovr: 89, base: [0.300, 24, 80, 24], traits: ["CNT"] },
-            { name: "Steven Kwan", ovr: 88, base: [0.300, 10, 52, 18], traits: ["CNT"] },
-            { name: "Randy Arozarena", ovr: 87, base: [0.255, 23, 80, 25], traits: ["SPD"] },
-            { name: "Bryan Reynolds", ovr: 86, base: [0.275, 25, 84, 6], traits: ["CNT"] },
-            { name: "Riley Greene", ovr: 86, base: [0.270, 24, 78, 5], traits: ["PWR"] },
-            { name: "Ted Williams", ovr: 99, base: [0.350, 38, 130, 2], traits: ["CNT"] },
-            { name: "Barry Bonds", ovr: 99, base: [0.315, 48, 125, 24], traits: ["PWR"] }
+            { name: "Yordan Alvarez", base: [0.300, 38, 110, 2], traits: ["PWR"] },
+            { name: "Juan Soto", base: [0.295, 38, 112, 10], traits: ["CNT"] },
+            { name: "Christian Yelich", base: [0.300, 24, 80, 24], traits: ["CNT"] },
+            { name: "Steven Kwan", base: [0.300, 10, 52, 18], traits: ["CNT"] },
+            { name: "Randy Arozarena", base: [0.255, 23, 80, 25], traits: ["SPD"] },
+            { name: "Bryan Reynolds", base: [0.275, 25, 84, 6], traits: ["CNT"] },
+            { name: "Riley Greene", base: [0.270, 24, 78, 5], traits: ["PWR"] },
+            { name: "Ted Williams", base: [0.350, 38, 130, 2], traits: ["CNT"] },
+            { name: "Barry Bonds", base: [0.315, 48, 125, 24], traits: ["PWR"] }
         ],
         CF: [
-            { name: "Julio Rodriguez", ovr: 93, base: [0.280, 30, 92, 32], traits: ["SPD"] },
-            { name: "Jarren Duran", ovr: 90, base: [0.285, 20, 75, 38], traits: ["SPD"] },
-            { name: "Michael Harris II", ovr: 89, base: [0.285, 20, 72, 22], traits: ["SPD"] },
-            { name: "Luis Robert Jr.", ovr: 88, base: [0.265, 32, 85, 24], traits: ["SPD"] },
-            { name: "Cody Bellinger", ovr: 87, base: [0.270, 28, 88, 16], traits: ["PWR"] },
-            { name: "Byron Buxton", ovr: 87, base: [0.255, 28, 76, 16], traits: ["SPD"] },
-            { name: "Jackson Chourio", ovr: 86, base: [0.275, 22, 78, 26], traits: ["SPD"] },
-            { name: "Willie Mays", ovr: 99, base: [0.310, 44, 125, 26], traits: ["SPD"] },
-            { name: "Ken Griffey Jr.", ovr: 98, base: [0.295, 48, 130, 16], traits: ["PWR"] }
+            { name: "Julio Rodriguez", base: [0.280, 30, 92, 32], traits: ["SPD"] },
+            { name: "Jarren Duran", base: [0.285, 20, 75, 38], traits: ["SPD"] },
+            { name: "Michael Harris II", base: [0.285, 20, 72, 22], traits: ["SPD"] },
+            { name: "Luis Robert Jr.", base: [0.265, 32, 85, 24], traits: ["SPD"] },
+            { name: "Cody Bellinger", base: [0.270, 28, 88, 16], traits: ["PWR"] },
+            { name: "Byron Buxton", base: [0.255, 28, 76, 16], traits: ["SPD"] },
+            { name: "Jackson Chourio", base: [0.275, 22, 78, 26], traits: ["SPD"] },
+            { name: "Willie Mays", base: [0.310, 44, 125, 26], traits: ["SPD"] },
+            { name: "Ken Griffey Jr.", base: [0.295, 48, 130, 16], traits: ["PWR"] }
         ],
         RF: [
-            { name: "Mookie Betts", ovr: 97, base: [0.300, 32, 95, 20], traits: ["SPD"] },
-            { name: "Aaron Judge", ovr: 98, base: [0.290, 52, 128, 8], traits: ["PWR"] },
-            { name: "Ronald Acuña Jr.", ovr: 96, base: [0.305, 38, 98, 55], traits: ["SPD"] },
-            { name: "Kyle Tucker", ovr: 93, base: [0.280, 32, 105, 24], traits: ["SPD"] },
-            { name: "Fernando Tatis Jr.", ovr: 92, base: [0.285, 34, 92, 22], traits: ["SPD"] },
-            { name: "Corbin Carroll", ovr: 88, base: [0.265, 22, 74, 45], traits: ["SPD"] },
-            { name: "Adolis Garcia", ovr: 86, base: [0.245, 33, 96, 14], traits: ["PWR"] },
-            { name: "Babe Ruth", ovr: 99, base: [0.345, 50, 140, 6], traits: ["PWR"] },
-            { name: "Ichiro Suzuki", ovr: 96, base: [0.335, 9, 60, 42], traits: ["CNT"] }
+            { name: "Mookie Betts", base: [0.300, 32, 95, 20], traits: ["SPD"] },
+            { name: "Aaron Judge", base: [0.290, 52, 128, 8], traits: ["PWR"] },
+            { name: "Ronald Acuña Jr.", base: [0.305, 38, 98, 55], traits: ["SPD"] },
+            { name: "Kyle Tucker", base: [0.280, 32, 105, 24], traits: ["SPD"] },
+            { name: "Fernando Tatis Jr.", base: [0.285, 34, 92, 22], traits: ["SPD"] },
+            { name: "Corbin Carroll", base: [0.265, 22, 74, 45], traits: ["SPD"] },
+            { name: "Adolis Garcia", base: [0.245, 33, 96, 14], traits: ["PWR"] },
+            { name: "Babe Ruth", base: [0.345, 50, 140, 6], traits: ["PWR"] },
+            { name: "Ichiro Suzuki", base: [0.335, 9, 60, 42], traits: ["CNT"] }
         ],
         DH: [
-            { name: "Shohei Ohtani", ovr: 98, base: [0.300, 48, 115, 35], traits: ["PWR"] },
-            { name: "Giancarlo Stanton", ovr: 93, base: [0.260, 40, 105, 2], traits: ["PWR"] },
-            { name: "Marcell Ozuna", ovr: 91, base: [0.290, 36, 105, 0], traits: ["PWR"] },
-            { name: "Kyle Schwarber", ovr: 89, base: [0.240, 42, 100, 6], traits: ["PWR"] },
-            { name: "Brent Rooker", ovr: 87, base: [0.280, 36, 102, 3], traits: ["PWR"] },
-            { name: "Jorge Soler", ovr: 86, base: [0.245, 34, 88, 1], traits: ["PWR"] },
-            { name: "David Ortiz", ovr: 97, base: [0.285, 42, 130, 1], traits: ["PWR"] },
-            { name: "Edgar Martinez", ovr: 96, base: [0.320, 28, 115, 4], traits: ["CNT"] },
-            { name: "Nelson Cruz", ovr: 92, base: [0.275, 38, 108, 2], traits: ["PWR"] }
+            { name: "Shohei Ohtani", base: [0.300, 48, 115, 35], traits: ["PWR"] },
+            { name: "Giancarlo Stanton", base: [0.260, 40, 105, 2], traits: ["PWR"] },
+            { name: "Marcell Ozuna", base: [0.290, 36, 105, 0], traits: ["PWR"] },
+            { name: "Kyle Schwarber", base: [0.240, 42, 100, 6], traits: ["PWR"] },
+            { name: "Brent Rooker", base: [0.280, 36, 102, 3], traits: ["PWR"] },
+            { name: "Jorge Soler", base: [0.245, 34, 88, 1], traits: ["PWR"] },
+            { name: "David Ortiz", base: [0.285, 42, 130, 1], traits: ["PWR"] },
+            { name: "Edgar Martinez", base: [0.320, 28, 115, 4], traits: ["CNT"] },
+            { name: "Nelson Cruz", base: [0.275, 38, 108, 2], traits: ["PWR"] }
         ],
         SP: [
-            { name: "Tarik Skubal", ovr: 96, base: [18, 5, 2.40], traits: ["K"] },
-            { name: "Paul Skenes", ovr: 93, base: [15, 5, 2.35], traits: ["K"] },
-            { name: "Zack Wheeler", ovr: 95, base: [16, 6, 2.65], traits: ["GB"] },
-            { name: "Logan Gilbert", ovr: 91, base: [14, 7, 3.15], traits: ["GB"] },
-            { name: "Cole Ragans", ovr: 90, base: [13, 8, 3.20], traits: ["WH"] },
-            { name: "Pedro Martinez", ovr: 99, base: [21, 5, 2.05], traits: ["K"] },
-            { name: "Randy Johnson", ovr: 98, base: [21, 6, 2.45], traits: ["K"] },
-            { name: "Greg Maddux", ovr: 97, base: [20, 6, 2.30], traits: ["GB"] }
+            { name: "Tarik Skubal", base: [18, 5, 2.40], traits: ["K"] },
+            { name: "Paul Skenes", base: [15, 5, 2.35], traits: ["K"] },
+            { name: "Zack Wheeler", base: [16, 6, 2.65], traits: ["GB"] },
+            { name: "Logan Gilbert", base: [14, 7, 3.15], traits: ["GB"] },
+            { name: "Cole Ragans", base: [13, 8, 3.20], traits: ["WH"] },
+            { name: "Pedro Martinez", base: [21, 5, 2.05], traits: ["K"] },
+            { name: "Randy Johnson", base: [21, 6, 2.45], traits: ["K"] },
+            { name: "Greg Maddux", base: [20, 6, 2.30], traits: ["GB"] }
         ],
         RP: [
-            { name: "Emmanuel Clase", ovr: 96, base: [5, 2, 1.45, 46], traits: ["GB"] },
-            { name: "Mason Miller", ovr: 94, base: [4, 2, 1.85, 36], traits: ["K"] },
-            { name: "Josh Hader", ovr: 93, base: [4, 3, 2.40, 37], traits: ["K"] },
-            { name: "Edwin Díaz", ovr: 93, base: [3, 2, 2.25, 39], traits: ["K"] },
-            { name: "Ryan Helsley", ovr: 92, base: [4, 2, 1.95, 42], traits: ["WH"] },
-            { name: "Mariano Rivera", ovr: 99, base: [5, 2, 1.70, 44], traits: ["GB"] },
-            { name: "Trevor Hoffman", ovr: 97, base: [4, 3, 2.30, 42], traits: ["K"] },
-            { name: "Billy Wagner", ovr: 96, base: [4, 2, 2.10, 40], traits: ["K"] }
+            { name: "Emmanuel Clase", base: [5, 2, 1.45, 46], traits: ["GB"] },
+            { name: "Mason Miller", base: [4, 2, 1.85, 36], traits: ["K"] },
+            { name: "Josh Hader", base: [4, 3, 2.40, 37], traits: ["K"] },
+            { name: "Edwin Díaz", base: [3, 2, 2.25, 39], traits: ["K"] },
+            { name: "Ryan Helsley", base: [4, 2, 1.95, 42], traits: ["WH"] },
+            { name: "Mariano Rivera", base: [5, 2, 1.70, 44], traits: ["GB"] },
+            { name: "Trevor Hoffman", base: [4, 3, 2.30, 42], traits: ["K"] },
+            { name: "Billy Wagner", base: [4, 2, 2.10, 40], traits: ["K"] }
         ]
     };
 
@@ -1316,9 +1307,6 @@
                     ${render8BitFaceHTML(p.name)}
                     <strong class="player-name">${p.name}</strong>
                     ${traitsHTML}
-                    <div class="badge-row">
-                        <span class="badge ovr-badge">${p.ovr}</span>
-                    </div>
                 </div>
             `;
         }).join('');
@@ -1332,7 +1320,6 @@
             
             let cardPortrait = '<div style="height:32px; margin:6px 0; display:flex; align-items:center; justify-content:center; color:#555; font-size:1.2em;">?</div>';
             let cardName = '<span style="color:#777; font-size:0.75em;">Empty</span>';
-            let cardBadges = '<span style="color:#555; font-size:0.7em;">Select</span>';
             let cardTraits = '';
             
             if (p) {
@@ -1341,11 +1328,6 @@
                 if (p.traits && p.traits.length > 0) {
                     cardTraits = `<div class="badge-row">${renderArchetypeBadgesHTML(p.traits)}</div>`;
                 }
-                cardBadges = `
-                    <div class="badge-row">
-                        <span class="badge ovr-badge">${p.ovr}</span>
-                    </div>
-                `;
             }
             
             return `
@@ -1354,7 +1336,6 @@
                     ${cardPortrait}
                     ${cardName}
                     ${cardTraits}
-                    ${cardBadges}
                 </div>
             `;
         }).join('');
@@ -1381,9 +1362,6 @@
                 ${render8BitFaceHTML(p.name)}
                 <strong class="player-name" style="margin: 4px 0;">${p.name}</strong>
                 ${traitsHTML}
-                <div class="badge-row" style="margin-top: 6px;">
-                    <span class="badge ovr-badge">${p.ovr} OVR</span>
-                </div>
             `;
 
             card.onclick = function() {
@@ -1395,11 +1373,11 @@
 
     function executePlayerSelection(index) {
         let player = catalogChoices[activeDraftPos][index];
-        pickPlayer(activeDraftPos, player.name, player.ovr, player.base, player.traits);
+        pickPlayer(activeDraftPos, player.name, player.base, player.traits);
     }
 
-    function pickPlayer(pos, name, ovr, base, traits) {
-        userTeam[pos] = { name, ovr, base, traits };
+    function pickPlayer(pos, name, base, traits) {
+        userTeam[pos] = { name, base, traits };
         
         let nextIndex = positions.indexOf(pos) + 1;
         let foundEmpty = false;
@@ -1447,10 +1425,9 @@
                 candidates.push({
                     pos: pos,
                     name: p.name,
-                    ovr: p.ovr || 85,
                     base: p.base,
                     traits: p.traits,
-                    score: (p.ovr || 85) + variance
+                    score: 85 + variance
                 });
             }
         });
@@ -1482,7 +1459,7 @@
                     <div class="mvp-heading">⭐ Winning Team MVP</div>
                     ${render8BitFaceHTML(mvp.name)}
                     <div class="mvp-name">${mvp.name}</div>
-                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Ace Starting Pitcher</div>
+                    <div class="mvp-meta">${mvp.pos} • Ace Starting Pitcher</div>
                     <div class="mvp-stat-grid pitcher">
                         <div class="mvp-stat-box">
                             <div class="mvp-stat-val">${w}-${l}</div>
@@ -1509,7 +1486,7 @@
                     <div class="mvp-heading">⭐ Winning Team MVP</div>
                     ${render8BitFaceHTML(mvp.name)}
                     <div class="mvp-name">${mvp.name}</div>
-                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Lockdown Bullpen Ace</div>
+                    <div class="mvp-meta">${mvp.pos} • Lockdown Bullpen Ace</div>
                     <div class="mvp-stat-grid reliever">
                         <div class="mvp-stat-box">
                             <div class="mvp-stat-val">${era}</div>
@@ -1547,7 +1524,7 @@
                     <div class="mvp-heading">⭐ Winning Team MVP</div>
                     ${render8BitFaceHTML(mvp.name)}
                     <div class="mvp-name">${mvp.name}</div>
-                    <div class="mvp-meta">${mvp.pos} • ${mvp.ovr} OVR • Offensive Leader</div>
+                    <div class="mvp-meta">${mvp.pos} • Offensive Leader</div>
                     <div class="mvp-stat-grid">
                         <div class="mvp-stat-box">
                             <div class="mvp-stat-val">${avgStr}</div>
@@ -1592,12 +1569,9 @@
             if (tbTics >= 3) {
                 clearInterval(tbInterval);
                 
-                let userTeamQuality = positions.reduce((sum, p) => sum + (userTeam[p] ? userTeam[p].ovr : 0), 0) / positions.length;
-                let oppTeamQuality = positions.reduce((sum, p) => sum + (opponentTeam[p] ? opponentTeam[p].ovr : 0), 0) / positions.length;
                 let agendaStatus = checkAgendaProgress();
                 let stratBonus = agendaStatus.allHit ? 0.20 : 0.0;
-                let userTbChance = 0.50 + ((userTeamQuality - oppTeamQuality) * 0.02) + stratBonus;
-                userTbChance = Math.max(0.35, Math.min(0.95, userTbChance));
+                let userTbChance = 0.50 + stratBonus;
                 
                 let userWonTiebreaker = Math.random() < userTbChance;
                 let finalUserWins = userWonTiebreaker ? userWins + 1 : userWins;
