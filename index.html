@@ -202,7 +202,7 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 16px 20px;
-            margin: 20px 0;
+            margin: 15px 0;
             text-align: center;
         }
         .agenda-grid-title {
@@ -392,11 +392,6 @@
             font-size: 0.6em;
             letter-spacing: 0.2px;
             border: 1px solid rgba(255,255,255,0.08);
-        }
-        .badge.price {
-            background: #064e3b;
-            color: #34d399;
-            border-color: #059669;
         }
         .badge.ovr-badge {
             background: #1e3a8a;
@@ -630,7 +625,7 @@
         <button class="btn" onclick="launchFreePlayRush()" style="background: var(--accent-blue); color: #fff; margin: 0 auto;">Start 30s Speed Rush</button>
     </div>
 
-    <!-- DUAL AGENDA TRACKER PANEL (CLOSE TO DRAFT WORKSPACE) -->
+    <!-- DUAL AGENDA TRACKER PANEL (POSITIONED RIGHT ABOVE THE DRAFT WORKSPACE) -->
     <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
         <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards</div>
         <div class="agenda-grids-wrapper">
@@ -950,7 +945,7 @@
     }
 
     function getPlayerCost(ovr) {
-        return 2.5; // Uniform nominal value since payroll is removed
+        return 2.5; 
     }
 
     function render8BitFaceHTML(name) {
