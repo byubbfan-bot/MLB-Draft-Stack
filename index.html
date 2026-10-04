@@ -620,21 +620,6 @@
         <button class="btn" onclick="launchFreePlayRush()" style="background: var(--accent-blue); color: #fff; margin: 0 auto;">Start 30s Speed Rush</button>
     </div>
 
-    <!-- DUAL AGENDA TRACKER PANEL -->
-    <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
-        <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards</div>
-        <div class="agenda-grids-wrapper">
-            <div class="grid-section">
-                <div class="grid-section-title">Batters (9 Units)</div>
-                <div id="agenda-grid-3x3" class="grid-3x3"></div>
-            </div>
-            <div class="grid-section" style="border-left: 1px solid var(--border-color); padding-left: 35px;">
-                <div class="grid-section-title" style="color: #93c5fd;">Pitchers (2 Units)</div>
-                <div id="agenda-grid-2x1" class="grid-2x1"></div>
-            </div>
-        </div>
-    </div>
-
     <div id="opponent-section">
         <h2 id="opponent-section-title">Opponent Lineup</h2>
         <div id="scout-report-box" class="scout-box" style="display: none;">
@@ -668,7 +653,22 @@
             <div id="draft-catalog" class="draft-pool"></div>
         </div>
         
-        <div id="user-section" style="margin-top:35px;">
+        <!-- DUAL AGENDA TRACKER PANEL (POSITIONED DIRECTLY ABOVE YOUR TEAM) -->
+        <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
+            <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards</div>
+            <div class="agenda-grids-wrapper">
+                <div class="grid-section">
+                    <div class="grid-section-title">Batters (9 Units)</div>
+                    <div id="agenda-grid-3x3" class="grid-3x3"></div>
+                </div>
+                <div class="grid-section" style="border-left: 1px solid var(--border-color); padding-left: 35px;">
+                    <div class="grid-section-title" style="color: #93c5fd;">Pitchers (2 Units)</div>
+                    <div id="agenda-grid-2x1" class="grid-2x1"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="user-section" style="margin-top:20px;">
             <h2>Your Active 11-Man Roster</h2>
             <div id="user-lineup" class="lineup-grid"></div>
         </div>
@@ -1023,7 +1023,7 @@
             { name: "Rafael Devers", base: [0.285, 33, 102, 4], traits: ["PWR"] },
             { name: "Nolan Arenado", base: [0.285, 33, 105, 3], traits: ["PWR"] },
             { name: "Matt Chapman", base: [0.250, 28, 82, 8], traits: ["PWR"] },
-            { name: "Alec Bohm", base: [0.280, 18, 92, 4], traits: ["CNT"] },
+            { name: "Alejandro Bohm", base: [0.280, 18, 92, 4], traits: ["CNT"] },
             { name: "Mike Schmidt", base: [0.270, 42, 118, 14], traits: ["PWR"] }
         ],
         SS: [
