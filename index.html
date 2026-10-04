@@ -807,13 +807,12 @@
         const agendaPanel = document.getElementById('agenda-tracker-container');
         const startOverlay = document.getElementById('freeplay-start-container');
         const gameplayWorkspace = document.getElementById('gameplay-workspace');
-        const simSection = document.getElementById('sim-section');
         const instructionsText = document.getElementById('hero-instructions-text');
         const simResults = document.getElementById('sim-results');
         
         if (freePlayInterval) clearInterval(freePlayInterval);
         freePlayActive = false;
-        simSection.style.display = 'none';
+        document.getElementById('sim-section').style.display = 'none';
         simResults.innerHTML = '';
         
         if (mode === "daily") {
@@ -858,9 +857,28 @@
             pitch2Req: pitchRoles[Math.floor(Math.random() * pitchRoles.length)]
         };
         
+        // Ensure the required pitching roles are guaranteed in the SP and RP catalog pools
         positions.forEach(pos => {
             userTeam[pos] = null;
-            let pool = playersDB[pos].sort(() => 0.5 - Math.random());
+            let pool = [...playersDB[pos]];
+            
+            if (pos === 'SP') {
+                // Ensure at least one SP has pitch1Req and one has pitch2Req
+                pool.sort((a, b) => {
+                    let aMatch = (a.traits.includes(activeAgenda.pitch1Req) || a.traits.includes(activeAgenda.pitch2Req)) ? -1 : 1;
+                    let bMatch = (b.traits.includes(activeAgenda.pitch1Req) || b.traits.includes(activeAgenda.pitch2Req)) ? -1 : 1;
+                    return aMatch - bMatch;
+                });
+            } else if (pos === 'RP') {
+                pool.sort((a, b) => {
+                    let aMatch = (a.traits.includes(activeAgenda.pitch1Req) || a.traits.includes(activeAgenda.pitch2Req)) ? -1 : 1;
+                    let bMatch = (b.traits.includes(activeAgenda.pitch1Req) || b.traits.includes(activeAgenda.pitch2Req)) ? -1 : 1;
+                    return aMatch - bMatch;
+                });
+            } else {
+                pool.sort(() => 0.5 - Math.random());
+            }
+            
             catalogChoices[pos] = pool.slice(0, 4);
         });
         
