@@ -202,7 +202,7 @@
             border: 1px solid var(--border-color);
             border-radius: 6px;
             padding: 16px 20px;
-            margin: 25px 0 20px 0;
+            margin: 20px 0;
             text-align: center;
         }
         .agenda-grid-title {
@@ -293,7 +293,7 @@
             background: #142232;
             padding: 16px;
             border-radius: 6px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             border: 1px solid var(--border-color);
         }
         .hud-item {
@@ -637,19 +637,7 @@
         <button class="btn" onclick="launchFreePlayRush()" style="background: var(--accent-blue); color: #fff; margin: 0 auto;">Start 30s Speed Rush</button>
     </div>
 
-    <div id="opponent-section">
-        <h2 id="opponent-section-title">Opponent Lineup</h2>
-        <div id="scout-report-box" class="scout-box" style="display: none;">
-            <div class="scout-icon">📋</div>
-            <div>
-                <div class="scout-title">Dugout Scouting Report</div>
-                <div class="scout-text" id="scout-report-text">Analyzing rival tendencies...</div>
-            </div>
-        </div>
-        <div id="opponent-lineup" class="lineup-grid" style="display:grid;"></div>
-    </div>
-
-    <!-- DUAL SCORECARD PANEL -->
+    <!-- DUAL AGENDA TRACKER PANEL (MOVED CLOSER TO DRAFT WORKSPACE) -->
     <div id="agenda-tracker-container" class="agenda-tracker-panel" style="display: none;">
         <div class="agenda-grid-title" id="agenda-title-text">🎯 Secret Agenda Scorecards (Evaluated on Simulation)</div>
         <div class="agenda-grids-wrapper">
@@ -662,6 +650,18 @@
                 <div id="agenda-grid-2x1" class="grid-2x1"></div>
             </div>
         </div>
+    </div>
+
+    <div id="opponent-section">
+        <h2 id="opponent-section-title">Opponent Lineup</h2>
+        <div id="scout-report-box" class="scout-box" style="display: none;">
+            <div class="scout-icon">📋</div>
+            <div>
+                <div class="scout-title">Dugout Scouting Report</div>
+                <div class="scout-text" id="scout-report-text">Analyzing rival tendencies...</div>
+            </div>
+        </div>
+        <div id="opponent-lineup" class="lineup-grid" style="display:grid;"></div>
     </div>
 
     <div class="legend-bar">
@@ -858,7 +858,7 @@
             freeplayPanel.style.display = "flex";
             agendaPanel.style.display = "block";
             startOverlay.style.display = "block";
-            gameplayWorkspace.style.display = "none"; // Hide until start button clicked
+            gameplayWorkspace.style.display = "none"; 
             
             document.getElementById('agenda-title-text').innerText = "⚡ Real-Time Puzzle Scorecards";
             instructionsText.innerHTML = '<strong>⚡ Free Play Speed Rush:</strong> No budget limits! Hit start when you are ready, and solve the trait requirements before the 30-second timer hits zero.';
@@ -895,8 +895,6 @@
         activeDraftPos = "C";
         document.getElementById('opponent-section-title').innerText = "⚡ Free Play Speed Puzzle";
         document.getElementById('scout-report-box').style.display = 'none';
-        
-        // Hide payroll bank item for Free Play mode since there's no budget
         document.getElementById('hud-bank-wrapper').style.display = 'none';
         
         renderOpponentLineup();
@@ -952,8 +950,8 @@
         
         resultsDiv.innerHTML = `
             <div class="result-graphic win">
-                <div class="graphic-title">🏆 Puzzle Solved!</div>
-                <div class="graphic-banner">Lightning fast! You solved the real-time puzzle with <strong>${timeLeft} seconds</strong> remaining!</div>
+                <div class="graphic-title">🏆 Correct Combination Found!</div>
+                <div class="graphic-banner">Puzzle Solved! You nailed the correct combination with <strong>${timeLeft} seconds</strong> remaining!</div>
                 <div class="btn-container">
                     <button class="btn" onclick="switchGameMode('freeplay')" style="background: var(--accent-green); color: #fff; margin: 0;">Play Again</button>
                 </div>
@@ -1323,7 +1321,7 @@
     }
 
     function calculateRemainingBudget() {
-        if (currentGameMode === "freeplay") return 99.0; // Unlimited budget for Free Play
+        if (currentGameMode === "freeplay") return 99.0;
         let spent = 0;
         positions.forEach(pos => {
             if (userTeam[pos]) spent += userTeam[pos].cost;
