@@ -908,18 +908,20 @@
         freePlayActive = false;
         clearInterval(freePlayInterval);
         
-        const resultsDiv = document.getElementById('sim-results');
-        resultsDiv.style.display = 'block';
-        
-        resultsDiv.innerHTML = `
-            <div class="result-graphic win">
-                <div class="graphic-title">🏆 Correct Combination Found!</div>
-                <div class="graphic-banner">Puzzle Solved! You nailed the correct combination with <strong>${timeLeft} seconds</strong> remaining!</div>
-                <div class="btn-container">
-                    <button class="btn" onclick="switchGameMode('freeplay')" style="background: var(--accent-green); color: #fff; margin: 0;">Play Again</button>
+        setTimeout(() => {
+            const resultsDiv = document.getElementById('sim-results');
+            resultsDiv.style.display = 'block';
+            
+            resultsDiv.innerHTML = `
+                <div class="result-graphic win">
+                    <div class="graphic-title">🏆 Correct Combination Found!</div>
+                    <div class="graphic-banner">Puzzle Solved! You nailed the correct combination with <strong>${timeLeft} seconds</strong> remaining!</div>
+                    <div class="btn-container">
+                        <button class="btn" onclick="switchGameMode('freeplay')" style="background: var(--accent-green); color: #fff; margin: 0;">Play Again</button>
+                    </div>
                 </div>
-            </div>
-        `;
+            `;
+        }, 100);
     }
 
     function render8BitFaceHTML(name) {
@@ -1115,7 +1117,6 @@
 
     function checkAgendaProgress() {
         let pwrCount = 0, cntCount = 0, spdCount = 0;
-        let pitch1Count = 0, pitch2Count = 0;
         
         let hitPositions = ["C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "DH"];
         hitPositions.forEach(pos => {
@@ -1127,21 +1128,13 @@
             }
         });
 
-        // Fixed individual pitcher slot evaluation
         let sp = userTeam["SP"];
         let rp = userTeam["RP"];
         
-        if (sp && sp.traits && sp.traits.includes(activeAgenda.pitch1Req)) pitch1Count = 1;
-        // If pitch1Req is met by SP, check if pitch2Req can be met by RP, or vice-versa
-        let pitcher1Matches = sp && sp.traits && (sp.traits.includes(activeAgenda.pitch1Req) || sp.traits.includes(activeAgenda.pitch2Req));
-        let pitcher2Matches = rp && rp.traits && (rp.traits.includes(activeAgenda.pitch1Req) || rp.traits.includes(activeAgenda.pitch2Req));
-        
-        // Exact 2x1 grid slot counting
         let slot1Met = 0, slot2Met = 0;
         if (sp && sp.traits && sp.traits.includes(activeAgenda.pitch1Req)) slot1Met = 1;
         if (rp && rp.traits && rp.traits.includes(activeAgenda.pitch2Req)) slot2Met = 1;
         
-        // Fallback check if roles are swapped between SP and RP
         if (slot1Met === 0 && slot2Met === 0) {
             if (sp && sp.traits && sp.traits.includes(activeAgenda.pitch2Req)) slot2Met = 1;
             if (rp && rp.traits && rp.traits.includes(activeAgenda.pitch1Req)) slot1Met = 1;
@@ -1150,8 +1143,6 @@
         let pwrHit = pwrCount >= activeAgenda.pwrReq;
         let cntHit = cntCount >= activeAgenda.cntReq;
         let spdHit = spdCount >= activeAgenda.spdReq;
-        let pitch1Hit = (sp && sp.traits && (sp.traits.includes(activeAgenda.pitch1Req) || sp.traits.includes(activeAgenda.pitch2Req)));
-        let pitch2Hit = (rp && rp.traits && (rp.traits.includes(activeAgenda.pitch1Req) || rp.traits.includes(activeAgenda.pitch2Req)) && rp !== sp);
 
         return { 
             pwrMet: Math.min(pwrCount, activeAgenda.pwrReq),
