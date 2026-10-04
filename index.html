@@ -908,20 +908,18 @@
         freePlayActive = false;
         clearInterval(freePlayInterval);
         
-        setTimeout(() => {
-            const resultsDiv = document.getElementById('sim-results');
-            resultsDiv.style.display = 'block';
-            
-            resultsDiv.innerHTML = `
-                <div class="result-graphic win">
-                    <div class="graphic-title">🏆 Correct Combination Found!</div>
-                    <div class="graphic-banner">Puzzle Solved! You nailed the correct combination with <strong>${timeLeft} seconds</strong> remaining!</div>
-                    <div class="btn-container">
-                        <button class="btn" onclick="switchGameMode('freeplay')" style="background: var(--accent-green); color: #fff; margin: 0;">Play Again</button>
-                    </div>
+        const resultsDiv = document.getElementById('sim-results');
+        resultsDiv.style.display = 'block';
+        
+        resultsDiv.innerHTML = `
+            <div class="result-graphic win">
+                <div class="graphic-title">🏆 Correct Combination Found!</div>
+                <div class="graphic-banner">Puzzle Solved! You nailed the correct combination with <strong>${timeLeft} seconds</strong> remaining!</div>
+                <div class="btn-container">
+                    <button class="btn" onclick="switchGameMode('freeplay')" style="background: var(--accent-green); color: #fff; margin: 0;">Play Again</button>
                 </div>
-            `;
-        }, 100);
+            </div>
+        `;
     }
 
     function render8BitFaceHTML(name) {
@@ -1144,13 +1142,15 @@
         let cntHit = cntCount >= activeAgenda.cntReq;
         let spdHit = spdCount >= activeAgenda.spdReq;
 
+        let allHit = (pwrHit && cntHit && spdHit && slot1Met > 0 && slot2Met > 0);
+
         return { 
             pwrMet: Math.min(pwrCount, activeAgenda.pwrReq),
             cntMet: Math.min(cntCount, activeAgenda.cntReq),
             spdMet: Math.min(spdCount, activeAgenda.spdReq),
             pitch1Met: slot1Met,
             pitch2Met: slot2Met,
-            allHit: (pwrHit && cntHit && spdHit && slot1Met > 0 && slot2Met > 0) 
+            allHit: allHit 
         };
     }
 
@@ -1177,11 +1177,8 @@
         }
         grid2x1.innerHTML = pitcherHtml;
 
-        if (currentGameMode === "freeplay" && freePlayActive) {
-            let complete = positions.every(pos => userTeam[pos] !== null && userTeam[pos] !== undefined);
-            if (complete && progress.allHit) {
-                triggerFreePlayWin();
-            }
+        if (currentGameMode === "freeplay" && freePlayActive && progress.allHit) {
+            triggerFreePlayWin();
         }
     }
 
